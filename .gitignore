@@ -4,6 +4,7 @@ venv/
 ENV/
 env/
 .env
+webappenv
 
 # Python cache files
 __pycache__/
