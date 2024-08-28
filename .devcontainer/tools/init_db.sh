@@ -10,9 +10,9 @@ CREATE USER $DATABASE_USER WITH PASSWORD '$DATABASE_PW';
 GRANT ALL PRIVILEGES ON DATABASE $DATABASE_NAME TO $DATABASE_USER;
 EOF"
 
-python -m venv /workspace/app/webappenv
+python3 -m venv /workspaces/app/webappenv
 
-source /workspace/app/webappenv/bin/activate
+source /workspaces/app/webappenv/bin/activate
 
 pip install django
 
