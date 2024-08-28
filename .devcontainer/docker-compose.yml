@@ -1,0 +1,19 @@
+services:
+  application: 
+    build: .
+    container_name: development
+    env_file: 
+      - ./.env
+    ports: 
+      - "8090:8090"
+    volumes: 
+      - ../:/workspaces/
+    networks: 
+      - trans_net
+    labels:
+      - 'devcontainer.local_folder=/home/fwechsle/ft_trans'
+      - 'devcontainer.config_file=/home/fwechsle/ft_trans/.devcontainer/devcontainer.json'
+
+networks: 
+  trans_net: 
+    driver: bridge
