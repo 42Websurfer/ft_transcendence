@@ -18,8 +18,8 @@ __pycache__/
 *.pyd
 *.sqlite3
 db.sqlite3
-media
-staticfiles
+media/
+staticfiles/
 .DS_Store
 
 # VSCode settings
