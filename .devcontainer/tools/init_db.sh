@@ -12,8 +12,10 @@ EOF"
 
 python -m venv /workspace/app/webappenv
 
-source /workspace/app/webappenv/bin/activate
+source /workspaces/app/webappenv/bin/activate
 
-pip install django
+pip install django psycopg2-binary
+/workspaces/app/transendence/manage.py makemigrations
+/workspaces/app/transendence/manage.py migrate
 
 nginx -g "daemon off;"
