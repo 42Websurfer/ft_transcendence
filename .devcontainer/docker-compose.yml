@@ -15,11 +15,13 @@ services:
       - 'devcontainer.config_file=/home/fwechsle/ft_trans/.devcontainer/devcontainer.json'
   database:
     container_name: django_db
-    image: postgres
+    build: ./database/.
     env_file:
       - .env
     networks:
       - trans_net
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     expose:
       - 5432
   nginx:
@@ -42,4 +44,4 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: /sgoinfre/goinfre/Perso/nsassenb/Transcendence/UserDB
+      device: /sgoinfre/goinfre/Perso/fwechsle/Transcendence/UserDB
