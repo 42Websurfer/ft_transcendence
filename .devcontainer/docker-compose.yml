@@ -20,8 +20,8 @@ services:
       - .env
     networks:
       - trans_net
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+    #volumes:
+    #  - postgres_data:/var/lib/postgresql/data
     expose:
       - 5432
   nginx:
@@ -38,10 +38,10 @@ services:
 networks: 
   trans_net: 
     driver: bridge
-volumes:
-  postgres_data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /sgoinfre/goinfre/Perso/fwechsle/Transcendence/UserDB
+#volumes:
+#  postgres_data:
+#    driver: local
+#    driver_opts:
+#      type: none
+#      o: bind
+#      device: /sgoinfre/goinfre/Perso/fwechsle/Transcendence/UserDB
