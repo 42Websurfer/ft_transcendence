@@ -4,16 +4,33 @@ services:
     container_name: development
     env_file: 
       - ./.env
-    ports: 
-      - "8090:8090"
     volumes: 
       - ../:/workspaces/
     networks: 
       - trans_net
+    expose:
+      - 8000
     labels:
       - 'devcontainer.local_folder=/home/fwechsle/ft_trans'
       - 'devcontainer.config_file=/home/fwechsle/ft_trans/.devcontainer/devcontainer.json'
-
+  database:
+    container_name: django_db
+    image: postgres
+    env_file:
+      - .env
+    networks:
+      - trans_net
+    expose:
+      - 5432
+  nginx:
+    container_name: nginx
+    image: nginx
+    volumes:
+      - ./conf/nginx:/etc/nginx/sites-enabled
+    networks:
+      - trans_net
+    ports:
+      - "8090:8090"
 networks: 
   trans_net: 
     driver: bridge
