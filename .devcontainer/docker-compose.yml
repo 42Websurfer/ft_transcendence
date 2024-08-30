@@ -26,11 +26,20 @@ services:
     container_name: nginx
     image: nginx
     volumes:
-      - ./conf/nginx:/etc/nginx/sites-enabled
+      - ./conf/nginx:/etc/nginx/conf.d
     networks:
       - trans_net
+    expose:
+      - 8090
     ports:
       - "8090:8090"
 networks: 
   trans_net: 
     driver: bridge
+volumes:
+  postgres_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /sgoinfre/goinfre/Perso/nsassenb/Transcendence/UserDB
