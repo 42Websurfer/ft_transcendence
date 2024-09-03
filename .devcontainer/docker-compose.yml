@@ -15,20 +15,9 @@ services:
       - 'devcontainer.config_file=/home/felix/Dokumente/ft_transendence/.devcontainer/devcontainer.json'
   database:
     container_name: django_db
-    build: 
-      context: ./database
-      args:
-        DB_USER: ${DB_USER}
+    image: postgres:latest
     env_file:
       - .env
-    user:  "$DB_USER:$DB_USER"
-    #healthcheck: 
-    #  test: ["CMD-SHELL", "/usr/local/bin/init_db.sh"]
-    #  interval: 5s
-    #  timeout: 5s
-    #  retries: 3
-    #  start_period: 10s
-    
     networks:
       - trans_net
     volumes:
@@ -51,8 +40,3 @@ networks:
     driver: bridge
 volumes:
   postgres_data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /home/felix/Dokumente/ft_transendence/UserDB/
