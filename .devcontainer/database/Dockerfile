@@ -1,6 +1,11 @@
 FROM postgres:latest
 
-RUN chown -R root:root /var/lib/postgresql/data
-RUN mkdir -p /var/lib/postgresql/test
-# Set the default command
+ARG DB_USER
+
+#COPY ./tools/init_db.sh /usr/local/bin/init_db.sh
+
+#RUN chmod +x /usr/local/bin/init_db.sh
+RUN useradd -u 1000 -M ${DB_USER}
+USER ${DB_USER}
+
 CMD ["postgres"]
