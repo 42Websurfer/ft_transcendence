@@ -9,19 +9,15 @@ RUN apt-get update && \
     curl \
     git \
     vim \
-    nginx \
     python3 \
-    postgresql \
-    postgresql-contrib \
     python3-venv && \
     ln -fs /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
     dpkg-reconfigure --frontend noninteractive tzdata && \
     apt-get autoremove -y && \
     apt-get clean -y
 
-COPY ./conf/default /etc/nginx/sites-enabled/default
-COPY ./tools/init_db.sh /usr/local/bin/init_db.sh
+COPY ./tools/init_django.sh /usr/local/bin/init_django.sh
 
-RUN chmod +x /usr/local/bin/init_db.sh
+RUN chmod +x /usr/local/bin/init_django.sh
 
-CMD ["/usr/local/bin/init_db.sh"]
+CMD ["/usr/local/bin/init_django.sh"]
