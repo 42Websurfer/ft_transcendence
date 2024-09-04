@@ -13,3 +13,7 @@ def pong(request):
     form = UserForm()
     users = User.objects.all()
     return render(request, 'niko.html', {'form': form, 'pongUser': users})
+
+def getLogin(request):
+    template = loader.get_template('login.html')
+    return HttpResponse(template.render())
