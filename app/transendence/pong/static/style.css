@@ -32,6 +32,10 @@ form {
     background-color: #018cc6;
 }
 
+.messages {
+    list-style-type: none;
+}
+
 .messages .error {
     color: red;
 }
