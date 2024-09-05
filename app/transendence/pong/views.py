@@ -25,16 +25,15 @@ def login(request):
 		try: 
 			user = User.objects.get(email=email)
 			if user is not None:
-				if password == user.password:
+				if hash(password) == user.password:
 					return HttpResponse("Welllll done!")
 				else:
-					return HttpResponse("Wrong pw!")
+					return HttpResponse(f"WRONG PW!!! HASH PW: {hash(password)}, HASH PW DATABASE: {user.password}")		
 		except:
 			return HttpResponse("NOOOO EMAIL!")
 	elif request.method == 'GET':
 		form = UserForm()
 		return render(request, 'login.html', {'form': form})
-
 
 def register(request):
 	if request.method == 'POST':
@@ -47,7 +46,6 @@ def register(request):
 		copy = request.POST.copy()
 		copy["password"] = hash(copy["password"])
 		request.POST = copy
-		print(request.POST)
 
 		form = UserForm(request.POST)
 		if form.is_valid():
