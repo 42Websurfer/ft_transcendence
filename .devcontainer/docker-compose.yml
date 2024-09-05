@@ -35,6 +35,13 @@ services:
       - 8090
     ports:
       - "8090:8090"
+  adminer: 
+    container_name: adminer
+    image: adminer
+    networks: 
+      - trans_net
+    ports: 
+      - "8080:8080"
 networks: 
   trans_net: 
     driver: bridge
