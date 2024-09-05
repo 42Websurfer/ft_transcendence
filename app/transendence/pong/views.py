@@ -18,18 +18,23 @@ from django.contrib.auth.hashers import make_password
 #     users = User.objects.all()
 #     return render(request, 'niko.html', {'form': form, 'pongUser': users})
 
-#@csrf_protect
+def startpage(request):
+	if request.user.is_authenticated:
+		return HttpResponse("STartpage!")
+	else:
+		return render (request, 'login.html')
+
 def user_login(request):
 	if request.method == 'POST':
-		email = request.POST.get('email')
+		username = request.POST.get('username')
 		password = request.POST.get('password')
-		if User.objects.filter(email=email).exists():
-			user = authenticate(email=email, password=password)
+		if User.objects.filter(username=username).exists():
+			user = authenticate(username=username, password=password)
 			if user is not None:
 				login(request, user)
-				return HttpResponse("Welllll done!")
+				return redirect('/')
 			else:
-				return HttpResponse(f"WRONG PW!!! NEU??")		
+				return render(request, 'login.html')
 		else:
 			return HttpResponse("NOOOO EMAIL!")
 	elif request.method == 'GET':
