@@ -43,6 +43,12 @@ def register(request):
 		firstname = request.POST.get('firstname')
 		lastname = request.POST.get('lastname')
 		username = request.POST.get('username')
+
+		copy = request.POST.copy()
+		copy["password"] = hash(copy["password"])
+		request.POST = copy
+		print(request.POST)
+
 		form = UserForm(request.POST)
 		if form.is_valid():
 			if User.objects.filter(email=email).exists():
