@@ -29,6 +29,7 @@ services:
     image: nginx
     volumes:
       - ./conf/nginx:/etc/nginx/conf.d
+      - ./../src:/var/www/html/frontend/
     networks:
       - trans_net
     expose:
