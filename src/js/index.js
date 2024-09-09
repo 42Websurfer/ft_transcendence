@@ -1,19 +1,3 @@
-function showSection(section)
-{
-    if (section === 'register')
-        import('./register.js').then(module => {
-            module.renderRegister();
-    });
-    else if (section === 'login')
-        import('./login.js').then(module => {
-            module.renderLogin();    
-    });
-    else if (section === 'welcome')
-        import('./welcome.js').then(module => {
-            module.renderWelcome();
-    });               
-}
-
 async function checkAuthentication() {
     const response = await fetch('/checkauth/', {
         method: 'GET',
@@ -29,6 +13,33 @@ async function checkAuthentication() {
     }
     return result.authenticated;
 }
+
+async function showSection(section)
+{
+    const isAuthenticated = await checkAuthentication();
+    if (section === 'register')
+        import('./register.js').then(module => {
+            module.renderRegister();
+        });
+    else if (section === 'login')
+        import('./login.js').then(module => {
+            module.renderLogin();    
+        });
+    else if (section === 'welcome')
+        if (isAuthenticated) {
+            import('./welcome.js').then(module => {
+                module.renderWelcome();
+            });
+        }
+        else
+            import('./login.js').then(module => {
+                module.renderLogin();    
+            });
+    import('./header.js').then(module => {
+        module.renderHeader(section);
+    });
+}
+
 
 async function initApp() {
     const isAuthenticated = await checkAuthentication();
