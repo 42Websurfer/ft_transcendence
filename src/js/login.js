@@ -56,4 +56,3 @@ async function handleLoginFormSubmit(event)
 		showSection('welcome');
 
 }
-

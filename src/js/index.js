@@ -1,17 +1,26 @@
 function showSection(section)
 {
-    if (section === 'register')
+    if (section === 'register'){
         import('./register.js').then(module => {
             module.renderRegister();
-    });
-    else if (section === 'login')
+    	});
+	}
+    else if (section === 'login'){
         import('./login.js').then(module => {
             module.renderLogin();    
-    });
-    else if (section === 'welcome')
+    	});
+	}
+    else if (section === 'welcome'){
         import('./welcome.js').then(module => {
             module.renderWelcome();
-    });               
+    	});
+	}
+	else if (section === 'pong'){
+		import('./pong.js').then(module => {
+			module.renderPong();
+		});
+	}
+	window.history.pushState({ section: section }, null, null);
 }
 
 async function checkAuthentication() {
@@ -38,5 +47,11 @@ async function initApp() {
         showSection('login');
     }
 }
+
+window.addEventListener('popstate', (event) => {
+	if (event.state && event.state.section){
+		showSection(event.state.section);
+	}
+});
 
 window.onload = initApp;
