@@ -29,9 +29,8 @@ export function displayMessages(result) {
     }
 }
 
-export async function handleLogoutSubmit(event)
+export async function handleLogoutSubmit()
 {
-    event.preventDefault();
     const csrftoken = getCookie('csrftoken');
 
     const response = await fetch('/logout/', {
@@ -44,4 +43,20 @@ export async function handleLogoutSubmit(event)
 
     const result = await response.json();
     showSection('login');
+}
+
+export async function checkAuthentication() {
+    const response = await fetch('/checkauth/', {
+        method: 'GET',
+        credentials: 'include'  // Ensure cookies are included in the request
+    });
+    const result = await response.json();
+    if (result.authenticated) {
+        localStorage.setItem('authenticated', 'true');
+        localStorage.setItem('user', JSON.stringify(result.user));
+    } else {
+        localStorage.removeItem('authenticated');
+        localStorage.removeItem('user');
+    }
+    return result.authenticated;
 }
