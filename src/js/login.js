@@ -10,11 +10,11 @@ export function renderLogin() {
 				<h1 class="h3 mb-3 fw-normal">Please sign in</h1>        
 				<div id="messages"></div>
 				<div class="form-floating">
-					<input type="text" name="login-username" class="form-control" id="floatingInput" placeholder="Username">
+					<input type="text" name="login-username" class="form-control" id="floatingInput" placeholder="Username" required>
 					<label for="floatingInput">Username</label>
 				</div>
 				<div class="form-floating">
-					<input type="password" name="login-password" class="form-control" id="floatingPassword" placeholder="Password">
+					<input type="password" name="login-password" class="form-control" id="floatingPassword" placeholder="Password" required>
 					<label for="floatingPassword">Password</label>
 				</div> 
 				<button class="btn btn-primary w-100 py-2" type="submit">Sign in</button>
@@ -49,6 +49,11 @@ async function handleLoginFormSubmit(event)
 
     const result = await response.json();
     displayMessages(result);
-	showSection('welcome');
+	console.log(result.error);
+	console.log(result.sucess);
+
+	if (result.success)
+		showSection('welcome');
+
 }
 
