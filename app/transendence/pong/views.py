@@ -67,9 +67,10 @@ def user_login(request):
 def user_logout(request):
 	if request.user.is_authenticated: 
 		logout(request)
-		return JsonResponse({
-			'success': 'User logged in successfully.'
-		}, status=200)
+	return JsonResponse({
+		'success': 'User logged in successfully.'
+	}, status=200)
+
 @csrf_exempt
 def register(request):
 	if request.method == 'POST':
