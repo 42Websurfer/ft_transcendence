@@ -94,7 +94,7 @@ class Ball extends Entity{
 		if (!other)
 			return;
 		if (other.position.x > this.position.x)
-			this.velocity.x = this.velocity.
+			this.velocity.x = -this.velocity.x
 		if (other.position.y != this.position.y)
 			this.velocity.y = -this.velocity.y;
 	}
