@@ -2,6 +2,7 @@ const canvas = document.createElement('canvas');
 canvas.width = 1280;
 canvas.height = 720;
 const ctx = canvas.getContext('2d');
+const PLAYER_MOVE_SPEED = 10;
 
 var entities = [];
 var pents = [];
@@ -160,6 +161,7 @@ class Box extends Mesh{
 class Player extends Entity{
 	constructor(x, y){
 		super(new Box(x, y, 40, 250));
+		this.keyBinds = {up: 'ArrowUp', down: 'ArrowDown'};
 		window.addEventListener('keydown', (event) => this.keyDown(event));
 		window.addEventListener('keyup', (event) => this.keyUp(event));
 		this.moveDir = new Vector(0,0);
@@ -183,20 +185,20 @@ class Player extends Entity{
 	}
 
 	keyDown(event){
-		if (event.key == 'ArrowUp'){
+		if (event.key === this.keyBinds.up){
 			let dir = new Vector(this.mesh.up.x, this.mesh.up.y);
-			dir.scale(5);
+			dir.scale(PLAYER_MOVE_SPEED);
 			this.moveDir = dir;
 		}
-		if (event.key == 'ArrowDown') {
+		if (event.key === this.keyBinds.down) {
 			let dir = new Vector(this.mesh.up.x, this.mesh.up.y);
-			dir.scale(-5);
+			dir.scale(-PLAYER_MOVE_SPEED);
 			this.moveDir = dir;
 		}
 	}
 
 	keyUp(event){
-		if (event.key == 'ArrowUp' || event.key == 'ArrowDown')
+		if (event.key === this.keyBinds.up || event.key === this.keyBinds.down)
 			this.moveDir.x = 0; this.moveDir.y = 0;
 	}
 }
@@ -210,7 +212,10 @@ function drawLine(p1, p2){
 }
 
 let a = new Player(canvas.width * 0.1, canvas.height * 0.5);
-let b = new Ball(/* canvas.width * 0.1 + 50, canvas.height * 0.2 */);
+let b = new Player(canvas.width * 0.9, canvas.height * 0.5);
+b.keyBinds.up = 'ArrowLeft';
+b.keyBinds.down = 'ArrowRight';
+let c = new Ball(/* canvas.width * 0.1 + 50, canvas.height * 0.2 */);
 
 // let shortest = undefined;
 
