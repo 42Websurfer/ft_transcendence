@@ -10,6 +10,7 @@ services:
       - trans_net
     expose:
       - 8000
+      - 8001
     labels:
       - 'devcontainer.local_folder=/home/fwechsle/ft_trans'
       - 'devcontainer.config_file=/home/fwechsle/ft_trans/.devcontainer/devcontainer.json'
