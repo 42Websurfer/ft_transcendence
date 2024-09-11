@@ -93,4 +93,9 @@ function renderNavbarButtons(section)
         logoutButton.addEventListener('click', () => {
             handleLogoutSubmit();
     });
+    const settingsButton = document.getElementById('settingsButton')
+    if (settingsButton)
+        settingsButton.addEventListener('click', () => {
+            showSection('websocket');
+    });
 }
