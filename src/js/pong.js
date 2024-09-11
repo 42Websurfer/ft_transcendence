@@ -4,9 +4,6 @@ canvas.height = 720;
 const ctx = canvas.getContext('2d');
 const PLAYER_MOVE_SPEED = 10;
 
-var entities = [];
-var pents = [];
-
 export function renderPong() {
 	const app = document.getElementById('app');
 	if (app)
@@ -17,6 +14,10 @@ class Vector{
 	constructor(x, y){
 		this.x = x;
 		this.y = y;
+	}
+
+	dup(){
+		return (new Vector(this.x, this.y));
 	}
 
 	add(otherVector){
@@ -59,96 +60,120 @@ class Transform{
 	constructor(posX, posY, rotation = 0){
 		this.position = new Vector(posX, posY);
 		this.rotation = rotation;
+		this.up = new Vector(0, -1);
+		this.up.rotate(this.rotation);
+	}
+
+	rotate(deg){
+		this.rotation = deg;
+		this.up.rotate(deg);
 	}
 }
 
-class Mesh extends Transform{
-	constructor(x, y){
-		super(x, y);
-		this.up = new Vector(0, -1);
+class Component{
+	constructor(){
+
+	}
+}
+
+class Physics extends Component{
+	constructor(x = 0, y = 0){
+		super();
+		this.velocity = new Vector(x, y);
+	}
+
+	setVelocity(dx, dy){
+		this.velocity.x = dx;
+		this.velocity.y = dy;
+	}
+
+	setVelocityV(vec){
+		this.velocity = vec;
+	}
+}
+
+class Mesh extends Component{
+	constructor(){
+		super();
 		this.points = [];
 	}
 
-	rotateMesh(deg){
-		for (const p of this.points) {
-			p.rotate(deg);
-		}
-		this.up.rotate(deg);
-	}
-
-	draw(){
+	draw(transform){
+		if (this.points.length == 0)
+			return;
 		ctx.beginPath();
 		let point = new Vector(this.points[0].x, this.points[0].y)
-		// point.rotate(this.rotation);
-		point = point.add(this.position);
+		point.rotate(transform.rotation);
+		point = point.add(transform.position);
 		ctx.moveTo(point.x, point.y);
 		for (let i = 1; i < this.points.length; i++) {
 			point = new Vector(this.points[i].x, this.points[i].y);
-			// point.rotate(this.rotation);
-			point = point.add(this.position);
+			point.rotate(transform.rotation);
+			point = point.add(transform.position);
 			ctx.lineTo(point.x, point.y);
 		}
 		point = new Vector(this.points[0].x, this.points[0].y)
-		// point.rotate(this.rotation);
-		point = point.add(this.position);
+		point.rotate(transform.rotation);
+		point = point.add(transform.position);
 		ctx.lineTo(point.x, point.y);
 		ctx.closePath();
 		ctx.fill();
 	}
+
+	getSmallestDistance(point){
+		throw new Error("Called from abstract, not implemented!");
+	}
 }
 
-class Entity{
-	constructor(mesh){
-		this.mesh = mesh;
-		entities.push(this);
+class Entity extends Transform{
+	constructor(x, y){
+		super(x, y);
+		this.components = {};
+		this.onCollision = undefined;
+	}
+
+	addComponent(type, component){
+		// if (!(type in this.components)){
+			this.components[type] = component;
+		// } else {
+			// this.components[type] = component;
+		// }
+	}
+
+	getComponent(type){
+		return this.components[type];
+	}
+
+	hasComponent(type){
+		return type in this.components;
 	}
 
 	move(xAdd, yAdd){
-		this.mesh.position.x += xAdd;
-		this.mesh.position.y += yAdd;
+		this.position.x += xAdd;
+		this.position.y += yAdd;
 	}
 
 	update(){
-		this.mesh.draw();
-	}
-}
-
-class PhysEntity extends Entity{
-	constructor(mesh){
-		super(mesh);
-		this.velocity = new Vector(0,0);
-		pents.push(this);
-	}
-
-	update(){
-		this.move(this.velocity.x, this.velocity.y);
-		super.update();
 	}
 }
 
 class Circle extends Mesh{
-	constructor(x, y, width){
-		super(x,y);
+	constructor(width){
+		super();
 		this.width = this.height = width;
 	}
 
-	draw(){
+	draw(transform){
 		ctx.beginPath();
-		ctx.arc(this.position.x, this.position.y, this.width * 0.5, 0, 360);
+		ctx.arc(transform.position.x, transform.position.y, this.width * 0.5, 0, 360);
 		ctx.closePath();
 		ctx.fill();
 	}
 }
 
-class Ball extends PhysEntity{
-	constructor(x = canvas.width / 2, y = canvas.height / 2){
-		super(new Circle(x, y, 40));
-	}
-}
-
 class Box extends Mesh{
-	constructor(x, y, w, h){
-		super(x, y);
+	constructor(w, h){
+		super();
 		this.width = w;
 		this.height = h;
 		this.points.push(new Vector(-(this.width * 0.5), this.height * 0.5));
@@ -158,9 +183,25 @@ class Box extends Mesh{
 	}
 }
 
+class Ball extends Entity{
+	constructor(x = canvas.width / 2, y = canvas.height / 2){
+		super(x, y);
+		this.addComponent(Mesh, new Circle(40));
+		this.physics = new Physics(3,0);
+		this.addComponent(Physics, this.physics);
+		
+		this.onCollision = function(other){
+			this.physics.velocity.x *= -1;
+		}
+	}
+
+}
+
 class Player extends Entity{
 	constructor(x, y){
-		super(new Box(x, y, 40, 250));
+		super(x, y);
+		this.mesh = new Box(40, 250);
+		this.addComponent(Mesh, this.mesh);
 		this.keyBinds = {up: 'ArrowUp', down: 'ArrowDown'};
 		window.addEventListener('keydown', (event) => this.keyDown(event));
 		window.addEventListener('keyup', (event) => this.keyUp(event));
@@ -168,7 +209,7 @@ class Player extends Entity{
 	}
 
 	move(xAdd, yAdd){
-		let newPos = this.mesh.position.add(new Vector(xAdd, yAdd));
+		let newPos = this.position.add(new Vector(xAdd, yAdd));
 		for (let point of this.mesh.points) {
 			point = point.add(newPos);
 			if (point.x < 0 || point.x > canvas.width)
@@ -176,7 +217,7 @@ class Player extends Entity{
 			if (point.y < 0 || point.y > canvas.height)
 				return;
 		}
-		this.mesh.position = newPos;
+		this.position = newPos;
 	}
 
 	update(){
@@ -186,12 +227,12 @@ class Player extends Entity{
 
 	keyDown(event){
 		if (event.key === this.keyBinds.up){
-			let dir = new Vector(this.mesh.up.x, this.mesh.up.y);
+			let dir = new Vector(this.up.x, this.up.y);
 			dir.scale(PLAYER_MOVE_SPEED);
 			this.moveDir = dir;
 		}
 		if (event.key === this.keyBinds.down) {
-			let dir = new Vector(this.mesh.up.x, this.mesh.up.y);
+			let dir = new Vector(this.up.x, this.up.y);
 			dir.scale(-PLAYER_MOVE_SPEED);
 			this.moveDir = dir;
 		}
@@ -203,46 +244,117 @@ class Player extends Entity{
 	}
 }
 
+class System{
+	execute(entities){
+
+	}
+}
+
+class RenderSystem extends System{
+	execute(entities){
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		entities.forEach(entity => {
+			const mesh = entity.getComponent(Mesh);
+			if (mesh){
+				mesh.draw(entity);
+			}
+		});
+	}
+}
+
+class MovementSystem extends System{
+	execute(entities){
+		entities.forEach(entity => {
+			const phys = entity.getComponent(Physics);
+			if (phys){
+				entity.position.x += phys.velocity.x;
+				entity.position.y += phys.velocity.y;
+			}
+		});
+	}
+}
+
+class CollisionSystem extends System{
+	execute(entities){
+		entities.forEach(ent => {
+			if (ent.hasComponent(Physics)){
+				const entMesh = ent.getComponent(Mesh);
+				entities.forEach(other => {
+					if (ent != other){
+						const otherMesh = other.getComponent(Mesh);
+						let ab = ent.position.sub(other.position);
+						let smallestDist = Math.max(Math.max(entMesh.width, entMesh.height), Math.max(otherMesh.width, otherMesh.height));
+						if (ab.length() < smallestDist){
+							if (ab.length() < 2 && ent.onCollision != undefined)
+							{
+								ent.onCollision(other);
+							}
+							drawLine(ent.position, other.position);
+						}
+					}
+				});
+			}
+		});
+	}
+}
+
+class Game{
+	constructor(){
+		this.entities = [];
+		this.systems = [];
+	}
+
+	addEntity(ent){
+		this.entities.push(ent);
+	}
+
+	addSystem(sys){
+		this.systems.push(sys);
+	}
+
+	update(){
+		this.systems.forEach(sys => {
+			sys.execute(this.entities);
+		});
+
+		this.entities.forEach(ent =>{
+			ent.update();
+		});
+	}
+}
+
 function drawLine(p1, p2){
 	ctx.beginPath();
 	ctx.moveTo(p1.x, p1.y);
+	let mid = p2.sub(p1);
+	let len = mid.length();
+	mid.scale(0.5);
+	mid = p1.add(mid);
+	ctx.fillText(len, mid.x, mid.y);
 	ctx.lineTo(p2.x, p2.y);
 	ctx.closePath();
 	ctx.stroke();
 }
+
+let game = new Game();
+
+game.addSystem(new RenderSystem());
+game.addSystem(new MovementSystem());
+game.addSystem(new CollisionSystem());
 
 let a = new Player(canvas.width * 0.1, canvas.height * 0.5);
 let b = new Player(canvas.width * 0.9, canvas.height * 0.5);
 b.keyBinds.up = 'ArrowLeft';
 b.keyBinds.down = 'ArrowRight';
 let c = new Ball(/* canvas.width * 0.1 + 50, canvas.height * 0.2 */);
+game.addEntity(a);
+game.addEntity(b);
+game.addEntity(c);
 
-// let shortest = undefined;
-
-// for (const point of a.mesh.points) {
-// 	let af = point.add(a.mesh.position);
-// 	let line = af.sub(b.mesh.position);
-// 	if (shortest == undefined || line.sqrLength() < shortest.sqrLength())
-// 		shortest = line;
-// 	drawLine(af, b.mesh.position);
-// }
-
-// ctx.strokeStyle = 'green';
-// drawLine(shortest, b.mesh.position);
-
-// a.update();
-// b.update();
-
-// drawLine(a.mesh.position, b.mesh.position);
 
 
 setInterval(function() {
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	for (const ent of entities) {
-		if (ent instanceof PhysEntity)
-			;//check collision??
-		ent.update();
-	}
+	game.update();
 }, 10);
 
 // ctx.beginPath();
@@ -274,12 +386,3 @@ setInterval(function() {
 // 	ls1.rotate(rotStep);
 // 	ls2.rotate(rotStep);
 // }
-
-// setInterval(function(){
-// 	ctx.clearRect(0, 0, canvas.width, canvas.height);
-// 	drawCourt();
-// 	for (const ent of ents) {
-// 		ent.update();
-// 		ent.draw();
-// 	}
-// }, 10);
