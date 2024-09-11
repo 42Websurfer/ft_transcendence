@@ -35,6 +35,10 @@ async function showSection(section)
             import('./login.js').then(module => {
                 module.renderLogin();    
             });
+    else if (section === 'websocket')
+        import('./test.js').then(module => {
+            module.renderWebsocket();
+        });
     import('./header.js').then(module => {
         module.renderHeader(section);
     });
