@@ -12,5 +12,4 @@ export function renderWelcome() {
     const form = document.getElementById('logoutButton');
     const pong = document.getElementById('start');
     form.addEventListener('click', handleLogoutSubmit);
-    pong.addEventListener('click', showSection('pong'));
 }
