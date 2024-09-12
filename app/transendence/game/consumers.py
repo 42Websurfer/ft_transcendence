@@ -49,7 +49,15 @@ class MyConsumer(AsyncWebsocketConsumer):
 					'player2_posY': text_data_json.get('player2_posY'),
 				}
 			)
-
+		elif(ws_type == 'chat_message'):
+			await self.channel_layer.group_send(
+				self.group_name,
+				{
+					'type': 'chat_message',
+					'user': text_data_json.get('user'),
+					'message': text_data_json.get('message')
+				}
+			)
 	async def welcome_message(self, event):
 		message = event.get('message')
 		user = event.get('user')
@@ -69,6 +77,15 @@ class MyConsumer(AsyncWebsocketConsumer):
 			'player2_posX': event.get('player2_posX'),
 			'player2_posY': event.get('player2_posY'),
 
+		}))
+	async def chat_message(self, event):
+		message = event.get('message')
+		user = event.get('user')
+		print()
+		await self.send(text_data=json.dumps({
+			'message': message,
+			'user': user,
+			'type': event.get('type')
 		}))
 
 """ 
