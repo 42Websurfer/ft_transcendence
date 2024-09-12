@@ -162,7 +162,7 @@ class Mesh extends Component{
 		let closestPoint = undefined;
 		let smallestDist = Infinity;
 
-		let transformedPoints = this.points.map(p => p.rotate(transform.rotation).add(transform.position));
+		let transformedPoints = this.points.map(p => p.dup().rotate(transform.rotation).add(transform.position));
 
 		for (let i = 0; i < transformedPoints.length; i++) {
 			let pointA = transformedPoints[i];
