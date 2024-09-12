@@ -170,7 +170,7 @@ class Mesh extends Component{
 
 			let planeAB = new Plane(pointA, pointB.sub(pointA));
 
-			drawLine(planeAB.start, planeAB.dir.add(planeAB.start));
+			// drawLine(planeAB.start, planeAB.dir.add(planeAB.start));
 			
 			let currPoint = planeAB.getClosestPoint(point);
 			let line = currPoint.sub(point);
@@ -368,16 +368,10 @@ class CollisionSystem extends System{
 						if (ab.length() < smallestDist){
 							let oClosest = otherMesh.getClosestPoint(other, ent.position);
 							let sClosest = entMesh.getClosestPoint(ent, oClosest);
-							// drawLine(sClosest, oClosest);
-							ctx.fillRect(oClosest.x, oClosest.y, 5, 5);
-							ctx.fillStyle = 'red';
-							ctx.fillRect(sClosest.x, sClosest.y, 5, 5);
-							ctx.fillStyle = 'black';
 							if (oClosest.sub(sClosest).dot(ab) > 0){
 								ent.onCollision(other, sClosest);
 								other.onCollision(ent, oClosest);
 							}
-							// drawLine(ent.position, other.position);
 						}
 					}
 				});
@@ -454,15 +448,6 @@ game.addEntity(wallr);
 setInterval(function() {
 	game.update();
 }, 10);
-
-// ctx.beginPath();
-// ctx.moveTo(50, 50);
-// ctx.lineTo(100, 50);
-// ctx.lineTo(100, 100);
-// ctx.lineTo(50, 100);
-// ctx.lineTo(50, 50);
-// ctx.closePath();
-// ctx.fill();
 
 // let players = 3;
 // let rotStep = 360 / players;
