@@ -28,23 +28,36 @@ class Vector{
 		return (new Vector(this.x - otherVec.x, this.y - otherVec.y));
 	}
 
+	normalize(){
+		let len = this.length();
+		this.x /= len;
+		this.y /= len;
+		return this;
+	}
+
 	scale(size){
 		this.x *= size;
 		this.y *= size;
+		return this;
 	}
 
-    rotate(degree) {
-        const radians = degree * (Math.PI / 180);
+	rotate(degree) {
+		const radians = degree * (Math.PI / 180);
 
-        const cos = Math.cos(radians);
-        const sin = Math.sin(radians);
+		const cos = Math.cos(radians);
+		const sin = Math.sin(radians);
 
-        const newX = this.x * cos - this.y * sin;
-        const newY = this.x * sin + this.y * cos;
+		const newX = this.x * cos - this.y * sin;
+		const newY = this.x * sin + this.y * cos;
 
-        this.x = newX;
-        this.y = newY;
-    }
+		this.x = newX;
+		this.y = newY;
+		return this;
+	}
+
+	dot(other){
+		return (this.x * other.x + this.y * other.y);
+	}
 
 	sqrLength(){
 		return (Math.pow(this.x, 2) + Math.pow(this.y, 2));
@@ -54,6 +67,31 @@ class Vector{
 		return (Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2)));
 	}
 
+}
+
+class Plane{
+	constructor(start, dir){
+		this.start = start.dup();
+		this.dir = dir.dup();
+	}
+
+	rotate(deg){
+		this.dir.rotate(deg);
+		return this;
+	}
+
+	getTangent(){
+		return (new Plane(this.start, this.dir.dup().rotate(90)));
+	}
+
+	getClosestPoint(point){
+		let normDir = this.dir.dup().normalize();
+		let v = point.sub(this.start);
+		let t = v.dot(normDir);
+		t = Math.max(0, Math.min(t, this.dir.dot(normDir)));
+		let cp = this.start.add(normDir.scale(t));
+		return cp;
+	}
 }
 
 class Transform{
@@ -112,7 +150,7 @@ class Mesh extends Component{
 			point = point.add(transform.position);
 			ctx.lineTo(point.x, point.y);
 		}
-		point = new Vector(this.points[0].x, this.points[0].y)
+		point = this.points[0].dup();
 		point.rotate(transform.rotation);
 		point = point.add(transform.position);
 		ctx.lineTo(point.x, point.y);
@@ -120,8 +158,30 @@ class Mesh extends Component{
 		ctx.fill();
 	}
 
-	getSmallestDistance(point){
-		throw new Error("Called from abstract, not implemented!");
+	getClosestPoint(transform, point){
+		let closestPoint = undefined;
+		let smallestDist = Infinity;
+
+		let transformedPoints = this.points.map(p => p.rotate(transform.rotation).add(transform.position));
+
+		for (let i = 0; i < transformedPoints.length; i++) {
+			let pointA = transformedPoints[i];
+			let pointB = transformedPoints[(i + 1) % transformedPoints.length];
+
+			let planeAB = new Plane(pointA, pointB.sub(pointA));
+
+			drawLine(planeAB.start, planeAB.dir.add(planeAB.start));
+			
+			let currPoint = planeAB.getClosestPoint(point);
+			let line = currPoint.sub(point);
+			let dist = line.sqrLength();
+			
+			if (dist < smallestDist) {
+				smallestDist = dist;
+				closestPoint = currPoint;
+			}
+		}
+		return (closestPoint);
 	}
 }
 
@@ -129,7 +189,10 @@ class Entity extends Transform{
 	constructor(x, y){
 		super(x, y);
 		this.components = {};
-		this.onCollision = undefined;
+	}
+
+	onCollision(other, collsionPoint = undefined){
+
 	}
 
 	addComponent(type, component){
@@ -169,6 +232,14 @@ class Circle extends Mesh{
 		ctx.closePath();
 		ctx.fill();
 	}
+
+	getClosestPoint(transform, point){
+		let closestPoint = point.sub(transform.position);
+		closestPoint.normalize();
+		closestPoint.scale(this.width * 0.5);
+		closestPoint = closestPoint.add(transform.position);
+		return (closestPoint);
+	}
 }
 
 class Box extends Mesh{
@@ -187,12 +258,12 @@ class Ball extends Entity{
 	constructor(x = canvas.width / 2, y = canvas.height / 2){
 		super(x, y);
 		this.addComponent(Mesh, new Circle(40));
-		this.physics = new Physics(3,0);
+		this.physics = new Physics(15,0);
 		this.addComponent(Physics, this.physics);
-		
-		this.onCollision = function(other){
-			this.physics.velocity.x *= -1;
-		}
+	}
+
+	onCollision(other, collsionPoint = undefined){
+		this.physics.velocity.x *= -1;
 	}
 
 }
@@ -236,6 +307,8 @@ class Player extends Entity{
 			dir.scale(-PLAYER_MOVE_SPEED);
 			this.moveDir = dir;
 		}
+		if (event.key === 'g')
+			this.rotate(this.rotation + 5);
 	}
 
 	keyUp(event){
@@ -244,10 +317,18 @@ class Player extends Entity{
 	}
 }
 
-class System{
-	execute(entities){
-
+class Wall extends Entity{
+	constructor(x, y, top = false){
+		super(x, y);
+		if (top)
+			this.addComponent(Mesh, new Box(canvas.width, 5));
+		else
+			this.addComponent(Mesh, new Box(5, canvas.height));
 	}
+}
+
+class System{
+	execute(entities){}
 }
 
 class RenderSystem extends System{
@@ -285,11 +366,18 @@ class CollisionSystem extends System{
 						let ab = ent.position.sub(other.position);
 						let smallestDist = Math.max(Math.max(entMesh.width, entMesh.height), Math.max(otherMesh.width, otherMesh.height));
 						if (ab.length() < smallestDist){
-							if (ab.length() < 2 && ent.onCollision != undefined)
-							{
-								ent.onCollision(other);
+							let oClosest = otherMesh.getClosestPoint(other, ent.position);
+							let sClosest = entMesh.getClosestPoint(ent, oClosest);
+							// drawLine(sClosest, oClosest);
+							ctx.fillRect(oClosest.x, oClosest.y, 5, 5);
+							ctx.fillStyle = 'red';
+							ctx.fillRect(sClosest.x, sClosest.y, 5, 5);
+							ctx.fillStyle = 'black';
+							if (oClosest.sub(sClosest).dot(ab) > 0){
+								ent.onCollision(other, sClosest);
+								other.onCollision(ent, oClosest);
 							}
-							drawLine(ent.position, other.position);
+							// drawLine(ent.position, other.position);
 						}
 					}
 				});
@@ -333,14 +421,16 @@ function drawLine(p1, p2){
 	ctx.fillText(len, mid.x, mid.y);
 	ctx.lineTo(p2.x, p2.y);
 	ctx.closePath();
+	ctx.fillRect(p2.x, p2.y, 5, 5);
 	ctx.stroke();
 }
+
 
 let game = new Game();
 
 game.addSystem(new RenderSystem());
-game.addSystem(new MovementSystem());
 game.addSystem(new CollisionSystem());
+game.addSystem(new MovementSystem());
 
 let a = new Player(canvas.width * 0.1, canvas.height * 0.5);
 let b = new Player(canvas.width * 0.9, canvas.height * 0.5);
@@ -351,6 +441,14 @@ game.addEntity(a);
 game.addEntity(b);
 game.addEntity(c);
 
+let wallt = new Wall(canvas.width / 2, 0, true);
+let wallb = new Wall(canvas.width / 2, canvas.height, true);
+let walll = new Wall(0, canvas.height / 2);	
+let wallr = new Wall(canvas.width, canvas.height / 2);
+game.addEntity(wallt);
+game.addEntity(wallb);
+game.addEntity(walll);
+game.addEntity(wallr);
 
 
 setInterval(function() {
