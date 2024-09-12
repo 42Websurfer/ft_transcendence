@@ -54,4 +54,10 @@ async function initApp() {
     }
 }
 
+window.addEventListener('popstate', (event) => {
+	if (event.state && event.state.section){
+		showSection(event.state.section);
+	}
+});
+
 window.onload = initApp;
