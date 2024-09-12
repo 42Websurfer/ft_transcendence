@@ -31,7 +31,7 @@ export function renderHeader(section)
                 Games
               </a>
               <ul class="dropdown-menu dropdown-menu-dark">
-                <li><a class="dropdown-item" href="#">Pong</a></li>
+                <li><a class="dropdown-item" onclick="showSection('pong')">Pong</a></li>
                 <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item" href="#">Simon Challenge</a></li>
                 <li><hr class="dropdown-divider"></li>
