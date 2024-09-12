@@ -7,7 +7,10 @@ const PLAYER_MOVE_SPEED = 10;
 export function renderPong() {
 	const app = document.getElementById('app');
 	if (app)
+	{
+		app.innerHTML = '';
 		app.appendChild(canvas);
+	}
 }
 
 class Vector{

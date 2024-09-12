@@ -39,6 +39,10 @@ async function showSection(section)
         import('./test.js').then(module => {
             module.renderWebsocket();
         });
+    else if (section === 'pong')
+        import('./pong.js').then(module => {
+            module.renderPong();
+        });        
     import('./header.js').then(module => {
         module.renderHeader(section);
     });
