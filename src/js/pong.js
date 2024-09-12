@@ -272,11 +272,12 @@ class Player extends Entity{
 	constructor(x, y){
 		super(x, y);
 		this.mesh = new Box(40, 250);
+		this.physics = new Physics(0, 0);
 		this.addComponent(Mesh, this.mesh);
+		this.addComponent(Physics, this.physics);
 		this.keyBinds = {up: 'ArrowUp', down: 'ArrowDown'};
 		window.addEventListener('keydown', (event) => this.keyDown(event));
 		window.addEventListener('keyup', (event) => this.keyUp(event));
-		this.moveDir = new Vector(0,0);
 	}
 
 	move(xAdd, yAdd){
@@ -291,21 +292,30 @@ class Player extends Entity{
 		this.position = newPos;
 	}
 
-	update(){
-		this.move(this.moveDir.x, this.moveDir.y);
-		super.update();
-	}
+	// update(){
+	// 	for (let point of this.mesh.points) {
+	// 		point = point.add(this.position);
+	// 		if (point.x < 0)
+	// 			this.position.x += -point.x;
+	// 		if (point.x > canvas.width)
+	// 			this.position.x += canvas.width - point.x;
+	// 		if (point.y < 0)
+	// 			this.position.y += -point.y;
+	// 		if (point.y > canvas.height)
+	// 			this.position.y += canvas.height - point.y;
+	// 	}
+	// }
 
 	keyDown(event){
 		if (event.key === this.keyBinds.up){
 			let dir = new Vector(this.up.x, this.up.y);
 			dir.scale(PLAYER_MOVE_SPEED);
-			this.moveDir = dir;
+			this.physics.velocity = dir;
 		}
 		if (event.key === this.keyBinds.down) {
 			let dir = new Vector(this.up.x, this.up.y);
 			dir.scale(-PLAYER_MOVE_SPEED);
-			this.moveDir = dir;
+			this.physics.velocity = dir;
 		}
 		if (event.key === 'g')
 			this.rotate(this.rotation + 5);
@@ -313,7 +323,7 @@ class Player extends Entity{
 
 	keyUp(event){
 		if (event.key === this.keyBinds.up || event.key === this.keyBinds.down)
-			this.moveDir.x = 0; this.moveDir.y = 0;
+			this.physics.velocity.x = 0; this.physics.velocity.y = 0;
 	}
 }
 
@@ -358,7 +368,7 @@ class MovementSystem extends System{
 class CollisionSystem extends System{
 	execute(entities){
 		entities.forEach(ent => {
-			if (ent.hasComponent(Physics)){
+			if (ent instanceof Ball){
 				const entMesh = ent.getComponent(Mesh);
 				entities.forEach(other => {
 					if (ent != other){
@@ -368,7 +378,9 @@ class CollisionSystem extends System{
 						if (ab.length() < smallestDist){
 							let oClosest = otherMesh.getClosestPoint(other, ent.position);
 							let sClosest = entMesh.getClosestPoint(ent, oClosest);
-							if (oClosest.sub(sClosest).dot(ab) > 0){
+							let diff = oClosest.sub(sClosest);
+							if (diff.dot(ab) > 0){
+								ent.move(diff.x, diff.y);
 								ent.onCollision(other, sClosest);
 								other.onCollision(ent, oClosest);
 							}
@@ -438,6 +450,9 @@ game.addEntity(c);
 let wallt = new Wall(canvas.width / 2, 0, true);
 let wallb = new Wall(canvas.width / 2, canvas.height, true);
 let walll = new Wall(0, canvas.height / 2);	
+walll.onCollision = function(){
+	console.log("GOOOL!");
+}
 let wallr = new Wall(canvas.width, canvas.height / 2);
 game.addEntity(wallt);
 game.addEntity(wallb);
