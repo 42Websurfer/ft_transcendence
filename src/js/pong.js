@@ -185,6 +185,41 @@ class Mesh extends Component{
 	}
 }
 
+class Circle extends Mesh{
+	constructor(width){
+		super();
+		this.width = this.height = width;
+	}
+
+	draw(transform){
+		ctx.beginPath();
+		ctx.arc(transform.position.x, transform.position.y, this.width * 0.5, 0, 360);
+		ctx.closePath();
+		ctx.fill();
+	}
+
+	getClosestPoint(transform, point){
+		let closestPoint = point.sub(transform.position);
+		closestPoint.normalize();
+		closestPoint.scale(this.width * 0.5);
+		closestPoint = closestPoint.add(transform.position);
+		return (closestPoint);
+	}
+}
+
+class Box extends Mesh{
+	constructor(w, h){
+		super();
+		this.width = w;
+		this.height = h;
+		this.points.push(new Vector(-(this.width * 0.5), this.height * 0.5));
+		this.points.push(new Vector(this.width * 0.5, this.height * 0.5));
+		this.points.push(new Vector(this.width * 0.5, -(this.height * 0.5)));
+		this.points.push(new Vector(-(this.width * 0.5), -(this.height * 0.5)));
+	}
+}
+
+
 class Entity extends Transform{
 	constructor(x, y){
 		super(x, y);
@@ -220,40 +255,6 @@ class Entity extends Transform{
 	}
 }
 
-class Circle extends Mesh{
-	constructor(width){
-		super();
-		this.width = this.height = width;
-	}
-
-	draw(transform){
-		ctx.beginPath();
-		ctx.arc(transform.position.x, transform.position.y, this.width * 0.5, 0, 360);
-		ctx.closePath();
-		ctx.fill();
-	}
-
-	getClosestPoint(transform, point){
-		let closestPoint = point.sub(transform.position);
-		closestPoint.normalize();
-		closestPoint.scale(this.width * 0.5);
-		closestPoint = closestPoint.add(transform.position);
-		return (closestPoint);
-	}
-}
-
-class Box extends Mesh{
-	constructor(w, h){
-		super();
-		this.width = w;
-		this.height = h;
-		this.points.push(new Vector(-(this.width * 0.5), this.height * 0.5));
-		this.points.push(new Vector(this.width * 0.5, this.height * 0.5));
-		this.points.push(new Vector(this.width * 0.5, -(this.height * 0.5)));
-		this.points.push(new Vector(-(this.width * 0.5), -(this.height * 0.5)));
-	}
-}
-
 class Ball extends Entity{
 	constructor(x = canvas.width / 2, y = canvas.height / 2){
 		super(x, y);
@@ -262,10 +263,18 @@ class Ball extends Entity{
 		this.addComponent(Physics, this.physics);
 	}
 
-	onCollision(other, collsionPoint = undefined){
-		this.physics.velocity.x *= -1;
+	onCollision(other, collisionPoint = undefined){
+		if (collisionPoint === undefined)
+			return;
+		let ba = this.position.sub(collisionPoint);
+		ba.normalize();
+		let tangent = new Plane(collisionPoint, ba);
+		let velocityNormalized = this.physics.velocity.dup().normalize();
+		let dotProduct = tangent.dir.dot(velocityNormalized);
+		let reflection = velocityNormalized.sub(ba.scale(2 * dotProduct));
+		reflection.scale(this.physics.velocity.length());
+		this.physics.velocity = reflection;
 	}
-
 }
 
 class Player extends Entity{
@@ -305,6 +314,20 @@ class Player extends Entity{
 	// 			this.position.y += canvas.height - point.y;
 	// 	}
 	// }
+
+	onCollision(other, collisionPoint = undefined){
+		var ophys = other.getComponent(Physics);
+		if (ophys && collisionPoint && other instanceof Ball){
+			let drall = collisionPoint.sub(this.position);
+			let prevScale = ophys.velocity.length();
+			drall = drall.add(this.physics.velocity);
+			drall.normalize();
+			drall.scale(10);	
+			ophys.velocity = ophys.velocity.add(drall);
+			ophys.velocity.normalize()
+			ophys.velocity.scale(prevScale);
+		}
+	}
 
 	keyDown(event){
 		if (event.key === this.keyBinds.up){
@@ -358,6 +381,11 @@ class MovementSystem extends System{
 		entities.forEach(entity => {
 			const phys = entity.getComponent(Physics);
 			if (phys){
+				// ctx.fillStyle = 'red';
+				// ctx.strokeStyle = 'red';
+				// drawLine(entity.position, phys.velocity.dup().scale(10).add(entity.position));
+				// ctx.strokeStyle = 'black';
+				// ctx.fillStyle = 'black';
 				entity.position.x += phys.velocity.x;
 				entity.position.y += phys.velocity.y;
 			}
@@ -367,22 +395,22 @@ class MovementSystem extends System{
 
 class CollisionSystem extends System{
 	execute(entities){
-		entities.forEach(ent => {
-			if (ent instanceof Ball){
-				const entMesh = ent.getComponent(Mesh);
-				entities.forEach(other => {
-					if (ent != other){
-						const otherMesh = other.getComponent(Mesh);
-						let ab = ent.position.sub(other.position);
-						let smallestDist = Math.max(Math.max(entMesh.width, entMesh.height), Math.max(otherMesh.width, otherMesh.height));
-						if (ab.length() < smallestDist){
-							let oClosest = otherMesh.getClosestPoint(other, ent.position);
-							let sClosest = entMesh.getClosestPoint(ent, oClosest);
+		entities.forEach(currentEnt => {
+			if (currentEnt instanceof Ball){
+				const entMesh = currentEnt.getComponent(Mesh);
+				entities.forEach(otherEnt => {
+					if (currentEnt != otherEnt){
+						const otherMesh = otherEnt.getComponent(Mesh);
+						let ab = currentEnt.position.sub(otherEnt.position);
+						let threshold = Math.max(Math.max(entMesh.width, entMesh.height), Math.max(otherMesh.width, otherMesh.height));
+						if (ab.length() < threshold){
+							let oClosest = otherMesh.getClosestPoint(otherEnt, currentEnt.position);
+							let sClosest = entMesh.getClosestPoint(currentEnt, oClosest);
 							let diff = oClosest.sub(sClosest);
 							if (diff.dot(ab) > 0){
-								ent.move(diff.x, diff.y);
-								ent.onCollision(other, sClosest);
-								other.onCollision(ent, oClosest);
+								currentEnt.move(diff.x, diff.y);
+								currentEnt.onCollision(otherEnt, sClosest);
+								otherEnt.onCollision(currentEnt, oClosest);
 							}
 						}
 					}
@@ -392,7 +420,7 @@ class CollisionSystem extends System{
 	}
 }
 
-class Game{
+class GameManager{
 	constructor(){
 		this.entities = [];
 		this.systems = [];
@@ -432,20 +460,20 @@ function drawLine(p1, p2){
 }
 
 
-let game = new Game();
+let manager = new GameManager();
 
-game.addSystem(new RenderSystem());
-game.addSystem(new CollisionSystem());
-game.addSystem(new MovementSystem());
+manager.addSystem(new RenderSystem());
+manager.addSystem(new CollisionSystem());
+manager.addSystem(new MovementSystem());
 
 let a = new Player(canvas.width * 0.1, canvas.height * 0.5);
 let b = new Player(canvas.width * 0.9, canvas.height * 0.5);
 b.keyBinds.up = 'ArrowLeft';
 b.keyBinds.down = 'ArrowRight';
 let c = new Ball(/* canvas.width * 0.1 + 50, canvas.height * 0.2 */);
-game.addEntity(a);
-game.addEntity(b);
-game.addEntity(c);
+manager.addEntity(a);
+manager.addEntity(b);
+manager.addEntity(c);
 
 let wallt = new Wall(canvas.width / 2, 0, true);
 let wallb = new Wall(canvas.width / 2, canvas.height, true);
@@ -454,14 +482,14 @@ walll.onCollision = function(){
 	console.log("GOOOL!");
 }
 let wallr = new Wall(canvas.width, canvas.height / 2);
-game.addEntity(wallt);
-game.addEntity(wallb);
-game.addEntity(walll);
-game.addEntity(wallr);
+manager.addEntity(wallt);
+manager.addEntity(wallb);
+manager.addEntity(walll);
+manager.addEntity(wallr);
 
 
 setInterval(function() {
-	game.update();
+	manager.update();
 }, 10);
 
 // let players = 3;
