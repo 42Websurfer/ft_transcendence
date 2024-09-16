@@ -1,22 +1,15 @@
-from django.shortcuts import render, redirect
-from django.http import HttpResponse, JsonResponse
-from django.template import loader
-from django.contrib import messages
+from django.shortcuts import get_object_or_404
+from django.http import JsonResponse
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.hashers import make_password
+from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
+from .models import User, Friendship
 import json
 import logging
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
-
-def startpage(request):
-	if request.user.is_authenticated:
-		return render(request, 'welcome.html')
-	else:
-		return render (request, 'login.html')
 
 def check_auth(request):
 	if request.user.is_authenticated:
@@ -101,3 +94,57 @@ def register(request):
 			}, status=201)
 		except json.JSONDecodeError:
 					return JsonResponse({'error': 'Invalid JSON.'}, status=400)
+
+@login_required
+def send_friend_request(request, friend_id):
+	user = request.user
+	friend = get_object_or_404(User, id=friend_id)
+	if user == friend: 
+		return JsonResponse({
+			'type': 'Failed Request',
+			'message': 'User and friend have same id',
+		}, status=400)
+	if Friendship.objects.filter(user=user, friend=friend, status='pending').exists():
+		return JsonResponse({
+			'type': 'Already requested',
+			'username': user.username,
+			'friendname': friend.username,
+			'status': 'pending'
+		}, status=201)
+	newFriend = Friendship.objects.create(user=user, friend=friend, status='pending')
+	return JsonResponse({
+		'type': 'Success Request',
+		'username': newFriend.user.username,
+		'friendname': newFriend.friend.username,
+		'status': newFriend.status,
+	})
+
+def friend_requests(request):
+    user = request.user
+    friend_requests = Friendship.objects.filter(friend=user, status='pending')
+    requests_data = [
+        {
+            'id': fr.id,
+            'from_user': fr.user.username,
+            'friend_user': fr.friend.username,
+            'status': fr.status,
+            'created_at': fr.created_at,
+        }
+        for fr in friend_requests
+    ]
+    return JsonResponse({'requests': requests_data})
+
+def friend_list(request):
+    user = request.user
+    friend_requests = Friendship.objects.filter(friend=user, status='accepted')
+    requests_data = [
+        {
+            'id': fr.id,
+            'from_user': fr.user.username,
+            'friend_user': fr.friend.username,
+            'status': fr.status,
+            'created_at': fr.created_at,
+        }
+        for fr in friend_requests
+    ]
+    return JsonResponse({'requests': requests_data})
