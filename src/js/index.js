@@ -16,6 +16,7 @@ async function checkAuthentication() {
 
 async function showSection(section)
 {
+    console.log('section:' + section);
     const isAuthenticated = await checkAuthentication();
     if (section === 'register')
         import('./register.js').then(module => {
@@ -25,24 +26,27 @@ async function showSection(section)
         import('./login.js').then(module => {
             module.renderLogin();    
         });
-    else if (section === 'welcome')
-        if (isAuthenticated) {
-            import('./welcome.js').then(module => {
-                module.renderWelcome();
+    if (isAuthenticated) {
+        if (section === 'welcome')
+                import('./welcome.js').then(module => {
+                    module.renderWelcome();
+                });
+        else if (section === 'websocket')
+            import('./test.js').then(module => {
+                module.renderWebsocket();
             });
-        }
-        else
-            import('./login.js').then(module => {
-                module.renderLogin();    
-            });
-    else if (section === 'websocket')
-        import('./test.js').then(module => {
-            module.renderWebsocket();
+        else if (section === 'pong')
+            import('./pong.js').then(module => {
+                module.renderPong();
+            });        
+    }
+    else if (section != 'login' && section != 'register') {
+        import('./login.js').then(module => {
+            module.renderLogin();    
         });
-    else if (section === 'pong')
-        import('./pong.js').then(module => {
-            module.renderPong();
-        });        
+        section = 'login';
+    }
+    console.log('Header section: ' + section);
     import('./header.js').then(module => {
         module.renderHeader(section);
     });
