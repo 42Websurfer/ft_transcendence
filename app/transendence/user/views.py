@@ -4,7 +4,8 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
-from .models import User, Friendship
+from .models import User, Friendship, PongMatches
+from django.db.models import Q
 import json
 import logging
 
@@ -119,32 +120,79 @@ def send_friend_request(request, friend_id):
 		'status': newFriend.status,
 	})
 
+@login_required
 def friend_requests(request):
-    user = request.user
-    friend_requests = Friendship.objects.filter(friend=user, status='pending')
-    requests_data = [
-        {
-            'id': fr.id,
-            'from_user': fr.user.username,
-            'friend_user': fr.friend.username,
-            'status': fr.status,
-            'created_at': fr.created_at,
-        }
-        for fr in friend_requests
-    ]
-    return JsonResponse({'requests': requests_data})
+	user = request.user
+	friend_requests = Friendship.objects.filter(friend=user, status='pending')
+	requests_data = [
+		{
+			'id': fr.id,
+			'from_user': fr.user.username,
+			'friend_user': fr.friend.username,
+			'status': fr.status,
+			'created_at': fr.created_at,
+		}
+		for fr in friend_requests
+	]
+	return JsonResponse({'requests': requests_data})
 
+@login_required
 def friend_list(request):
-    user = request.user
-    friend_requests = Friendship.objects.filter(friend=user, status='accepted')
-    requests_data = [
-        {
-            'id': fr.id,
-            'from_user': fr.user.username,
-            'friend_user': fr.friend.username,
-            'status': fr.status,
-            'created_at': fr.created_at,
-        }
-        for fr in friend_requests
-    ]
-    return JsonResponse({'requests': requests_data})
+	user = request.user
+	friend_requests = Friendship.objects.filter(friend=user, status='accepted')
+	requests_data = [
+		{
+			'id': fr.id,
+			'from_user': fr.user.username,
+			'friend_user': fr.friend.username,
+			'status': fr.status,
+			'created_at': fr.created_at,
+		}
+		for fr in friend_requests
+	]
+	return JsonResponse({'requests': requests_data})
+
+@csrf_exempt
+@login_required
+def addMatches(request):
+	if request.method == 'POST':
+		matchStats = json.loads(request.body)
+		user1 = get_object_or_404(User, id=matchStats.get('player1_id'))
+		user2 = get_object_or_404(User, id=matchStats.get('player2_id'))
+		if user1 is None or user2 is None:
+			return JsonResponse({'type': 'error'}, status=400)
+
+		if matchStats.get('score_player1') > matchStats.get('score_player2'): 
+			winner=user1 
+		else:
+			winner=user2 
+
+		newMatch = PongMatches.objects.create(
+			player1_id=user1,
+			player2_id=user2,
+			score_player1=matchStats.get('score_player1'),
+			score_player2=matchStats.get('score_player2'),
+			winner=winner,
+		)
+		if newMatch:
+			response_data = {'type': 'success'}
+		else:
+			response_data ={'type': 'error'}
+
+		return JsonResponse(response_data, status=201)
+	return JsonResponse({'type': 'error'}, status=405)
+
+def getMatchHistory(request):
+	user = request.user
+	history = PongMatches.objects.filter(Q(player1_id=user) | Q(player2_id=user) )
+	requests_data = [
+		{
+			'player1_id': game.player1_id.username,
+			'player2_id': game.player2_id.username,
+			'score_player1': game.score_player1,
+			'score_player2': game.score_player2,
+			'played_at': game.played_at,
+		}
+		for game in history
+	]
+	return JsonResponse({'requests': requests_data})
