@@ -8,11 +8,48 @@
 */
 
 body {
-    background-color: #fdf1d9;
-    /* background:linear-gradient() */
+    background-color: #cccef1;
 }
 header {
     padding: 35px;
+}
+
+.custom-header {
+    background: linear-gradient(to bottom, #8581c7,#4740a8 100%);
+    border-bottom: 0.1em solid #353333;
+}
+
+.custom-header-logo {
+    width: 50px;
+    height: 100%;
+}
+
+.custom-header-text {
+    font-family: 'Press Start 2P';
+    text-shadow: 1px 1px 2px #000000;
+    color:#ffffff !important;
+    font-size:1.6em;
+    text-align: left;
+}
+
+footer {
+    font-family: 'Press Start 2P';
+    background: linear-gradient(to bottom,#4740a8 0,#8581c7 100%);
+    text-shadow: 1px 1px 2px #000000;
+    border-top: 0.1em solid #353333;
+}
+
+.custom-footer {
+    margin-top: 20px;
+    margin-bottom: 0px;
+}
+
+.custom-footer-text {
+    margin-top: 0.8em;
+    margin-bottom: 0.8em;
+    margin-left: 1.5em;
+    color:#ffffff !important;
+    font-size:1.2em
 }
 
 main {

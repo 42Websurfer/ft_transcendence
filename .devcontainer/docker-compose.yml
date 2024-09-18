@@ -10,10 +10,9 @@ services:
       - trans_net
     expose:
       - 8000
-      - 8001
     labels:
-      - 'devcontainer.local_folder=/home/fwechsle/ft_trans'
-      - 'devcontainer.config_file=/home/fwechsle/ft_trans/.devcontainer/devcontainer.json'
+      - 'devcontainer.local_folder=/home/fheid/transcendence'
+      - 'devcontainer.config_file=/home/fheid/transcendence/.devcontainer/devcontainer.json'
   database:
     container_name: django_db
     image: postgres:latest

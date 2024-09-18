@@ -46,9 +46,11 @@ async function showSection(section)
         });
         section = 'login';
     }
-    console.log('Header section: ' + section);
     import('./header.js').then(module => {
         module.renderHeader(section);
+    });
+    import('./footer.js').then(module => {
+        module.renderFooter(section);
     });
 }
 

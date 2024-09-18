@@ -4,12 +4,12 @@ export function renderHeader(section)
 {
     const app = document.getElementById('navbarHeader');
     app.innerHTML = `
-    <nav class="navbar navbar-dark bg-dark fixed-top">
-    <div class="container-fluid">
+    <nav class="navbar fixed-top custom-header">
+    <div class="container-fluid custom-header-text">
       <a class="navbar-brand" href="#">
-        <img width="30" height="40" src="./img/Logo.jpg" alt="">
-        Websurfer
+        <img class="custom-header-logo" src="./img/Logo.jpg" alt="">
       </a>
+      <div class ="custom-header-text">WEBSURFER</div>
       <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasDarkNavbar" aria-controls="offcanvasDarkNavbar" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
