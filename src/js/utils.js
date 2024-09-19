@@ -42,6 +42,9 @@ export async function handleLogoutSubmit()
     });
 
     const result = await response.json();
+    if (ws)
+        ws.close(1000, "Client closed coonection");
+    wsBool = false;
     showSection('login');
 }
 
