@@ -1,6 +1,6 @@
 import { getCookie, displayMessages } from './utils.js';
 
-export function renderWelcome() {
+export async function renderWelcome() {
     const app = document.getElementById('app');
 
     app.innerHTML = `
@@ -40,6 +40,9 @@ export function renderWelcome() {
     <h2>Show Match History</h2>
     <button id="matchHistoryButton">Show Matches</button>
     <div id="matchHistory"></div>
+    <h2>Show Online Status</h2>
+    <button id="getStatusButton">Show online status</button>
+    <div id="user_status"></div>
     `;
     const friendRequestButton = document.getElementById('sendFriendRequest');
     const responseDisplay = document.getElementById('responseDisplay');
@@ -51,6 +54,9 @@ export function renderWelcome() {
     const messages = document.getElementById('messages');
     const matchHistoryButton = document.getElementById('matchHistoryButton');
     const matchHistory = document.getElementById('matchHistory');
+    const getStatusButton = document.getElementById('getStatusButton');
+    const response = await getOnlineStatus();
+    displayStatusResponse(response);
 
     formdata.addEventListener('submit', handleMatchFormSubmit);
 
@@ -60,6 +66,13 @@ export function renderWelcome() {
             const response = await sendFriendRequest(friendId);
             displayResponse(response);
         }
+    });
+
+    formdata.addEventListener('submit', handleMatchFormSubmit);
+
+    getStatusButton.addEventListener('click', async () => {
+            const response = await getOnlineStatus();
+            displayStatusResponse(response);
     });
 
     checkRequestsButton.addEventListener('click', async () => {
@@ -102,6 +115,18 @@ export function renderWelcome() {
         const result = await response.json();
         displayMatchResponse(result);
     
+    }
+
+    async function getOnlineStatus() {
+        try {
+            const response = await fetch(`/online-users/`, {
+                method: 'GET',
+                credentials: 'include'
+            });
+            return await response.json();
+        } catch (error) {
+            return { error: 'Failed to online-users request.' };
+        }
     }
 
     async function sendFriendRequest(friendId) {
@@ -181,4 +206,12 @@ export function renderWelcome() {
             <pre>${JSON.stringify(response, null, 2)}</pre>
         `;
     }
+
+}
+
+export function displayStatusResponse(response, element) {
+    element = document.getElementById('user_status')
+    element.innerHTML = `
+        <pre>${JSON.stringify(response, null, 2)}</pre>
+    `;
 }
