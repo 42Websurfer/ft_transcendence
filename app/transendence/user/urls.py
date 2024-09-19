@@ -10,7 +10,7 @@ urlpatterns = [
     path('friend_requests/', views.friend_requests, name='friend_requests'),
     path('friend_list/', views.friend_list, name='friend_list'),
     path('match_result/', views.addMatches, name='match_result'),
-    path('match_history/', views.getMatchHistory, name='match_history')
-
+    path('match_history/', views.getMatchHistory, name='match_history'),
+    path('online-users/', views.get_all_online_users, name='online-users')
 ]
 

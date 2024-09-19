@@ -1,13 +1,14 @@
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from .models import User, Friendship, PongMatches
 from django.db.models import Q
 import json
 import logging
+import redis
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -196,3 +197,22 @@ def getMatchHistory(request):
 		for game in history
 	]
 	return JsonResponse({'requests': requests_data})
+
+r = redis.Redis(host='redis', port=6379, db=0)
+User = get_user_model()
+
+def get_all_online_users(request):
+	online_users_ids = r.smembers("online_users")
+
+	online_users_ids = [int(user_id) for user_id in online_users_ids]
+
+	online_users = User.objects.filter(id__in=online_users_ids)
+
+	user_data = [
+		{
+			'id': user.id,
+			'username': user.username,
+		}
+		for user in online_users
+	]
+	return JsonResponse({'online_users': user_data})
