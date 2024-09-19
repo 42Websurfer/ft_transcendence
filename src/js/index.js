@@ -1,3 +1,6 @@
+wsBool = false;
+
+let ws;
 async function checkAuthentication() {
     const response = await fetch('/checkauth/', {
         method: 'GET',
@@ -27,6 +30,13 @@ async function showSection(section)
             module.renderLogin();    
         });
     if (isAuthenticated) {
+        if (!wsBool)
+        {
+            initOnlineStatus();
+            wsBool = true;
+        }
+        else 
+            console.log("WARUM IST ES NICHT EINGELOGGT?!");
         if (section === 'welcome')
                 import('./welcome.js').then(module => {
                     module.renderWelcome();
@@ -52,6 +62,41 @@ async function showSection(section)
     });
 }
 
+
+function initOnlineStatus() {
+    ws = new WebSocket('ws://localhost:8090/ws/online-status/');
+
+    ws.onopen =  function() {
+        console.log("Connected to WebSocket Online Status");
+    };
+
+    ws.onmessage = function(event) {
+        try {
+            const data = JSON.parse(event.data);
+            console.log("Online Friends:", data.online_users);
+            const onlineStats = document.getElementById('user_status')
+            if (onlineStats)
+            {
+                onlineStats.innerHTML = '';
+                onlineStats.innerHTML = `
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            }    
+            else {
+                console.log("ERROR");
+            }
+        }
+        catch (error){
+            console.error("Error Parsing online status");
+        }
+    };
+
+    ws.onclose = function() {
+        console.log("WebSocket Online Status connection closed");
+    };
+}
+
+wsBool = false;
 
 async function initApp() {
     const isAuthenticated = await checkAuthentication();
