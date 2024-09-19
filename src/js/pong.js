@@ -115,8 +115,10 @@ class Component{
 }
 
 class Physics extends Component{
-	constructor(x = 0, y = 0){
+	constructor(x = 0, y = 0, isStatic = false, hasGravity = true){
 		super();
+		this.hasGravity = hasGravity;
+		this.isStatic = isStatic;
 		this.velocity = new Vector(x, y);
 	}
 
@@ -131,8 +133,9 @@ class Physics extends Component{
 }
 
 class Mesh extends Component{
-	constructor(){
+	constructor(isTrigger = false){
 		super();
+		this.isTrigger = isTrigger;
 		this.points = [];
 	}
 
@@ -186,8 +189,8 @@ class Mesh extends Component{
 }
 
 class Circle extends Mesh{
-	constructor(width){
-		super();
+	constructor(width, isTrigger = false){
+		super(isTrigger);
 		this.width = this.height = width;
 	}
 
@@ -208,8 +211,8 @@ class Circle extends Mesh{
 }
 
 class Box extends Mesh{
-	constructor(w, h){
-		super();
+	constructor(w, h, isTrigger = false){
+		super(isTrigger);
 		this.width = w;
 		this.height = h;
 		this.points.push(new Vector(-(this.width * 0.5), this.height * 0.5));
@@ -227,6 +230,10 @@ class Entity extends Transform{
 	}
 
 	onCollision(other, collsionPoint = undefined){
+
+	}
+
+	onTrigger(other, collisionPoint = undefined){
 
 	}
 
@@ -259,7 +266,8 @@ class Ball extends Entity{
 	constructor(x = canvas.width / 2, y = canvas.height / 2){
 		super(x, y);
 		this.addComponent(Mesh, new Circle(40));
-		this.physics = new Physics(15,0);
+		this.physics = new Physics(0,0, false, false);
+		// this.physics.hasGravity = false;
 		this.addComponent(Physics, this.physics);
 	}
 
@@ -273,7 +281,7 @@ class Ball extends Entity{
 		let dotProduct = tangent.dir.dot(velocityNormalized);
 		let reflection = velocityNormalized.sub(ba.scale(2 * dotProduct));
 		reflection.scale(this.physics.velocity.length());
-		this.physics.velocity = reflection;
+		this.physics.setVelocityV(reflection);
 	}
 }
 
@@ -281,7 +289,7 @@ class Player extends Entity{
 	constructor(x, y){
 		super(x, y);
 		this.mesh = new Box(40, 250);
-		this.physics = new Physics(0, 0);
+		this.physics = new Physics(0, 0, true, false);
 		this.addComponent(Mesh, this.mesh);
 		this.addComponent(Physics, this.physics);
 		this.keyBinds = {up: 'ArrowUp', down: 'ArrowDown'};
@@ -381,13 +389,15 @@ class MovementSystem extends System{
 		entities.forEach(entity => {
 			const phys = entity.getComponent(Physics);
 			if (phys){
+				if (phys.hasGravity){
+					phys.setVelocity(phys.velocity.x, phys.velocity.y + 0.0981);
+				}
 				// ctx.fillStyle = 'red';
 				// ctx.strokeStyle = 'red';
 				// drawLine(entity.position, phys.velocity.dup().scale(10).add(entity.position));
 				// ctx.strokeStyle = 'black';
 				// ctx.fillStyle = 'black';
-				entity.position.x += phys.velocity.x;
-				entity.position.y += phys.velocity.y;
+				entity.move(phys.velocity.x, phys.velocity.y);
 			}
 		});
 	}
@@ -396,31 +406,47 @@ class MovementSystem extends System{
 class CollisionSystem extends System{
 	execute(entities){
 		entities.forEach(currentEnt => {
-			if (currentEnt instanceof Ball){
-				const entMesh = currentEnt.getComponent(Mesh);
-				entities.forEach(otherEnt => {
-					if (currentEnt != otherEnt){
-						const otherMesh = otherEnt.getComponent(Mesh);
-						let ab = currentEnt.position.sub(otherEnt.position);
-						let threshold = Math.max(Math.max(entMesh.width, entMesh.height), Math.max(otherMesh.width, otherMesh.height));
-						if (ab.length() < threshold){
-							let oClosest = otherMesh.getClosestPoint(otherEnt, currentEnt.position);
-							let sClosest = entMesh.getClosestPoint(currentEnt, oClosest);
-							let diff = oClosest.sub(sClosest);
-							if (diff.dot(ab) > 0){
-								currentEnt.move(diff.x, diff.y);
+			const entMesh = currentEnt.getComponent(Mesh);
+			if (!entMesh)
+				return ;
+			entities.forEach(otherEnt => {
+				if (currentEnt != otherEnt){
+					const otherMesh = otherEnt.getComponent(Mesh);
+					if (!otherMesh)
+						return ;
+					let ab = otherEnt.position.sub(currentEnt.position);
+					let threshold = Math.max(Math.max(entMesh.width, entMesh.height), Math.max(otherMesh.width, otherMesh.height));
+					if (ab.length() < threshold){
+						let oClosest = otherMesh.getClosestPoint(otherEnt, currentEnt.position);
+						let sClosest = entMesh.getClosestPoint(currentEnt, oClosest);
+						let diff = oClosest.sub(sClosest);
+						if (diff.dot(ab) < 0){
+							drawLine(currentEnt.position, sClosest, 'red');
+							if (currentEnt.hasComponent(Physics)){
+								let phys = currentEnt.getComponent(Physics);
+								if (!phys.isStatic)
+									currentEnt.move(diff.x, diff.y);
+								// drawLine(currentEnt.position, new Vector(0,0));
+							}
+							if (entMesh.isTrigger){
+								currentEnt.onTrigger(otherEnt, sClosest);
+							} else {
 								currentEnt.onCollision(otherEnt, sClosest);
+							}
+							if (otherMesh.isTrigger){
+								otherEnt.onTrigger(currentEnt, oClosest);
+							} else {
 								otherEnt.onCollision(currentEnt, oClosest);
 							}
 						}
 					}
-				});
-			}
+				}
+			});
 		});
 	}
 }
 
-class GameManager{
+class World{
 	constructor(){
 		this.entities = [];
 		this.systems = [];
@@ -445,51 +471,125 @@ class GameManager{
 	}
 }
 
-function drawLine(p1, p2){
+class PongGameManager extends Entity{
+	constructor(){
+		super(0, 0);
+		// this.players = [];
+		this.player1 = new Player(canvas.width * 0.1, canvas.height * 0.5);
+		this.player2 = new Player(canvas.width * 0.9, canvas.height * 0.5);
+		this.ball = new Ball(/* canvas.width * 0.1 + 50, canvas.height * 0.2 */);
+		this.roundRunning = false;
+		this.scores = [0, 0];
+		this.initGame();
+	}
+
+	initGame(){
+		
+		world.addEntity(this.player1);
+		world.addEntity(this.player2);
+		world.addEntity(this.ball);
+
+		let wallt = new Wall(canvas.width / 2, 0, true);
+		let wallb = new Wall(canvas.width / 2, canvas.height, true);
+		let walll = new Wall(0, canvas.height / 2);	
+		let wallr = new Wall(canvas.width, canvas.height / 2);
+		walll.onCollision = (other) => {
+			if (!(other instanceof Ball))
+				return;
+			this.scores[1]++;
+			this.resetRound();
+		};
+		wallr.onCollision = (other) => {
+			if (!(other instanceof Ball))
+				return;
+			this.scores[0]++;
+			this.resetRound();
+		};
+		world.addEntity(wallt);
+		world.addEntity(wallb);
+		world.addEntity(walll);
+		world.addEntity(wallr);
+
+		window.addEventListener("keydown", event => {
+			if(event.key == ' ' && !this.roundRunning){
+				this.startRound();
+				event.preventDefault();
+			}
+		})
+
+	}
+
+	drawExtra(){
+		let a = ctx.font;
+		ctx.font = '120px Arial';
+		ctx.fillText(this.scores[0], canvas.width * 0.25, canvas.height * 0.25);
+		ctx.fillText(this.scores[1], canvas.width * 0.75, canvas.height * 0.25);
+		ctx.font = a;
+		drawLine(new Vector(canvas.width * 0.5, 0), new Vector(canvas.width * 0.5, canvas.height), 'black', 10, [10, 10]);
+	}
+
+	resetRound(){
+		this.roundRunning = false;
+		this.ball.physics.setVelocity(0,0);
+		this.ball.position.x = canvas.width / 2;
+		this.ball.position.y = canvas.height / 2;
+	}
+
+	startRound(){
+		this.roundRunning = true;
+		if (this.scores[0] < this.scores[1])
+			this.ball.physics.setVelocity(15, 0);
+		else
+			this.ball.physics.setVelocity(-15, 0);
+	}
+
+	update(){
+		this.drawExtra();
+		// console.log("GAMEMODE UPDATE!");
+	}
+}
+
+function drawLine(p1, p2, color = 'black', lineWidth = 1, dashPattern = [], debug = false){
 	ctx.beginPath();
 	ctx.moveTo(p1.x, p1.y);
-	let mid = p2.sub(p1);
-	let len = mid.length();
-	mid.scale(0.5);
-	mid = p1.add(mid);
-	ctx.fillText(len, mid.x, mid.y);
+	if (debug){
+		let mid = p2.sub(p1);
+		let len = mid.length();
+		mid.scale(0.5);
+		mid = p1.add(mid);
+		ctx.fillText(len, mid.x, mid.y);
+		ctx.fillRect(p2.x, p2.y, 5, 5);
+	}
 	ctx.lineTo(p2.x, p2.y);
 	ctx.closePath();
-	ctx.fillRect(p2.x, p2.y, 5, 5);
+
+	let savestroke = ctx.strokeStyle;
+	let savefill = ctx.fillStyle;
+	let savewidth = ctx.lineWidth;
+	let savePattern = ctx.getLineDash();
+
+	ctx.lineWidth = lineWidth;
+	ctx.setLineDash(dashPattern);
+	ctx.fillStyle = color;
+	ctx.strokeStyle = color;
 	ctx.stroke();
+	ctx.fillStyle = savefill;
+	ctx.strokeStyle = savestroke;
+	ctx.lineWidth = savewidth;
+	ctx.setLineDash(savePattern);
 }
 
 
-let manager = new GameManager();
+let world = new World();
 
-manager.addSystem(new RenderSystem());
-manager.addSystem(new CollisionSystem());
-manager.addSystem(new MovementSystem());
+world.addSystem(new RenderSystem());
+world.addSystem(new CollisionSystem());
+world.addSystem(new MovementSystem());
 
-let a = new Player(canvas.width * 0.1, canvas.height * 0.5);
-let b = new Player(canvas.width * 0.9, canvas.height * 0.5);
-b.keyBinds.up = 'ArrowLeft';
-b.keyBinds.down = 'ArrowRight';
-let c = new Ball(/* canvas.width * 0.1 + 50, canvas.height * 0.2 */);
-manager.addEntity(a);
-manager.addEntity(b);
-manager.addEntity(c);
-
-let wallt = new Wall(canvas.width / 2, 0, true);
-let wallb = new Wall(canvas.width / 2, canvas.height, true);
-let walll = new Wall(0, canvas.height / 2);	
-walll.onCollision = function(){
-	console.log("GOOOL!");
-}
-let wallr = new Wall(canvas.width, canvas.height / 2);
-manager.addEntity(wallt);
-manager.addEntity(wallb);
-manager.addEntity(walll);
-manager.addEntity(wallr);
-
+world.addEntity(new PongGameManager());
 
 setInterval(function() {
-	manager.update();
+	world.update();
 }, 10);
 
 // let players = 3;
