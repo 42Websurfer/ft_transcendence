@@ -17,7 +17,7 @@ async function checkAuthentication() {
     return result.authenticated;
 }
 
-async function showSection(section)
+async function showSection(section, lobbyId)
 {
     console.log('section:' + section);
     const isAuthenticated = await checkAuthentication();
@@ -48,7 +48,12 @@ async function showSection(section)
         else if (section === 'pong')
             import('./pong.js').then(module => {
                 module.renderPong();
-            });        
+            });
+        else if (section === 'lobby') {
+            import('./lobby.js').then(module => {
+                module.renderLobby(lobbyId);
+            });
+        }
     }
     else if (section != 'login' && section != 'register') {
         import('./login.js').then(module => {
