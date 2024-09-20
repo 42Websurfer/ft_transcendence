@@ -1,6 +1,6 @@
 export const canvas = document.createElement('canvas');
-canvas.width = 1280;
-canvas.height = 720;
+canvas.width = 1920;
+canvas.height = 1080;
 export const ctx = canvas.getContext('2d');
 
 export function renderPong() {
@@ -310,13 +310,13 @@ export class CollisionSystem extends System{
 							let phys = currentEnt.getComponent(Physics);
 							let ophys = otherEnt.getComponent(Physics);
 							if (phys && !phys.isStatic){
-								drawLine(currentEnt.position, currentEnt.position.add(diff));
-								drawText('Move dist', currentEnt.position.x, currentEnt.position.y);
+								// drawLine(currentEnt.position, currentEnt.position.add(diff));
+								// drawText('Move dist', currentEnt.position.x, currentEnt.position.y);
 								currentEnt.move(diff.x, diff.y);
 							}
 							if (ophys && !ophys.isStatic){
-								drawLine(otherEnt.position, otherEnt.position.add(diff));
-								drawText('Move dist', otherEnt.position.x, otherEnt.position.y);
+								// drawLine(otherEnt.position, otherEnt.position.add(diff));
+								// drawText('Move dist', otherEnt.position.x, otherEnt.position.y);
 								otherEnt.move(-diff.x, -diff.y)
 							}
 							if (entMesh.isTrigger){
@@ -377,6 +377,17 @@ export function drawText(text, x, y, textStyle = undefined, colour = 'black'){
 	ctx.fillStyle = colour;
 	ctx.fillText(text, x, y);
 	ctx.fillStyle = saveStyle;
+	ctx.font = save;
+}
+
+export function strokeText(text, x, y, textStyle = undefined, colour = 'black'){
+	let save = ctx.font;
+	let saveStyle = ctx.strokeStyle;
+	if (textStyle)
+		ctx.font = textStyle;
+	ctx.strokeStyle = colour;
+	ctx.strokeText(text, x, y);
+	ctx.strokeStyle = saveStyle;
 	ctx.font = save;
 }
 

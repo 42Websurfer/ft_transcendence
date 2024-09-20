@@ -1,4 +1,4 @@
-import {Vector, Plane, World, Entity, Mesh, Physics, Box, Circle, RenderSystem, CollisionSystem, MovementSystem, canvas, drawText, drawLine} from './GameSystem.js';
+import {Vector, Plane, World, Entity, Mesh, Physics, Box, Circle, RenderSystem, CollisionSystem, MovementSystem, canvas, drawText, strokeText, drawLine, ctx} from './GameSystem.js';
 
 const PLAYER_MOVE_SPEED = 20;
 
@@ -15,9 +15,19 @@ class Ball extends Entity{
 		this.physics = new Physics(0,0, false, false);
 		// this.physics.hasGravity = false;
 		this.addComponent(Physics, this.physics);
+		this.lastHit = undefined;
+	}
+
+	resetBall(){
+		this.physics.setVelocity(0, 0);
+		// this.lastHit = undefined;
+		this.position.x = canvas.width / 2;
+		this.position.y = canvas.height / 2;
 	}
 
 	onCollision(other, collisionPoint = undefined){
+		if (other instanceof Player)
+			this.lastHit = other;
 		if (collisionPoint === undefined)
 			return;
 		let ba = this.position.sub(collisionPoint);
@@ -32,27 +42,41 @@ class Ball extends Entity{
 }
 
 class Player extends Entity{
-	constructor(x, y){
+	constructor(x, y, length = 250){
 		super(x, y);
-		this.mesh = new Box(40, 250);
+		this.mesh = new Box(25, length);
 		this.physics = new Physics(0, 0, true, false);
 		this.addComponent(Mesh, this.mesh);
 		this.addComponent(Physics, this.physics);
 		this.keyBinds = {up: 'ArrowUp', down: 'ArrowDown'};
 		window.addEventListener('keydown', (event) => this.keyDown(event));
 		window.addEventListener('keyup', (event) => this.keyUp(event));
-	}
-
-	bindToGoal(goal){
-		this.position.x = goal.position.x;
-		this.position.y = goal.position.y;
-		this.rotate(goal.rotation);
+		this.score = 0;
+		this.startPos = undefined;
+		this.goalHeight = 0;
 	}
 
 	move(xAdd, yAdd){
 		let newPos = this.position.add(new Vector(xAdd, yAdd));
-		for (let point of this.mesh.points) {
-			point = point.add(newPos);
+
+		/**
+		 * Check if the new player position is still in range of its goal
+		 * if not dont allow the move
+		 */
+		if (this.startPos !== undefined){
+			let ab = newPos.sub(this.startPos);
+			let len = ab.length();
+			ab.scale((len + this.mesh.height * 0.5) / len);
+			if (ab.length() > this.goalHeight * 0.5)
+				return;
+		}
+		/**
+		 * Check if the mesh is still inside the canvas
+		 * if not dont allow the move
+		 */
+		let transformedPoints = this.mesh.points.map(p => p.dup().rotate(this.rotation).add(newPos));
+		for (let point of transformedPoints) {
+			// point = point.add(newPos);
 			if (point.x < 0 || point.x > canvas.width)
 				return;
 			if (point.y < 0 || point.y > canvas.height)
@@ -75,94 +99,136 @@ class Player extends Entity{
 		}
 	}
 
-	update(){
-		drawLine(this.position, this.position.add(this.up.dup().scale(100)), 'blue');
-	}
-
 	keyDown(event){
 		if (event.key === this.keyBinds.up){
 			let dir = new Vector(this.up.x, this.up.y);
 			dir.scale(PLAYER_MOVE_SPEED);
+			console.log('Moving:', dir);
 			this.physics.velocity = dir;
-		}
-		if (event.key === this.keyBinds.down) {
+		} else if (event.key === this.keyBinds.down) {
 			let dir = new Vector(this.up.x, this.up.y);
 			dir.scale(-PLAYER_MOVE_SPEED);
 			this.physics.velocity = dir;
-		}
-		if (event.key === 'g')
+		} else if (event.key === 'g') {
 			this.rotate(this.rotation + 5);
+		}
+		else {
+			return;
+		}
+		event.preventDefault();
 	}
 
 	keyUp(event){
 		if (event.key === this.keyBinds.up || event.key === this.keyBinds.down){
 			this.physics.velocity.x = 0;
 			this.physics.velocity.y = 0;
+		} else {
+			return;
 		}
+		event.preventDefault();
 	}
 }
 
 class Wall extends Entity{
-	constructor(x, y, top = false){
+	constructor(x, y, rot, height){
 		super(x, y);
-		if (top)
-			this.addComponent(Mesh, new Box(canvas.width, 5));
-		else
-			this.addComponent(Mesh, new Box(5, canvas.height));
+		this.height = height;
+		let m = new Box(10, this.height, true);
+		this.rotate(rot);
+		this.addComponent(Mesh, m);
 	}
 }
 
-class Goal extends Entity{
-	constructor(x, y, rot, height){
+class PlayerSection extends Entity{
+	constructor(x, y, rotation, height){
 		super(x, y);
-		let m = new Box(10, height, true);
-		this.rotate(rot);
-		this.addComponent(Mesh, m);
+		this.goal = new Wall(x, y, rotation, height);
+		this.player = new Player(x, y, height * 0.33);
+		this.bindPlayer();
+		world.addEntity(this.goal);
+		world.addEntity(this.player);
+	}
+
+	update(){
+		this.drawScore();
+	}
+
+	drawScore(){
+		const center = new Vector(canvas.width * .5, canvas.height * .5);
+		let lineToCenter = center.sub(this.position);
+		lineToCenter.rotate(25);
+		lineToCenter.normalize();
+		lineToCenter.scale(100);
+		let drawPos = lineToCenter.add(this.position);
+		drawText(this.player.score, drawPos.x, drawPos.y, '120px Arial');
+	}
+
+	bindPlayer(){
+		this.player.position.x = this.goal.position.x;
+		this.player.position.y = this.goal.position.y;
+		this.player.rotate(this.goal.rotation);
+		if (this.player.up.dot(new Vector(0, -1)) < 0)
+			this.player.rotate(this.player.rotation + 180);
+		let forward = new Vector(canvas.width * 0.5, canvas.height * 0.5).sub(this.player.position);
+		forward.normalize();
+		forward.scale(75);
+		forward = forward.add(this.player.position);
+		this.player.position = forward;
+		this.player.startPos = forward;
+		this.player.goalHeight = this.goal.height;
 	}
 }
 
 class PongGameManager extends Entity{
 	constructor(){
 		super(0, 0);
-		// this.players = [];
-		this.player1 = new Player(canvas.width * 0.1, canvas.height * 0.5);
-		this.player1.keyBinds = {up: 'w', down: 's'};
-		this.player2 = new Player(canvas.width * 0.9, canvas.height * 0.5);
-		this.ball = new Ball(/* canvas.width * 0.1 + 50, canvas.height * 0.2 */);
-		this.roundRunning = false;
-		this.scores = [0, 0];
-		this.winner = -1;
+		this.sections = [];
+		this.ball = new Ball();
+		world.addEntity(this.ball);
 		this.initGame();
+	}
+
+	update(){
+		// this.buildDynamicField(3);
+	}
+
+	buildDynamicField(playerCount){
+		const center = new Vector(canvas.width / 2, canvas.height / 2);
+		let point1 = new Vector(0, -canvas.height / 2);
+		let rotationStep = 360 / playerCount;
+		let rot = (rotationStep) / 2;
+		let point2 = point1.dup().rotate(rotationStep);
+		for (let i = 0; i < playerCount; i++) {
+			let ba = point2.sub(point1);
+			drawLine(point1.add(center), point2.add(center));
+			ba.scale(0.5);
+			let midpoint = ba.add(point1);
+			midpoint = midpoint.add(center);
+			ctx.fillRect(midpoint.x, midpoint.y, 5, 5);
+			this.sections.push(new PlayerSection(midpoint.x, midpoint.y, rot + 90, ba.length() * 2));
+			point1.rotate(rotationStep);
+			point2.rotate(rotationStep);
+			rot += rotationStep;
+		}
 	}
 
 	initGame(){
 		
-		world.addEntity(this.player1);
-		world.addEntity(this.player2);
-		world.addEntity(this.ball);
+		this.buildDynamicField(25);
+		// this.sections.push(new PlayerSection(0, canvas.height / 2, 0, canvas.height));
+		// this.sections.push(new PlayerSection(canvas.width, canvas.height / 2, 0, canvas.height));
+		// this.sections.push(new PlayerSection(canvas.width / 2, 0, 90, canvas.width));
+		// this.sections.push(new PlayerSection(canvas.width / 2, canvas.height, 90, canvas.width));
 
-		let wallt = new Wall(canvas.width / 2, 0, true);
-		let wallb = new Wall(canvas.width / 2, canvas.height, true);
-
-		let goal1 = new Goal(0, canvas.height / 2, 0, canvas.height);
-		goal1.onTrigger = (other) => {
-			if (!(other instanceof Ball))
-				return;
-			this.scores[1]++;
-			this.resetRound();
-		};
-		let goal2 = new Goal(canvas.width, canvas.height / 2, 0, canvas.height);
-		goal2.onTrigger = (other) => {
-			if (!(other instanceof Ball))
-				return;
-			this.scores[0]++;
-			this.resetRound();
-		};
-
-		world.addEntity(wallt);
-		world.addEntity(wallb);
-		world.addEntity(goal1);
-		world.addEntity(goal2);
+		this.sections.forEach( section => {
+			world.addEntity(section);
+			section.goal.onTrigger = (other) =>{
+				if (other instanceof Ball){
+					other.lastHit.score++;
+					this.resetRound();
+				}
+			};
+		});
 
 		window.addEventListener("keydown", event => {
 			if(event.key == ' ' && !this.roundRunning){
@@ -171,56 +237,27 @@ class PongGameManager extends Entity{
 			}
 		})
 
-	}
+		this.ball.physics.setVelocity(15, 0);
 
-	drawExtra(){
-		drawText(this.scores[0], canvas.width * 0.25, canvas.height * 0.25, '120px Arial');
-		drawText(this.scores[1], canvas.width * 0.75, canvas.height * 0.25, '120px Arial');
-		drawLine(new Vector(canvas.width * 0.5, 0), new Vector(canvas.width * 0.5, canvas.height), 'black', 10, [10, 10]);
-		if (!this.roundRunning){
-			if (this.winner == -1)
-				drawText('Press space to start Round!', canvas.width * 0.3, canvas.height * 0.5, '48px Arial', 'red');
-			else
-				drawText(`Player ${this.winner+1} won!`, canvas.width * .4, canvas.height * .5, '48px Arial', 'green');
-		}
-	}
-
-	checkWinCondition(){
-		for (let i = 0; i < this.scores.length; i++) {
-			const currScore = this.scores[i];
-			if (currScore >= 7)
-				return i;
-		}
-		return -1;
-	}
-
-	resetGame(){
-		this.scores.fill(0);
-		this.winner = -1;
-	}
-
-	resetRound(){
-		this.winner = this.checkWinCondition(); 
-		this.roundRunning = false;
-		this.ball.physics.setVelocity(0,0);
-		this.ball.position.x = canvas.width / 2;
-		this.ball.position.y = canvas.height / 2;
 	}
 
 	startRound(){
-		if (this.winner != -1)
-			this.resetGame();
-		this.roundRunning = true;
-		if (this.scores[0] < this.scores[1])
-			this.ball.physics.setVelocity(15, 0);
-		else
-			this.ball.physics.setVelocity(-15, 0);
+		let dir = undefined;
+		if (this.ball.lastHit !== undefined){
+			dir = this.ball.lastHit.position.sub(this.ball.position);
+			dir.normalize();
+			dir.scale(15);
+		}
+		else{
+			dir = new Vector(15, 0);
+		}
+		this.ball.physics.setVelocity(dir.x, dir.y);
 	}
 
-	update(){
-		this.drawExtra();
-		// console.log("GAMEMODE UPDATE!");
+	resetRound(){
+		this.ball.resetBall();
 	}
+
 }
 
 let world = new World();
