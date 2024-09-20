@@ -353,8 +353,10 @@ class Player extends Entity{
 	}
 
 	keyUp(event){
-		if (event.key === this.keyBinds.up || event.key === this.keyBinds.down)
-			this.physics.velocity.x = 0; this.physics.velocity.y = 0;
+		if (event.key === this.keyBinds.up || event.key === this.keyBinds.down){
+			this.physics.velocity.x = 0;
+			this.physics.velocity.y = 0;
+		}
 	}
 }
 
@@ -409,39 +411,43 @@ class CollisionSystem extends System{
 			const entMesh = currentEnt.getComponent(Mesh);
 			if (!entMesh)
 				return ;
-			entities.forEach(otherEnt => {
-				if (currentEnt != otherEnt){
-					const otherMesh = otherEnt.getComponent(Mesh);
-					if (!otherMesh)
-						return ;
-					let ab = otherEnt.position.sub(currentEnt.position);
-					let threshold = Math.max(Math.max(entMesh.width, entMesh.height), Math.max(otherMesh.width, otherMesh.height));
-					if (ab.length() < threshold){
-						let oClosest = otherMesh.getClosestPoint(otherEnt, currentEnt.position);
-						let sClosest = entMesh.getClosestPoint(currentEnt, oClosest);
-						let diff = oClosest.sub(sClosest);
-						if (diff.dot(ab) < 0){
-							drawLine(currentEnt.position, sClosest, 'red');
-							if (currentEnt.hasComponent(Physics)){
-								let phys = currentEnt.getComponent(Physics);
-								if (!phys.isStatic)
-									currentEnt.move(diff.x, diff.y);
-								// drawLine(currentEnt.position, new Vector(0,0));
-							}
-							if (entMesh.isTrigger){
-								currentEnt.onTrigger(otherEnt, sClosest);
-							} else {
-								currentEnt.onCollision(otherEnt, sClosest);
-							}
-							if (otherMesh.isTrigger){
-								otherEnt.onTrigger(currentEnt, oClosest);
-							} else {
-								otherEnt.onCollision(currentEnt, oClosest);
+			if (currentEnt instanceof Ball){ //schabernack fix1
+				entities.forEach(otherEnt => {
+					if (currentEnt != otherEnt){
+						const otherMesh = otherEnt.getComponent(Mesh);
+						if (!otherMesh)
+							return ;
+						let ab = otherEnt.position.sub(currentEnt.position);
+						let threshold = Math.max(Math.max(entMesh.width, entMesh.height), Math.max(otherMesh.width, otherMesh.height));
+						if (ab.length() < threshold){
+							let oClosest = otherMesh.getClosestPoint(otherEnt, currentEnt.position);
+							let sClosest = entMesh.getClosestPoint(currentEnt, oClosest);
+							let diff = oClosest.sub(sClosest);
+							if (diff.dot(ab) < 0){
+								// drawLine(currentEnt.position, sClosest, 'red');
+								currentEnt.move(diff.x ,diff.y); //schabernack fix1.2
+								// if (currentEnt.hasComponent(Physics)){
+								// 	let phys = currentEnt.getComponent(Physics);
+								// 	let ophys = otherEnt.getComponent(Physics);
+								// 	if (phys.isStatic && ophys && !ophys.isStatic)
+								// 		otherEnt.move(-diff.x * 2, -diff.y * 2);
+								// 	// drawLine(currentEnt.position, new Vector(0,0));
+								// }
+								if (entMesh.isTrigger){
+									currentEnt.onTrigger(otherEnt, sClosest);
+								} else {
+									currentEnt.onCollision(otherEnt, sClosest);
+								}
+								if (otherMesh.isTrigger){
+									otherEnt.onTrigger(currentEnt, oClosest);
+								} else {
+									otherEnt.onCollision(currentEnt, oClosest);
+								}
 							}
 						}
 					}
-				}
-			});
+				});
+			}
 		});
 	}
 }
@@ -454,6 +460,12 @@ class World{
 
 	addEntity(ent){
 		this.entities.push(ent);
+	}
+
+	removeEntity(ent){
+		const index = this.entities.indexOf(ent);
+		if (index !== -1)
+			this.entities.splice(index, 1);
 	}
 
 	addSystem(sys){
@@ -476,10 +488,12 @@ class PongGameManager extends Entity{
 		super(0, 0);
 		// this.players = [];
 		this.player1 = new Player(canvas.width * 0.1, canvas.height * 0.5);
+		this.player1.keyBinds = {up: 'w', down: 's'};
 		this.player2 = new Player(canvas.width * 0.9, canvas.height * 0.5);
 		this.ball = new Ball(/* canvas.width * 0.1 + 50, canvas.height * 0.2 */);
 		this.roundRunning = false;
 		this.scores = [0, 0];
+		this.winner = -1;
 		this.initGame();
 	}
 
@@ -520,15 +534,33 @@ class PongGameManager extends Entity{
 	}
 
 	drawExtra(){
-		let a = ctx.font;
-		ctx.font = '120px Arial';
-		ctx.fillText(this.scores[0], canvas.width * 0.25, canvas.height * 0.25);
-		ctx.fillText(this.scores[1], canvas.width * 0.75, canvas.height * 0.25);
-		ctx.font = a;
+		drawText(this.scores[0], canvas.width * 0.25, canvas.height * 0.25, '120px Arial');
+		drawText(this.scores[1], canvas.width * 0.75, canvas.height * 0.25, '120px Arial');
 		drawLine(new Vector(canvas.width * 0.5, 0), new Vector(canvas.width * 0.5, canvas.height), 'black', 10, [10, 10]);
+		if (!this.roundRunning){
+			if (this.winner == -1)
+				drawText('Press space to start Round!', canvas.width * 0.3, canvas.height * 0.5, '48px Arial', 'red');
+			else
+				drawText(`Player ${this.winner+1} won!`, canvas.width * .4, canvas.height * .5, '48px Arial', 'green');
+		}
+	}
+
+	checkWinCondition(){
+		for (let i = 0; i < this.scores.length; i++) {
+			const currScore = this.scores[i];
+			if (currScore >= 7)
+				return i;
+		}
+		return -1;
+	}
+
+	resetGame(){
+		this.scores.fill(0);
+		this.winner = -1;
 	}
 
 	resetRound(){
+		this.winner = this.checkWinCondition(); 
 		this.roundRunning = false;
 		this.ball.physics.setVelocity(0,0);
 		this.ball.position.x = canvas.width / 2;
@@ -536,6 +568,8 @@ class PongGameManager extends Entity{
 	}
 
 	startRound(){
+		if (this.winner != -1)
+			this.resetGame();
 		this.roundRunning = true;
 		if (this.scores[0] < this.scores[1])
 			this.ball.physics.setVelocity(15, 0);
@@ -547,6 +581,17 @@ class PongGameManager extends Entity{
 		this.drawExtra();
 		// console.log("GAMEMODE UPDATE!");
 	}
+}
+
+function drawText(text, x, y, textStyle = undefined, colour = 'black'){
+	let save = ctx.font;
+	let saveStyle = ctx.fillStyle;
+	if (textStyle)
+		ctx.font = textStyle;
+	ctx.fillStyle = colour;
+	ctx.fillText(text, x, y);
+	ctx.fillStyle = saveStyle;
+	ctx.font = save;
 }
 
 function drawLine(p1, p2, color = 'black', lineWidth = 1, dashPattern = [], debug = false){
