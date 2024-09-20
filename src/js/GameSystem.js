@@ -1,6 +1,6 @@
 export const canvas = document.createElement('canvas');
-canvas.width = 1920;
-canvas.height = 1080;
+canvas.width = 1640;
+canvas.height = 780;
 export const ctx = canvas.getContext('2d');
 
 export function renderPong() {
@@ -107,12 +107,20 @@ export class Transform{
 	}
 }
 
+/**
+ * Abstract class Component
+ * Base for all componets using Entity Component System
+ */
 export class Component{
 	constructor(){
 
 	}
 }
 
+/**
+ * Physics component
+ * responsible for storing Entitys movement direction
+ */
 export class Physics extends Component{
 	constructor(x = 0, y = 0, isStatic = false, hasGravity = true){
 		super();
@@ -131,6 +139,14 @@ export class Physics extends Component{
 	}
 }
 
+/**
+ * Mesh component
+ * Contains all the points of the mesh.
+ * The points are relative to the center of the Mesh
+ * World position will be added each draw by passing the Entitys transform data
+ * comes with a generic draw function for Meshes with more than 2 points
+ * Draw can be overloaded like in the Circle class, which does not need points
+ */
 export class Mesh extends Component{
 	constructor(isTrigger = false){
 		super();
@@ -154,9 +170,15 @@ export class Mesh extends Component{
 		point = transformedPoints[0];
 		ctx.lineTo(point.x, point.y);
 		ctx.closePath();
-		ctx.stroke();
+		ctx.fill();
 	}
 
+	/**
+	 * 
+	 * @param {Transform} transform entity transform
+	 * @param {Vector} point the point to get closest to
+	 * @returns point on one of the meshes edges closes to the given point
+	 */
 	getClosestPoint(transform, point){
 		let closestPoint = undefined;
 		let smallestDist = Infinity;
@@ -194,7 +216,7 @@ export class Circle extends Mesh{
 		ctx.beginPath();
 		ctx.arc(transform.position.x, transform.position.y, this.width * 0.5, 0, 360);
 		ctx.closePath();
-		ctx.stroke();
+		ctx.fill();
 	}
 
 	getClosestPoint(transform, point){
@@ -218,7 +240,9 @@ export class Box extends Mesh{
 	}
 }
 
-
+/**
+ * Entity
+ */
 export class Entity extends Transform{
 	constructor(x, y){
 		super(x, y);

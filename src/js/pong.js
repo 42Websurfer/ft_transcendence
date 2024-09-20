@@ -193,6 +193,14 @@ class PongGameManager extends Entity{
 	}
 
 	buildDynamicField(playerCount){
+		if (playerCount === 2){
+			this.sections.push(new PlayerSection(0, canvas.height * .5, 0, canvas.height));
+			this.sections.push(new PlayerSection(canvas.width, canvas.height * .5, 0, canvas.height));
+			this.sections[0].player.keyBinds = {up: 'w', down: 's'};
+			world.addEntity(new Wall(canvas.width * .5, 0, 90, canvas.width));
+			world.addEntity(new Wall(canvas.width * .5, canvas.height, 90, canvas.width));
+			return;
+		}
 		const center = new Vector(canvas.width / 2, canvas.height / 2);
 		let point1 = new Vector(0, -canvas.height / 2);
 		let rotationStep = 360 / playerCount;
@@ -214,7 +222,7 @@ class PongGameManager extends Entity{
 
 	initGame(){
 		
-		this.buildDynamicField(25);
+		this.buildDynamicField(2);
 		// this.sections.push(new PlayerSection(0, canvas.height / 2, 0, canvas.height));
 		// this.sections.push(new PlayerSection(canvas.width, canvas.height / 2, 0, canvas.height));
 		// this.sections.push(new PlayerSection(canvas.width / 2, 0, 90, canvas.width));
