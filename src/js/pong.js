@@ -103,7 +103,6 @@ class Player extends Entity{
 		if (event.key === this.keyBinds.up){
 			let dir = new Vector(this.up.x, this.up.y);
 			dir.scale(PLAYER_MOVE_SPEED);
-			console.log('Moving:', dir);
 			this.physics.velocity = dir;
 		} else if (event.key === this.keyBinds.down) {
 			let dir = new Vector(this.up.x, this.up.y);
@@ -274,29 +273,7 @@ world.addSystem(new RenderSystem());
 world.addSystem(new CollisionSystem());
 world.addSystem(new MovementSystem());
 
-world.addEntity(new PongGameManager());
 
 setInterval(function() {
 	world.update();
 }, 10);
-
-// let players = 3;
-// let rotStep = 360 / players;
-// const cent = new Vector(canvas.width/2, canvas.height/2);
-// let ls1 = new Vector(0, -(canvas.height / 2));
-// let ls2 = new Vector(0, -(canvas.height / 2));
-// ls2.rotate(rotStep);
-
-// for (let index = 0; index < players; index++) {
-// 	let p1 = ls1.add(cent);
-// 	let p2 = ls2.add(cent);
-// 	ctx.fillRect(p1.x, p1.y, 5, 5);
-// 	ctx.fillRect(p2.x, p2.y, 5, 5);
-// 	ctx.beginPath();
-// 	ctx.moveTo(p1.x, p1.y);
-// 	ctx.lineTo(p2.x, p2.y);
-// 	ctx.stroke();
-// 	ctx.closePath();
-// 	ls1.rotate(rotStep);
-// 	ls2.rotate(rotStep);
-// }
