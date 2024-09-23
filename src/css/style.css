@@ -12,6 +12,8 @@ body {
     margin: 0;
     display: flex;
     flex-direction: column;
+    animation: gradientAnimation 15s ease infinite, changeColor 10s linear infinite;
+    background: #5c57ad;
 }
 
 .header {
@@ -115,11 +117,6 @@ body {
 
 #menu-item-dashboard {
     background: linear-gradient(to bottom,#ce1fa2 0,#dd3eb5 100%);
-}
-
-/* body {
-    animation: gradientAnimation 15s ease infinite, changeColor 10s linear infinite;
-    background: #5c57ad;
 }
 
 @keyframes changeColor {
