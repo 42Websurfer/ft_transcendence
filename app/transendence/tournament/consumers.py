@@ -25,6 +25,7 @@ class Tournament(AsyncWebsocketConsumer):
 					'type': 'send_tournament_users',
 				}
 			)
+
 	async def disconnect(self, close_code):
 		if (self.user.is_authenticated):
 			await self.channel_layer.group_discard(
@@ -38,6 +39,7 @@ class Tournament(AsyncWebsocketConsumer):
 					'type': 'send_tournament_users',
 				}
 			)
+			#wenn es der admin war, dann muss ein neuer Admin gesetzt werden
 	
 	async def send_tournament_users(self, event):
 		User = get_user_model()
