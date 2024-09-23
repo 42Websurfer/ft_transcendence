@@ -270,12 +270,34 @@ class PongGameManager extends Entity{
 
 }
 
+class MultiplayerManage extends Entity{
+	constructor(){
+		super(0, 0);
+	}
+}
+
 let world = new World();
 
 world.addSystem(new RenderSystem());
 world.addSystem(new CollisionSystem());
 world.addSystem(new MovementSystem());
 
+let socket = new WebSocket(`ws://${window.location.host}/ws/test`);
+
+socket.onopen = () => {
+	console.log('Connected to WebSocket server');
+}
+
+socket.onmessage = (event) => {
+	const data = JSON.parse(event.data);
+
+	if (data.type === 'currentState'){
+		world.entities = data.entities;
+		console.log("UPDATE CURRENT STATE:", data);
+	} else if (data.type === 'newPlayer') {
+		console.log("NEW PLAYER:", data);
+	}
+}
 
 setInterval(function() {
 	world.update();
