@@ -14,10 +14,35 @@ async function checkAuthentication() {
     return result.authenticated;
 }
 
+function renderLoginLogoutButton(isAuthenticated) {
+
+    const app = document.getElementById('LoginLogoutButton');
+    if (!app)
+        return;
+        
+    if (isAuthenticated)
+    {
+        app.innerHTML = `
+        <div class="col-5">
+            <button id="LogoutButton" type="button" class="btn btn-primary login-logout-button">Logout</button>
+        </div>
+        `;
+    }
+    else
+    {
+        app.innerHTML = `
+        <div class="col-5">
+            <button id="LoginButton" type="button" class="btn btn-primary login-logout-button">Login</button>
+        </div>
+        `;
+    }
+}
+
 async function showSection(section)
 {
     console.log('section:' + section);
     const isAuthenticated = await checkAuthentication();
+    renderLoginLogoutButton(isAuthenticated);
     if (section === 'register')
         import('./register.js').then(module => {
             module.renderRegister();

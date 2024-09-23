@@ -32,6 +32,14 @@ body {
     margin-top: 2.5vh;
 }
 
+.login-logout-button {
+    background: linear-gradient(to bottom, #56565f,#706f7a 100%);
+    border: 0.1em solid #353333;
+    position: relative;
+    text-shadow: 1px 1px 2px #000000;
+    overflow: hidden;
+}
+
 .main-content {
     flex-grow: 1;
     overflow-y: auto;
@@ -79,12 +87,14 @@ body {
     transition: transform 0.3s ease;
     border: 0.1em solid #292424;
     filter:brightness(100%);
+    overflow: hidden;
 }
 
 .menu-item:hover {
     transform: translate(-100px, 4px);
     filter:brightness(90%);
     color: #ffffff;
+    border: 0.11em solid #292424;
 }
 
 #menu-item-local {
