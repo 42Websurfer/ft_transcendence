@@ -67,9 +67,9 @@ async function showSection(section, lobbyId)
     });
 }
 
-
+    
 function initOnlineStatus() {
-    ws = new WebSocket('ws://localhost:8090/ws/online-status/');
+    ws = new WebSocket(`ws://${window.location.host}/ws/online-status/`);
 
     ws.onopen =  function() {
         console.log("Connected to WebSocket Online Status");

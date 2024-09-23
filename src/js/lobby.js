@@ -41,7 +41,7 @@ export function renderLobby(groupName) {
         </div>
     `;    
     
-    const socket = new WebSocket(`ws://localhost:8090/ws/tm/${groupName}/`);
+    const socket = new WebSocket(`ws://${window.location.host}/ws/tm/${groupName}/`);
     runWebsocket(socket);
     closeWebsocket(socket);
 }

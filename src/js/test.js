@@ -119,6 +119,6 @@ export function renderWebsocket() {
         alert("You have to enter a User!");
         renderWebsocket();
     }
-    const socket = new WebSocket(`ws://10.13.9.1:8090/ws/pong/${groupName}/`);
+    const socket = new WebSocket(`ws://${window.location.host}/ws/pong/${groupName}/`);
     runWebsocket(socket, user, app);
 }
