@@ -296,6 +296,10 @@ socket.onmessage = (event) => {
 		console.log("UPDATE CURRENT STATE:", data);
 	} else if (data.type === 'newPlayer') {
 		console.log("NEW PLAYER:", data);
+		if (data.player === 'Player1')
+			world.addEntity(new Player(400, 200, 200));
+		else if (data.player === 'Player2');
+			world.addEntity(new Player(400, 400, 200));
 	}
 }
 
