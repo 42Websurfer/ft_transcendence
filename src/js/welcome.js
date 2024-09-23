@@ -4,42 +4,28 @@ export function renderWelcome() {
     const app = document.getElementById('app');
 
     app.innerHTML = `
-    MOIN BRATAN
-    <button id="sendFriendRequest">Send Friend Request</button>
-    <div id="responseDisplay"></div>
-    <h2>Friend Requests</h2>
-    <button id="checkRequests">Show Friend Requests</button>
-    <div id="friendRequests"></div>
-    <h2>Accpeted Friend's </h2>
-    <button id="acceptedFriendButton">Show Accepted Friend's</button>
-    <div id="acceptedFriend"></div>
-    <br>
-    <hr>
-    <form id="matchForm">
-        <input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
-        <h2>Add Match Results</h2>
-        <div class="form-floating">
-            <input type="text" name="player1" class="form-control" required>
-            <label for="floatingInput">Player 1</label>
+    <div class="menu">
+        <div class="menu-item" id="menu-item-local">
+            <h1>Local</h1>
+            <p>Play local - alone or with a friend<p>
+        </div>  
+        <div class="menu-item" id="menu-item-online">
+            <h1>Online</h1>
+            <p>Play online with friends<p>
         </div>
-        <div class="form-floating">
-            <input type="text" name="player2" class="form-control" required>
-            <label for="floatingPassword">Player 2</label>
+        <div class="menu-item" id="menu-item-tournament">
+            <h1>Tournament</h1>
+            <p>Play an exciting Tournament<p>
         </div>
-        <div class="form-floating">
-            <input type="text" name="score_player1" class="form-control" required>
-            <label for="floatingPassword">Score Player 1</label>
+        <div class="menu-item" id="menu-item-multiplayer">
+            <h1>Multiplayer</h1>
+            <p>Play online in multiplayer mode<p>
         </div>
-        <div class="form-floating">
-            <input type="text" name="score_player2" class="form-control" required>
-            <label for="floatingPassword">Score Player 2</label>
+        <div class="menu-item" id="menu-item-dashboard">
+            <h1>Dashboard</h1>
+            <p>Check your game stats<p>
         </div>
-        <button class="btn btn-primary w-100 py-2" type="submit">Sign in</button>
-	</form>
-    <div id="messages"></div>
-    <h2>Show Match History</h2>
-    <button id="matchHistoryButton">Show Matches</button>
-    <div id="matchHistory"></div>
+    </div>
     `;
     const friendRequestButton = document.getElementById('sendFriendRequest');
     const responseDisplay = document.getElementById('responseDisplay');

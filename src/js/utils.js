@@ -60,3 +60,13 @@ export async function checkAuthentication() {
     }
     return result.authenticated;
 }
+
+export function setLoginLogoutButton(section) {
+    const app = document.getElementById('LoginLogoutButton');
+
+    if (section === "login")
+        
+
+
+    app.innerHTML
+}
