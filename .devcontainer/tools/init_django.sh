@@ -4,6 +4,7 @@ python3 -m venv /workspaces/app/webappenv
 
 source /workspaces/app/webappenv/bin/activate
 
+pip install --upgrade setuptools
 pip install django psycopg2-binary
 /workspaces/app/transendence/manage.py makemigrations
 /workspaces/app/transendence/manage.py migrate
