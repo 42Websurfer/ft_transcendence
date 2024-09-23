@@ -282,7 +282,7 @@ world.addSystem(new RenderSystem());
 world.addSystem(new CollisionSystem());
 world.addSystem(new MovementSystem());
 
-let socket = new WebSocket(`ws://${window.location.host}/ws/test`);
+let socket = new WebSocket(`ws://${window.location.host}/ws/pong/test/`);
 
 socket.onopen = () => {
 	console.log('Connected to WebSocket server');
