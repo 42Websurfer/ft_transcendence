@@ -324,7 +324,7 @@ socket.onmessage = (event) => {
 			right.keyBinds = {up: 'ArrowUp', down: 'ArrowDown'};
 		}
 	} else if (data.type === 'updatePos'){
-		world.entities[data.id] = new Vector(data.pos.x, data.pos.y);
+		world.entities[data.id].position = new Vector(data.pos.x, data.pos.y);
 	} else if (data.type === 'setScore'){
 		//player/entity id and data.newScore ???
 	}
