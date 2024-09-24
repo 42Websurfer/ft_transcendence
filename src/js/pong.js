@@ -49,9 +49,10 @@ class Player extends Entity{
 		super(x, y);
 		this.mesh = new Box(25, length);
 		this.physics = new Physics(0, 0, true, false);
+		this.net = new Network();
 		this.addComponent(Mesh, this.mesh);
 		this.addComponent(Physics, this.physics);
-		this.addComponent(Network, new Network());
+		this.addComponent(Network, this.net);
 		this.keyBinds = {up: '', down: ''};
 		window.addEventListener('keydown', (event) => this.keyDown(event));
 		window.addEventListener('keyup', (event) => this.keyUp(event));
@@ -87,7 +88,7 @@ class Player extends Entity{
 				return;
 		}
 		this.position = newPos;
-		if (this.isLocal){
+		if (this.net.isLocal){
 			socket.send(JSON.stringify({type: 'game_loop', x: this.position.x, y: this.position.y}));
 		}
 	}
@@ -299,11 +300,11 @@ socket.onmessage = (event) => {
 		world.entities = data.entities;
 	} else if (data.type === 'newPlayer') {
 		if (data.player === 'Player1'){
-			left.getComponent(Network).isLocal = true;
+			left.net.isLocal = true;
 			left.keyBinds = {up: 'ArrowUp', down: 'ArrowDown'};
 		}
 		else if (data.player === 'Player2'){
-			right.getComponent(Network).isLocal = true;
+			right.net.isLocal = true;
 			right.keyBinds = {up: 'ArrowUp', down: 'ArrowDown'};
 		}
 	} else if (data.type === 'updatePlayer'){
