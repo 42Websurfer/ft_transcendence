@@ -8,6 +8,7 @@ from django.contrib.auth import get_user_model
 redis = redis.Redis(host='redis', port=6379, db=0)
 class MyConsumer(AsyncWebsocketConsumer):  
 	player = 'DEFAULT'
+	
 	async def connect(self):
 		User = get_user_model()
 		self.group_name = self.scope['url_route']['kwargs']['group_name']
@@ -49,7 +50,7 @@ class MyConsumer(AsyncWebsocketConsumer):
 		await self.channel_layer.group_send(
 			self.group_name,
 			{
-				'type': 'disconnected',
+				'type': 'disconnectedMsg',
 				'player': self.player
 			}
 		)
@@ -65,10 +66,10 @@ class MyConsumer(AsyncWebsocketConsumer):
 			await self.channel_layer.group_send(
 				self.group_name,
 				{
-					'type': 'game_loop',
+					'type': 'update_playerMsg',
 					'sender': self.player,
-					'foes_posX': text_data_json.get('posX'),
-					'foes_posY': text_data_json.get('posY')
+					'foes_posX': text_data_json.get('x'),
+					'foes_posY': text_data_json.get('y')
 				}
 			)
 		elif (ws_type == 'game'):
