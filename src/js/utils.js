@@ -1,3 +1,6 @@
+import { showSection } from './index.js';
+
+
 export function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {

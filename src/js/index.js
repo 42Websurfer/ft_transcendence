@@ -1,3 +1,5 @@
+import { handleLogoutSubmit } from './utils.js';
+
 async function checkAuthentication() {
     const response = await fetch('/checkauth/', {
         method: 'GET',
@@ -14,7 +16,7 @@ async function checkAuthentication() {
     return result.authenticated;
 }
 
-function renderLoginLogoutButton(isAuthenticated) {
+async function renderLoginLogoutButton(isAuthenticated, section) {
 
     const app = document.getElementById('LoginLogoutButton');
     if (!app)
@@ -24,25 +26,49 @@ function renderLoginLogoutButton(isAuthenticated) {
     {
         app.innerHTML = `
         <div class="col-5">
-            <button id="LogoutButton" type="button" class="btn btn-primary login-logout-button">Logout</button>
+        <button id="logoutButton" type="button" class="btn btn-primary login-logout-button">Logout</button>
         </div>
         `;
+        const logoutButton = document.getElementById('logoutButton')
+        logoutButton.addEventListener('click', () => {
+            handleLogoutSubmit();
+        });
     }
     else
     {
-        app.innerHTML = `
-        <div class="col-5">
-            <button id="LoginButton" type="button" class="btn btn-primary login-logout-button">Login</button>
-        </div>
-        `;
+        if (section === 'register')
+        {
+            app.innerHTML = `
+            <div class="col-5">
+            <button id="loginButton" type="button" class="btn btn-primary login-logout-button">Login</button>
+            </div>
+            `;
+            const loginButton = document.getElementById('loginButton')
+            loginButton.addEventListener('click', () => {
+                showSection('login');
+            });
+        }
+        else //(section === 'login')
+        {
+            app.innerHTML = `
+            <div class="col-5">
+            <button id="registerButton" type="button" class="btn btn-primary login-logout-button">Sign up</button>
+            </div>
+            `;
+            const registerButton = document.getElementById('registerButton')
+            registerButton.addEventListener('click', () => {
+                showSection('register');
+            });
+        }
+
     }
 }
 
-async function showSection(section)
+export async function showSection(section)
 {
     console.log('section:' + section);
     const isAuthenticated = await checkAuthentication();
-    renderLoginLogoutButton(isAuthenticated);
+    renderLoginLogoutButton(isAuthenticated, section);
     if (section === 'register')
         import('./register.js').then(module => {
             module.renderRegister();
@@ -71,12 +97,6 @@ async function showSection(section)
         });
         section = 'login';
     }
-    import('./header.js').then(module => {
-        module.renderHeader(section);
-    });
-    import('./footer.js').then(module => {
-        module.renderFooter(section);
-    });
 }
 
 

@@ -24,14 +24,38 @@ body {
     color:#ffffff !important;
     font-size:2.4em;
     background: linear-gradient(to bottom, #8581c7,#4740a8 100%);
-    border-bottom: 0.1em solid #353333;
     flex-direction: row;
+    display: flex;
+    align-items: center;
+    border-bottom: 0.06em solid #353333;
+}
+
+.header-col {
+    width: 33.333333%;
+}
+
+.header-logo {
+    margin-left: 0.7vw;
+}
+
+.header-logo > img {
+    border: 0.02em solid #353333;
 }
 
 .header-text {
     display: flex;
     justify-content: center;
-    margin-top: 2.5vh;
+}
+
+.header-text > p {
+    margin: 0.8vh 0 0 0;
+}
+
+.header-login-logout-button {
+    display: flex;
+    justify-content: flex-end;
+    margin-right: 1vw;
+    margin-bottom: 0.5vh;
 }
 
 .login-logout-button {
@@ -40,6 +64,7 @@ body {
     position: relative;
     text-shadow: 1px 1px 2px #000000;
     overflow: hidden;
+    white-space: nowrap;
 }
 
 .main-content {
@@ -55,13 +80,62 @@ body {
     border-top: 0.1em solid #353333;
     color:#ffffff !important;
     font-size:1em;
-    text-align: left;
+    flex-direction: row;
+    display: flex;
+    align-items: center;
+}
+
+.footer-col {
+    width: 50%;
 }
 
 .footer-text {
-    vertical-align: middle;
-    line-height: 5vh;
+    display: flex;
     margin-left: 1vw;
+}
+
+.footer-text > p{
+    margin: 0;
+}
+
+.footer-settings {
+    display: flex;
+    justify-content: flex-end;
+    margin-right: 1vw;
+}
+
+.footer-settings > p{
+    margin: 0;
+}
+
+.footer-settings button {
+    background: none;
+    border: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 0.3s ease;
+    text-shadow: 1px 1px 2px #000000;
+}
+
+.footer-settings button:hover {
+    color: #2d2c2e;
+    text-shadow: 1px 1px 2px #ffffff;
+}
+
+.login {
+    /* display: flex;
+    flex-direction: column;
+    gap: 1.75vh;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 4vh;
+    padding-left: 16vw; */
+}
+
+.login-form-field {
+    margin-bottom: 2vh;
 }
 
 .menu {

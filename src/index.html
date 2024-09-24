@@ -9,22 +9,39 @@
     <link rel="stylesheet" href="./css/style.css">
 </head>
 <body>
-    <div class="header d-flex align-items-center justify-content-between p-3">
-        <div class="logo">
+
+
+    <div class="header">
+        <div class="header-logo header-col">
             <img src="./img/Logo.jpg" alt="Logo" style="max-height: 8vh;">
         </div>
-        <div class="header-text text-center flex-grow-1">
+        <div class="header-text header-col">
             <p>WEBPONG</p>
         </div>
-        <div id="LoginLogoutButton"></div>
-    </div>
-    <div class="container-fluid main-content" id="app"></div>
-    <div class="footer">
-        <div class="footer-text">
-            <p>© WEBSURFERS 2024</p>
+        <div class="header-col header-login-logout-button">
+            <div id="LoginLogoutButton"></div>
         </div>
     </div>
-    <script src="./js/index.js"></script>
+
+
+    <div class="container-fluid main-content" id="app"></div>
+
+
+    <div class="footer">
+        <div class="footer-col">
+            <div class="footer-text">
+                <p>© WEBSURFERS 2024</p>
+            </div>
+        </div>
+        <div class="footer-col">
+            <div class="footer-settings">
+                <button id="settings-button">SETTINGS</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="./js/index.js" type="module"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
