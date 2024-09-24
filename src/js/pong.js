@@ -295,10 +295,8 @@ socket.onopen = () => {
 socket.onmessage = (event) => {
 	const data = JSON.parse(event.data);
 
-	console.log('Recieve:', data);
 	if (data.type === 'currentState'){
 		world.entities = data.entities;
-		console.log("UPDATE CURRENT STATE:", data);
 	} else if (data.type === 'newPlayer') {
 		if (data.player === 'Player1'){
 			left.isLocal = true;
