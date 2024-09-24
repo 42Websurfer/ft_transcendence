@@ -86,6 +86,7 @@ class Player extends Entity{
 				return;
 		}
 		this.position = newPos;
+		socket.send(JSON.stringify(this.position));
 	}
 
 	onCollision(other, collisionPoint = undefined){
@@ -291,13 +292,13 @@ socket.onopen = () => {
 socket.onmessage = (event) => {
 	const data = JSON.parse(event.data);
 
+	console.log('Recieve:', data);
 	if (data.type === 'currentState'){
 		world.entities = data.entities;
 		console.log("UPDATE CURRENT STATE:", data);
 	} else if (data.type === 'newPlayer') {
 
 	} else if (data.type === 'updatePlayer'){
-		console.log("MOVE ENTITY ID/IDX:", data.id);
 		if (data.player === 'Player1')
 			world.entities[0].position = new Vector(data.pos.x, data.pos.y);
 		else if (data.player === 'Player2')
