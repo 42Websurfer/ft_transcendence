@@ -113,10 +113,23 @@ class MyConsumer(AsyncWebsocketConsumer):
 		}
 		await self.send(text_data=json.dumps(users_data))
 
-	async def disconnectMsg(self, event)
+	async def disconnectedMsg(self, event):
 		users_data = {
 			'type': 'disconnected',
 			'player': event.get('player')
+		}
+		await self.send(text_data=json.dumps(users_data))
+	
+	async def update_playerMsg(self, event):
+		if (self.player == event.get('sender')):
+			return
+		users_data = {
+			'type': 'updatePlayer',
+			'player': event.get('sender'),
+			'pos': {
+				'x': event.get('foes_posX'), 
+				'y': event.get('foes_posY')
+			},
 		}
 		await self.send(text_data=json.dumps(users_data))
 
