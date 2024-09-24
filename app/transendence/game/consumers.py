@@ -5,35 +5,70 @@ import redis
 from asgiref.sync import sync_to_async
 from django.contrib.auth import get_user_model
 
+redis = redis.Redis(host='redis', port=6379, db=0)
 class MyConsumer(AsyncWebsocketConsumer):  
+	player = 'DEFAULT'
 	async def connect(self):
+		User = get_user_model()
 		self.group_name = self.scope['url_route']['kwargs']['group_name']
+		self.user = self.scope["user"]
+		try: 
+			user = await sync_to_async(User.objects.get)(id=self.user.id)
+		except User.DoesNotExist:
+			print('User does not exist')	
+		print(f"ANZAHL GROUP: {redis.scard(self.group_name)}")
+		if (redis.exists(self.group_name) and redis.scard(self.group_name) > 0):
+			self.player = 'Player2'
+			print('PLAYER2')
+		else:
+			self.player = 'Player1'
+			print('PLAYER1')
+
 
 		await self.channel_layer.group_add(
 			self.group_name,
 			self.channel_name
 		)
-
 		await self.accept()
+		redis.sadd(self.group_name, self.user.id)
+		await self.channel_layer.group_send(
+			self.group_name,
+			{
+				'type': 'newPlayerMsg',
+				'player': self.player,
+				'uid': self.user.id,
+				'username': user.username
+			}
+		)
 
 	async def disconnect(self, close_code):
 		await self.channel_layer.group_discard(
 			self.group_name,
 			self.channel_name
 		)
+		await self.channel_layer.group_send(
+			self.group_name,
+			{
+				'type': 'disconnected',
+				'player': self.player
+			}
+		)
+		redis.srem(self.group_name, self.user.id)
 
 	async def receive(self, text_data):
 		text_data_json = json.loads(text_data)
 		print(f"text:data: {text_data_json}")
 		
 		ws_type = text_data_json.get('type', 'DEFAULT')
-		if (ws_type == 'welcome'):
+		#Hier wird der game_loop decoded und anschließend die positionen and den Gegner weitergeleitet!
+		if (ws_type == 'game_loop'):
 			await self.channel_layer.group_send(
 				self.group_name,
 				{
-					'type': 'welcome_message',
-					'user': text_data_json.get('user'),
-					'message': f"Welcome User: {text_data_json.get('user', 'DEFAULT')}"
+					'type': 'game_loop',
+					'sender': self.player,
+					'foes_posX': text_data_json.get('posX'),
+					'foes_posY': text_data_json.get('posY')
 				}
 			)
 		elif (ws_type == 'game'):
@@ -57,35 +92,32 @@ class MyConsumer(AsyncWebsocketConsumer):
 					'message': text_data_json.get('message')
 				}
 			)
-	async def welcome_message(self, event):
-		message = event.get('message')
-		user = event.get('user')
-		print()
-		await self.send(text_data=json.dumps({
-			'message': message,
-			'user': user,
-			'type': event.get('type')
-		}))
 
-	async def game(self, event):
-		await self.send(text_data=json.dumps({
-			'type': event.get('type'),
-			'user': event.get('user'),
-			'player1_posX': event.get('player1_posX'),
-			'player1_posY': event.get('player1_posY'),
-			'player2_posX': event.get('player2_posX'),
-			'player2_posY': event.get('player2_posY'),
 
-		}))
-	async def chat_message(self, event):
-		message = event.get('message')
-		user = event.get('user')
-		print()
-		await self.send(text_data=json.dumps({
-			'message': message,
-			'user': user,
-			'type': event.get('type')
-		}))
+
+	async def newPlayerMsg(self,event):
+		# if self.player == event.get('player'):
+		# 	print('-------------------')
+		# 	print('PLAYER:')
+		# 	print(self.player)
+		# 	print(event.get('player'))
+		# 	print('------------------')
+		# 	return 
+		# print(f"NEWPLAYER: {self.player}")
+		users_data = {
+				'type': 'newPlayer',
+				'player': event.get('player'),
+				'uid': event.get('uid'),
+				'username': event.get('username')
+		}
+		await self.send(text_data=json.dumps(users_data))
+
+	async def disconnectMsg(self, event)
+		users_data = {
+			'type': 'disconnected',
+			'player': event.get('player')
+		}
+		await self.send(text_data=json.dumps(users_data))
 
 """ 
 				player1_posX: 1,
@@ -114,8 +146,6 @@ self.scope:
 Diese Methode akzeptiert die eingehende WebSocket-Verbindung. Ohne diesen Aufruf wird die Verbindung nicht hergestellt.
  """
 
-redisStore = redis.Redis(host='redis', port=6379, db=0)
-
 class UserStatus(AsyncWebsocketConsumer):
 	async def connect(self):
 		self.group_name = 'online_status'
@@ -126,7 +156,7 @@ class UserStatus(AsyncWebsocketConsumer):
 				self.channel_name
 			)
 			await self.accept()
-			redisStore.sadd('online_users', self.user.id)
+			redis.sadd('online_users', self.user.id)
 			await self.channel_layer.group_send(
 				self.group_name,
 				{
@@ -142,7 +172,7 @@ class UserStatus(AsyncWebsocketConsumer):
 				self.group_name,
 				self.channel_name
 			)
-			redisStore.srem('online_users', self.user.id)
+			redis.srem('online_users', self.user.id)
 			await self.channel_layer.group_send(
 				self.group_name,
 				{
@@ -154,7 +184,7 @@ class UserStatus(AsyncWebsocketConsumer):
 	async def send_online_users(self, event):
 		#try:
 		User = get_user_model()
-		online_users_ids = redisStore.smembers("online_users")
+		online_users_ids = redis.smembers("online_users")
 		print(f"SELF USER: {self.user}")
 		print(f"SELF USER_id: {self.user.id}")
 
