@@ -309,9 +309,9 @@ socket.onmessage = (event) => {
 		}
 	} else if (data.type === 'updatePlayer'){
 		if (data.player === 'Player1')
-			world.entities[0].position = new Vector(data.pos.x, data.pos.y);
+			left.position = new Vector(data.pos.x, data.pos.y);
 		else if (data.player === 'Player2')
-			world.entities[1].position = new Vector(data.pos.x, data.pos.y);
+			right.position = new Vector(data.pos.x, data.pos.y);
 	} else if (data.type === 'setScore'){
 		//player/entity id and data.newScore ???
 	}
