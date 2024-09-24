@@ -87,10 +87,10 @@ class Player extends Entity{
 			if (point.y < 0 || point.y > canvas.height)
 				return;
 		}
-		this.position = newPos;
 		if (this.net.isLocal && (this.position.x !== newPos.x || this.position.y !== newPos.y)){
 			socket.send(JSON.stringify({type: 'game_loop', x: this.position.x, y: this.position.y}));
 		}
+		this.position = newPos;
 	}
 
 	onCollision(other, collisionPoint = undefined){
@@ -295,7 +295,7 @@ socket.onopen = () => {
 
 socket.onmessage = (event) => {
 	const data = JSON.parse(event.data);
-
+	console.log(data);
 	if (data.type === 'currentState'){
 		world.entities = data.entities;
 	} else if (data.type === 'newPlayer') {
@@ -321,6 +321,11 @@ let right = new Player(canvas.width * 0.9, canvas.height * 0.5);
 world.addEntity(left);
 world.addEntity(right);
 
-setInterval(function() {
+const id = setInterval(function() {
 	world.update();
 }, 10);
+
+socket.onclose = () => {
+	clearInterval(id);
+	showSection('welcome');
+}
