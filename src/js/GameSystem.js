@@ -2,6 +2,7 @@ export const canvas = document.createElement('canvas');
 canvas.width = 1640;
 canvas.height = 780;
 export const ctx = canvas.getContext('2d');
+var G_ID = 0;
 
 export function renderPong() {
 	const app = document.getElementById('app');
@@ -253,6 +254,7 @@ export class Box extends Mesh{
 export class Entity extends Transform{
 	constructor(x, y){
 		super(x, y);
+		this.id = G_ID++;
 		this.components = {};
 	}
 
