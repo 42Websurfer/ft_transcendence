@@ -7,7 +7,8 @@ export function renderLogin() {
 	app.innerHTML = `
 	<div class="login">
 		<div class="login-container">
-			<form id="loginForm" class="login-form">
+			<form id="loginForm">
+				<div id="messages"></div>
 				<input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
 
 				<div class="login-instructions">

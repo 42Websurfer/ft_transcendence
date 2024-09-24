@@ -3,41 +3,53 @@ import { showSection } from './index.js';
 
 export function renderRegister() {
 
-		const app = document.getElementById('app');
-		app.innerHTML = `
-		<div class="container login-container">
-		<form id="registerForm">
-        <input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
-				<img class="mb-4" src=" ./img/Logo.jpg" alt="" width="72" height="57">
-				<h1 class="h3 mb-3 fw-normal">Please sign up</h1>        
-			 <div id="messages"></div>
-				<div class="form-floating">
+	const app = document.getElementById('app');
+	app.innerHTML = `
+	<div class="login">
+		<div class="login-container">
+			<form id="registerForm"">
+				<div id="messages"></div>
+				<input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
+
+				<div class="login-instructions">
+					<p>Welcome, please sign up!</p>
+				</div>
+				
+
+				<div class="login-form-field form-floating">
 					<input type="email" name="register-email" class="form-control" placeholder="name@example.com" required>
 					<label for="floatingInput">Email address</label>
 				</div>
-				<div class="form-floating">
+				<div class="login-form-field form-floating">
 					<input type="password" name="register-password" class="form-control" placeholder="Password" required>
 					<label for="floatingPassword">Password</label>
 				</div>
-				<div class="form-floating">
-						<input type="text" name="register-firstname" class="form-control" placeholder="Firstname" required>
-						<label for="floatingPassword">Firstname</label>
-					</div>
-					<div class="form-floating">
-						<input type="text" name="register-lastname" class="form-control" placeholder="Lastname" required>
-						<label for="floatingPassword">Lastname</label>
-					</div>
-					<div class="form-floating">
-						<input type="text" name="register-username" class="form-control" placeholder="Username" required>
-						<label for="floatingPassword">Username</label>
-					</div>
-				<button class="btn btn-primary w-100 py-2" type="submit">Sign in</button>
-				<p class="mt-5 mb-3 text-body-secondary">©websurfer</p>
-			</form>
-		</div>
-		`;
+				<div class="login-form-field form-floating">
+					<input type="text" name="register-firstname" class="form-control" placeholder="Firstname" required>
+					<label for="floatingPassword">Firstname</label>
+				</div>
+				<div class="login-form-field form-floating">
+					<input type="text" name="register-lastname" class="form-control" placeholder="Lastname" required>
+					<label for="floatingPassword">Lastname</label>
+				</div>
+				<div class="login-form-field form-floating">
+					<input type="text" name="register-username" class="form-control" placeholder="Username" required>
+					<label for="floatingPassword">Username</label>
+				</div>
 
-		const form = document.getElementById('registerForm');
+
+				<button class="signin-button btn btn-primary w-100 py-2" type="submit">Sign up</button>
+				
+			</form>
+			<div class="signin-or-text">
+				<p>OR</p>
+			</div>
+			<button class="signin-42-button btn btn-primary w-100 py-2">Sign In with <svg viewBox="0 0 137.52 96.5" xml:space="preserve" fill="currentColor" width="1em" height="1em" class="ml-2 size-6"><g><polygon points="76,0 50.67,0 0,50.66 0,71.17 50.67,71.17 50.67,96.5 76,96.5 76,50.66 25.33,50.66"></polygon><polygon points="86.85,25.33 112.19,0 86.85,0"></polygon><polygon points="137.52,25.33 137.52,0 112.19,0 112.19,25.33 86.85,50.66 86.85,76 112.19,76 112.19,50.66"></polygon><polygon points="137.52,50.66 112.19,76 137.52,76"></polygon></g></svg></button>
+		</div>
+	</div>
+	`;
+
+	const form = document.getElementById('registerForm');
     form.addEventListener('submit', handleFormSubmit);
 }
 
