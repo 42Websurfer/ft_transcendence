@@ -73,8 +73,9 @@ class MyConsumer(AsyncWebsocketConsumer):
 			await self.channel_layer.group_send(
 				self.group_name,
 				{
-					'type': 'update_playerMsg',
+					'type': 'update_posMsg',
 					'sender': self.player,
+					'id': text_data_json.get('id'),
 					'foes_posX': text_data_json.get('x'),
 					'foes_posY': text_data_json.get('y')
 				}
@@ -127,12 +128,12 @@ class MyConsumer(AsyncWebsocketConsumer):
 		}
 		await self.send(text_data=json.dumps(users_data))
 	
-	async def update_playerMsg(self, event):
+	async def update_posMsg(self, event):
 		if (self.player == event.get('sender')):
 			return
 		users_data = {
-			'type': 'updatePlayer',
-			'player': event.get('sender'),
+			'type': 'updatePos',
+			'id': event.get('id'),
 			'pos': {
 				'x': event.get('foes_posX'), 
 				'y': event.get('foes_posY')
