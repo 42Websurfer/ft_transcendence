@@ -30,6 +30,14 @@ class Ball extends Entity{
 		this.position.y = canvas.height / 2;
 	}
 
+	move(xAdd, yAdd){
+		if (this.net.isLocal && (this.position.x !== newPos.x || this.position.y !== newPos.y)){
+			socket.send(JSON.stringify({type: 'game_loop', id: this.id, x: this.position.x, y: this.position.y}));
+		}
+		this.position.x += xAdd;
+		this.position.y += yAdd;
+	}
+
 	onCollision(other, collisionPoint = undefined){
 		if (other instanceof Player)
 			this.lastHit = other;
