@@ -327,7 +327,7 @@ export class CollisionSystem extends System{
 		entities.forEach(currentEnt => {
 			const entMesh = currentEnt.getComponent(Mesh);
 			const net = currentEnt.getComponent(Network);
-			if (!entMesh || net && !net.isLocal)	
+			if (!entMesh || net && !net.isLocal)
 				return ;
 			entities.forEach(otherEnt => {
 				if (currentEnt != otherEnt){

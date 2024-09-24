@@ -53,7 +53,7 @@ class Player extends Entity{
 		this.addComponent(Mesh, this.mesh);
 		this.addComponent(Physics, this.physics);
 		this.addComponent(Network, this.net);
-		this.keyBinds = {up: '', down: ''};
+		this.keyBinds = {up: 'remote', down: 'remote'};
 		window.addEventListener('keydown', (event) => this.keyDown(event));
 		window.addEventListener('keyup', (event) => this.keyUp(event));
 		this.score = 0;
@@ -88,7 +88,7 @@ class Player extends Entity{
 				return;
 		}
 		this.position = newPos;
-		if (this.net.isLocal){
+		if (this.net.isLocal && (this.position.x !== newPos.x || this.position.y !== newPos.y)){
 			socket.send(JSON.stringify({type: 'game_loop', x: this.position.x, y: this.position.y}));
 		}
 	}
@@ -102,7 +102,7 @@ class Player extends Entity{
 			drall.normalize();
 			drall.scale(10);	
 			ophys.velocity = ophys.velocity.add(drall);
-			ophys.velocity.normalize()
+			ophys.velocity.normalize();
 			ophys.velocity.scale(prevScale);
 		}
 	}
