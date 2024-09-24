@@ -88,8 +88,8 @@ class Player extends Entity{
 		}
 		this.position = newPos;
 		if (this.isLocal){
-			console.log({type: 'game_loop', x: this.position.x, y: this.position.y});
-			socket.send({type: 'game_loop', x: this.position.x, y: this.position.y});
+			console.log(JSON.stringify({type: 'game_loop', x: this.position.x, y: this.position.y}));
+			socket.send(JSON.stringify({type: 'game_loop', x: this.position.x, y: this.position.y}));
 		}
 	}
 
