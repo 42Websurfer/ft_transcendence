@@ -4,6 +4,7 @@ from channels.layers import get_channel_layer
 import redis
 from asgiref.sync import sync_to_async
 from django.contrib.auth import get_user_model
+from .Pong import *
 
 redis = redis.Redis(host='redis', port=6379, db=0)
 class MyConsumer(AsyncWebsocketConsumer):  
@@ -18,6 +19,9 @@ class MyConsumer(AsyncWebsocketConsumer):
 		except User.DoesNotExist:
 			print('User does not exist')	
 		print(f"ANZAHL GROUP: {redis.scard(self.group_name)}")
+
+		world.addEntity(Player(100, 300))
+
 		if (redis.exists(self.group_name) and redis.scard(self.group_name) > 0):
 			self.player = 'Player2'
 			print('PLAYER2')

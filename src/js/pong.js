@@ -309,36 +309,12 @@ socket.onmessage = (event) => {
 	if (data.type === 'currentState'){
 		world.entities = data.entities;
 	} else if (data.type === 'newPlayer') {
-		if (data.player === 'Player1'){
-			left.net.isLocal = true;
-			left.keyBinds = {up: 'ArrowUp', down: 'ArrowDown'};
-			ball.net.isLocal = true;
-			window.addEventListener('keydown', (event) => {
-				if (event.key === ' '){
-					ball.physics.setVelocity(15, 0);
-				}
-			});
-		}
-		else if (data.player === 'Player2'){
-			right.net.isLocal = true;
-			right.keyBinds = {up: 'ArrowUp', down: 'ArrowDown'};
-		}
+		
 	} else if (data.type === 'updatePos'){
-		world.entities[data.id].position = new Vector(data.pos.x, data.pos.y);
 	} else if (data.type === 'setScore'){
 		//player/entity id and data.newScore ???
 	}
 }
-let left = new Player(canvas.width * 0.1, canvas.height * 0.5);
-let right = new Player(canvas.width * 0.9, canvas.height * 0.5);
-let ball = new Ball();
-world.addEntity(left);
-world.addEntity(right);
-world.addEntity(ball);
-world.addEntity(new Wall(canvas.width * .5, 0, 90, canvas.width));
-world.addEntity(new Wall(canvas.width * .5, canvas.height, 90, canvas.width));
-world.addEntity(new Wall(0, canvas.height * 0.5, 0, canvas.height));
-world.addEntity(new Wall(canvas.width, canvas.height * 0.5, 0, canvas.height));
 
 const id = setInterval(function() {
 	world.update();
