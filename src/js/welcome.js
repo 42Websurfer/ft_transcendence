@@ -5,25 +5,34 @@ export function renderWelcome() {
 
     app.innerHTML = `
     <div class="menu">
-        <div class="menu-item" id="menu-item-local">
-            <h1>Local</h1>
-            <p>Play local - alone or with a friend<p>
-        </div>  
-        <div class="menu-item" id="menu-item-online">
-            <h1>Online</h1>
-            <p>Play online with friends<p>
+        <div class="menu-friends">
+            <div class="menu-friends-container">
+                <div class="menu-friends-header">
+                    <p>FRIENDS</p>
+                </div>
+            </div>
         </div>
-        <div class="menu-item" id="menu-item-tournament">
-            <h1>Tournament</h1>
-            <p>Play an exciting Tournament<p>
-        </div>
-        <div class="menu-item" id="menu-item-multiplayer">
-            <h1>Multiplayer</h1>
-            <p>Play online in multiplayer mode<p>
-        </div>
-        <div class="menu-item" id="menu-item-dashboard">
-            <h1>Dashboard</h1>
-            <p>Check your game stats<p>
+        <div class="menu-gamemodes">
+            <div class="menu-item" id="menu-item-local">
+                <h1>Local</h1>
+                <p>Play local - alone or with a friend<p>
+            </div>  
+            <div class="menu-item" id="menu-item-online">
+                <h1>Online</h1>
+                <p>Play online with friends<p>
+            </div>
+            <div class="menu-item" id="menu-item-tournament">
+                <h1>Tournament</h1>
+                <p>Play an exciting Tournament<p>
+            </div>
+            <div class="menu-item" id="menu-item-multiplayer">
+                <h1>Multiplayer</h1>
+                <p>Play online in multiplayer mode<p>
+            </div>
+            <div class="menu-item" id="menu-item-dashboard">
+                <h1>Dashboard</h1>
+                <p>Check your game stats<p>
+            </div>
         </div>
     </div>
     `;

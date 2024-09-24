@@ -228,19 +228,48 @@ body {
 }
 
 .menu {
+    flex-direction: row;
+    display: flex;
+    height: 100%;
+}
+
+.menu-friends {
+    width: 35%;
+    padding: 4vh;
+    padding-right: 0;
+}
+
+.menu-gamemodes {
+    width: 100%;
     display: flex;
     flex-direction: column;
     gap: 1.75vh;
     justify-content: center;
-    align-items: flex-start;
-    padding-top: 4vh;
-    padding-left: 16vw;
+    align-items: flex-end;
+    padding-left: 10vw;
+}
+
+.menu-friends-container {
+    height: 77vh;
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    padding: 32px 48px 48px 48px;
+    border-radius: 8px;
+    border: 0.1em solid #000000;
+}
+
+.menu-friends-header {
+    font-family: 'Press Start 2P';
+    font-size:1.6em;
+    color: #d8d3d3;
+    text-shadow: 1px 1px 2px #000000;
+    text-align: center;    
 }
 
 .menu-item {
     text-align: left;
     height: 14vh;
-    width: 100%;
+    width: 110%;
     border-radius: 4px;
     position: relative;
     font-family: 'Press Start 2P';
@@ -256,31 +285,30 @@ body {
 }
 
 .menu-item:hover {
-    transform: translate(-100px, 4px);
+    transform: translate(-50px, 4px);
     filter:brightness(90%);
     color: #ffffff;
     border: 0.11em solid #292424;
 }
 
 #menu-item-local {
-    background: linear-gradient(to bottom,#dd580a 0,#e2793c 100%);
+    background: linear-gradient(to bottom, rgba(221, 88, 10, 0.7) 0%, rgba(226, 121, 60, 0.7) 100%);
 }
 
 #menu-item-online {
-    background: linear-gradient(to bottom,#077018 0,#0f9c27 100%);
+    background: linear-gradient(to bottom, rgba(7, 112, 24, 0.7) 0%, rgba(15, 156, 39, 0.7) 100%);
 }
 
 #menu-item-tournament {
-    background: linear-gradient(to bottom,#4740a8 0,#8581c7 100%);
+    background: linear-gradient(to bottom, rgba(71, 64, 168, 0.7) 0%, rgba(133, 129, 199, 0.7) 100%);
 }
 
 #menu-item-multiplayer {
-    background: linear-gradient(to bottom,#db1620 0,#f1303a 100%);
+    background: linear-gradient(to bottom, rgba(219, 22, 32, 0.7) 0%, rgba(241, 48, 58, 0.7) 100%);
 }
 
 #menu-item-dashboard {
-    background: linear-gradient(to bottom,#ce1fa2 0,#dd3eb5 100%);
-}
+    background: linear-gradient(to bottom, rgba(206, 31, 162, 0.7) 0%, rgba(221, 62, 181, 0.7) 100%);
 
 @keyframes changeColor {
     0% {
