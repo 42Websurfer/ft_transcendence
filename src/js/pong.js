@@ -1,4 +1,4 @@
-import {Vector, Plane, World, Entity, Mesh, Physics, Box, Circle, RenderSystem, CollisionSystem, MovementSystem, canvas, drawText, strokeText, drawLine, ctx} from './GameSystem.js';
+import {Vector, Plane, World, Entity, Mesh, Physics, Network, Box, Circle, RenderSystem, CollisionSystem, MovementSystem, canvas, drawText, strokeText, drawLine, ctx} from './GameSystem.js';
 
 const PLAYER_MOVE_SPEED = 20;
 
@@ -45,13 +45,13 @@ class Ball extends Entity{
 }
 
 class Player extends Entity{
-	constructor(x, y, isLocal = false, length = 250){
+	constructor(x, y, length = 250){
 		super(x, y);
-		this.isLocal = isLocal;
 		this.mesh = new Box(25, length);
 		this.physics = new Physics(0, 0, true, false);
 		this.addComponent(Mesh, this.mesh);
 		this.addComponent(Physics, this.physics);
+		this.addComponent(Network, new Network());
 		this.keyBinds = {up: '', down: ''};
 		window.addEventListener('keydown', (event) => this.keyDown(event));
 		window.addEventListener('keyup', (event) => this.keyUp(event));
@@ -299,11 +299,11 @@ socket.onmessage = (event) => {
 		world.entities = data.entities;
 	} else if (data.type === 'newPlayer') {
 		if (data.player === 'Player1'){
-			left.isLocal = true;
+			left.getComponent(Network).isLocal = true;
 			left.keyBinds = {up: 'ArrowUp', down: 'ArrowDown'};
 		}
 		else if (data.player === 'Player2'){
-			right.isLocal = true;
+			right.getComponent(Network).isLocal = true;
 			right.keyBinds = {up: 'ArrowUp', down: 'ArrowDown'};
 		}
 	} else if (data.type === 'updatePlayer'){
