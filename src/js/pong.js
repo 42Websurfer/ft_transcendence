@@ -88,7 +88,6 @@ class Player extends Entity{
 		}
 		this.position = newPos;
 		if (this.isLocal){
-			console.log(JSON.stringify({type: 'game_loop', x: this.position.x, y: this.position.y}));
 			socket.send(JSON.stringify({type: 'game_loop', x: this.position.x, y: this.position.y}));
 		}
 	}
@@ -301,7 +300,14 @@ socket.onmessage = (event) => {
 		world.entities = data.entities;
 		console.log("UPDATE CURRENT STATE:", data);
 	} else if (data.type === 'newPlayer') {
-
+		if (data.player === 'Player1'){
+			left.isLocal = true;
+			left.keyBinds = {up: 'ArrowUp', down: 'ArrowDown'};
+		}
+		else if (data.player === 'Player2'){
+			right.isLocal = true;
+			right.keyBinds = {up: 'ArrowUp', down: 'ArrowDown'};
+		}
 	} else if (data.type === 'updatePlayer'){
 		if (data.player === 'Player1')
 			world.entities[0].position = new Vector(data.pos.x, data.pos.y);
@@ -311,10 +317,10 @@ socket.onmessage = (event) => {
 		//player/entity id and data.newScore ???
 	}
 }
-let local = new Player(canvas.width * 0.1, canvas.height * 0.5, true);
-local.keyBinds = {up: 'ArrowUp', down: 'ArrowDown'};
-world.addEntity(local);
-world.addEntity(new Player(canvas.width * 0.9, canvas.height * 0.5));
+let left = new Player(canvas.width * 0.1, canvas.height * 0.5);
+let right = new Player(canvas.width * 0.9, canvas.height * 0.5);
+world.addEntity(left);
+world.addEntity(right);
 
 setInterval(function() {
 	world.update();
