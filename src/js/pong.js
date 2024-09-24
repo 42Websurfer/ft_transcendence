@@ -45,8 +45,9 @@ class Ball extends Entity{
 }
 
 class Player extends Entity{
-	constructor(x, y, length = 250){
+	constructor(x, y, isLocal = false, length = 250){
 		super(x, y);
+		this.isLocal = isLocal;
 		this.mesh = new Box(25, length);
 		this.physics = new Physics(0, 0, true, false);
 		this.addComponent(Mesh, this.mesh);
@@ -86,7 +87,10 @@ class Player extends Entity{
 				return;
 		}
 		this.position = newPos;
-		socket.send(JSON.stringify(this.position));
+		if (this.isLocal){
+			console.log({type: 'game_loop', x: this.position.x, y: this.position.y});
+			socket.send({type: 'game_loop', x: this.position.x, y: this.position.y});
+		}
 	}
 
 	onCollision(other, collisionPoint = undefined){
@@ -307,7 +311,7 @@ socket.onmessage = (event) => {
 		//player/entity id and data.newScore ???
 	}
 }
-let local = new Player(canvas.width * 0.1, canvas.height * 0.5);
+let local = new Player(canvas.width * 0.1, canvas.height * 0.5, true);
 local.keyBinds = {up: 'ArrowUp', down: 'ArrowDown'};
 world.addEntity(local);
 world.addEntity(new Player(canvas.width * 0.9, canvas.height * 0.5));
