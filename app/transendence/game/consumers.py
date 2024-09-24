@@ -32,15 +32,22 @@ class MyConsumer(AsyncWebsocketConsumer):
 		)
 		await self.accept()
 		redis.sadd(self.group_name, self.user.id)
-		await self.channel_layer.group_send(
-			self.group_name,
-			{
-				'type': 'newPlayerMsg',
+		users_data = {
+				'type': 'newPlayer',
 				'player': self.player,
 				'uid': self.user.id,
-				'username': user.username
-			}
-		)
+				'username': self.user.username
+		}
+		await self.send(text_data=json.dumps(users_data))
+		# await self.channel_layer.group_send(
+		# 	self.group_name,
+		# 	{
+		# 		'type': 'newPlayerMsg',
+		# 		'player': self.player,
+		# 		'uid': self.user.id,
+		# 		'username': user.username
+		# 	}
+		# )
 
 	async def disconnect(self, close_code):
 		await self.channel_layer.group_discard(
