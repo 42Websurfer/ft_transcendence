@@ -51,7 +51,7 @@ class Player extends Entity{
 		this.physics = new Physics(0, 0, true, false);
 		this.addComponent(Mesh, this.mesh);
 		this.addComponent(Physics, this.physics);
-		this.keyBinds = {up: 'ArrowUp', down: 'ArrowDown'};
+		this.keyBinds = {up: '', down: ''};
 		window.addEventListener('keydown', (event) => this.keyDown(event));
 		window.addEventListener('keyup', (event) => this.keyUp(event));
 		this.score = 0;
@@ -295,15 +295,21 @@ socket.onmessage = (event) => {
 		world.entities = data.entities;
 		console.log("UPDATE CURRENT STATE:", data);
 	} else if (data.type === 'newPlayer') {
-		console.log("NEW PLAYER:", data);
+
+	} else if (data.type === 'updatePlayer'){
+		console.log("MOVE ENTITY ID/IDX:", data.id);
 		if (data.player === 'Player1')
-			world.addEntity(new Player(400, 200, 200));
+			world.entities[0].position = new Vector(data.pos.x, data.pos.y);
 		else if (data.player === 'Player2')
-			world.addEntity(new Player(400, 400, 200));
-		else
-			console.log("NIX RICHTIG?");
+			world.entities[1].position = new Vector(data.pos.x, data.pos.y);
+	} else if (data.type === 'setScore'){
+		//player/entity id and data.newScore ???
 	}
 }
+let local = new Player(canvas.width * 0.1, canvas.height * 0.5);
+local.keyBinds = {up: 'ArrowUp', down: 'ArrowDown'};
+world.addEntity(local);
+world.addEntity(new Player(canvas.width * 0.9, canvas.height * 0.5));
 
 setInterval(function() {
 	world.update();
