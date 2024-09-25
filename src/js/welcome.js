@@ -32,6 +32,81 @@ const freundesliste = [
     {
         'username': 'caigner',
         'status': 'offline'
+    },
+
+    {
+        'username': 'fwechsle',
+        'status': 'online'
+    },
+
+    {
+        'username': 'nsassenb',
+        'status': 'online'
+    },
+
+    {
+        'username': 'fheid',
+        'status': 'online'
+    },
+
+    {
+        'username': 'jseidere',
+        'status': 'offline'
+    },
+
+    {
+        'username': 'caigner',
+        'status': 'offline'
+    },
+
+    {
+        'username': 'fwechsle',
+        'status': 'online'
+    },
+
+    {
+        'username': 'nsassenb',
+        'status': 'online'
+    },
+
+    {
+        'username': 'fheid',
+        'status': 'online'
+    },
+
+    {
+        'username': 'jseidere',
+        'status': 'offline'
+    },
+
+    {
+        'username': 'caigner',
+        'status': 'offline'
+    },
+
+    {
+        'username': 'fwechsle',
+        'status': 'online'
+    },
+
+    {
+        'username': 'nsassenb',
+        'status': 'online'
+    },
+
+    {
+        'username': 'fheid',
+        'status': 'online'
+    },
+
+    {
+        'username': 'jseidere',
+        'status': 'offline'
+    },
+
+    {
+        'username': 'caigner',
+        'status': 'offline'
     }
 
 ];
@@ -64,10 +139,10 @@ export function renderWelcome() {
                 <hr class="friends-divider">
                 <div class="friends-options">
                     <div class="friends-options-add">
-                        <p>ADD</p>
+                        <button id="friends-options-add-button">ADD</button>
                     </div>
                     <div class="friends-options-remove">
-                        <p>REMOVE</p>
+                        <button id="friends-options-remove-button">REMOVE</button>
                     </div>
                 </div>
             </div>

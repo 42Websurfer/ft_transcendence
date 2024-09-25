@@ -284,7 +284,7 @@ body {
     color: #049127;
     font-size:1.4vw;
     text-shadow: 1px 1px 2px #000000;
-    margin-top: 3vh;
+    margin-top: 1vh;
 }
 
 .friends-online-list {
@@ -295,13 +295,21 @@ body {
     text-shadow: 1px 1px 2px #000000;
     font-size:1vw;
     margin-left: 1vw;
+    height: 17vh;
+    overflow: scroll;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.friends-online-list::-webkit-scrollbar {
+    display: none;
 }
 
 .friends-offline-header {
     color: #af210e;
     font-size:1.4vw;
     text-shadow: 1px 1px 2px #000000;
-    margin-top: 3vh;
+    margin-top: 1vh;
 }
 
 .friends-offline-list {
@@ -312,6 +320,14 @@ body {
     text-shadow: 1px 1px 2px #000000;
     font-size:1vw;
     margin-left: 1vw;
+    height: 17vh;
+    overflow: scroll;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.friends-offline-list::-webkit-scrollbar {
+    display: none;
 }
 
 .friends-options {
@@ -328,17 +344,25 @@ body {
     text-align: left;
 }
 
-.friends-options-add > p {
-    margin: 0;
-}
-
 .friends-options-remove {
     width: 50%;
     text-align: right;
 }
 
-.friends-options-remove > p {
-    margin: 0;
+.friends-options button {
+    background: none;
+    border: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 0.3s ease;
+    text-shadow: 1px 1px 2px #000000;   
+}
+
+.friends-options button:hover {
+    color: #2d2c2e;
+    text-shadow: 1px 1px 2px #ffffff;
 }
 
 .menu-item {
