@@ -32,7 +32,7 @@ export function displayMessages(result) {
     }
 }
 
-export async function handleLogoutSubmit()
+export async function handleLogoutSubmit(ws, wsBool)
 {
     const csrftoken = getCookie('csrftoken');
 
@@ -46,7 +46,7 @@ export async function handleLogoutSubmit()
 
     const result = await response.json();
     if (ws)
-        ws.close(1000, "Client closed coonection");
+        ws.close(1000, "Client closed connection");
     wsBool = false;
     showSection('login');
 }

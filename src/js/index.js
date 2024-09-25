@@ -35,7 +35,8 @@ async function renderLoginLogoutButton(isAuthenticated, section) {
         `;
         const logoutButton = document.getElementById('logoutButton')
         logoutButton.addEventListener('click', () => {
-            handleLogoutSubmit();
+            wsBool = false;
+            handleLogoutSubmit(ws, wsBool);
         });
     }
     else
@@ -68,6 +69,13 @@ async function renderLoginLogoutButton(isAuthenticated, section) {
     }
 }
 
+function addListItem(content, ul)
+{
+    const li = document.createElement('li');
+    li.textContent = content;
+    ul.appendChild(li);
+}
+
 function initOnlineStatus() {
     ws = new WebSocket(`ws://${window.location.host}/ws/online-status/`);
 
@@ -81,12 +89,25 @@ function initOnlineStatus() {
             // console.log("Online Friends:", data.online_users);
             
             const friendsOnlineList = document.getElementById('friendsOnlineList');
-            const friendsOfflineList = document.getElementById('friendsOfflineList');
+            const friendsOfflineList = document.getElementById('friendsOfflineList'); 
                 
             if (!friendsOnlineList || !friendsOfflineList)
                 return;
 
-            console.log("data: ", data.friendList);            
+            friendsOnlineList.innerHTML = "";
+            friendsOfflineList.innerHTML = "";
+
+            console.log("data: ", data.friendList);
+            
+            const freundesliste = data.friendList;
+            
+            console.log("freundesliste len: ", freundesliste.length);
+            console.log("freundesliste: ", freundesliste);
+            
+            console.log("freund[0]: ", freundesliste[0]);
+            console.log("freund[0].status: ", freundesliste[0].status);
+            console.log("freund[0].username: ", freundesliste[0].username);
+
 
             for (let i = 0; i < freundesliste.length; i++)
             {

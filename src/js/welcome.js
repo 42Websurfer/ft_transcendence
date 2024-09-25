@@ -1,116 +1,5 @@
 import { getCookie, displayMessages } from './utils.js';
 
-function addListItem(content, ul)
-{
-    const li = document.createElement('li');
-    li.textContent = content;
-    ul.appendChild(li);
-}
-
-const freundesliste = [
-    
-    {
-        'username': 'fwechsle',
-        'status': 'online'
-    },
-
-    {
-        'username': 'nsassenb',
-        'status': 'online'
-    },
-
-    {
-        'username': 'fheid',
-        'status': 'online'
-    },
-
-    {
-        'username': 'jseidere',
-        'status': 'offline'
-    },
-
-    {
-        'username': 'caigner',
-        'status': 'offline'
-    },
-
-    {
-        'username': 'fwechsle',
-        'status': 'online'
-    },
-
-    {
-        'username': 'nsassenb',
-        'status': 'online'
-    },
-
-    {
-        'username': 'fheid',
-        'status': 'online'
-    },
-
-    {
-        'username': 'jseidere',
-        'status': 'offline'
-    },
-
-    {
-        'username': 'caigner',
-        'status': 'offline'
-    },
-
-    {
-        'username': 'fwechsle',
-        'status': 'online'
-    },
-
-    {
-        'username': 'nsassenb',
-        'status': 'online'
-    },
-
-    {
-        'username': 'fheid',
-        'status': 'online'
-    },
-
-    {
-        'username': 'jseidere',
-        'status': 'offline'
-    },
-
-    {
-        'username': 'caigner',
-        'status': 'offline'
-    },
-
-    {
-        'username': 'fwechsle',
-        'status': 'online'
-    },
-
-    {
-        'username': 'nsassenb',
-        'status': 'online'
-    },
-
-    {
-        'username': 'fheid',
-        'status': 'online'
-    },
-
-    {
-        'username': 'jseidere',
-        'status': 'offline'
-    },
-
-    {
-        'username': 'caigner',
-        'status': 'offline'
-    }
-
-];
-
 export function renderWelcome() {
 
     const app = document.getElementById('app');
@@ -169,19 +58,38 @@ export function renderWelcome() {
                 <p>Check your game stats<p>
             </div>
         </div>
+        <div class="modal" id="friendsAddModal">
+            <div class="modal-content">
+                <span class="close-button" id="closeModalButton">&times;</span>
+                <div class="friends-add-header">
+                    <p>ADD FRIENDS BY USERNAME</p>
+                </div>
+                <hr class="friends-add-divider">
+                <div class="friends-add-input-container">
+                    <input type="text" id="friendUsername" placeholder="Enter username">
+                    <button id="sendInvitationButton">Send Invitation</button>
+                </div>
+            </div>
+        </div>
     </div>
     `;
     
     const addButton = document.getElementById('friends-options-add-button');
-    const friendsOfflineDiv = document.getElementById('friendsOffline');
-    // const removeButton = document.getElementById('friends-options-remove-button');
+    const friendsAddModal = document.getElementById('friendsAddModal');
+    const closeModalButton = document.getElementById('closeModalButton');
 
     addButton.addEventListener('click', () => {
+        friendsAddModal.style.display = 'block';
+    });
 
-        if (friendsOfflineDiv.style.display === 'none')
-            friendsOfflineDiv.style.display = 'block';
-        else
-            friendsOfflineDiv.style.display = 'none';
+    closeModalButton.addEventListener('click', () => {
+        friendsAddModal.style.display = 'none';
+    });
+
+    window.addEventListener('click', (event) => {
+        if (event.target === friendsAddModal) {
+            friendsAddModal.style.display = 'none';
+        }
     });
 
 }
