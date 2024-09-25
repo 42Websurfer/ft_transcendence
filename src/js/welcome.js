@@ -116,9 +116,9 @@ export async function renderWelcome() {
     formdata.addEventListener('submit', handleMatchFormSubmit);
 
     friendRequestButton.addEventListener('click', async () => {
-        const friendId = prompt("Enter the friend's user ID:");
-        if (friendId) {
-            const response = await sendFriendRequest(friendId);
+        const username = prompt("Enter the friend's username:");
+        if (username) {
+            const response = await sendFriendRequest(username);
             displayResponse(response);
         }
     });
@@ -184,10 +184,10 @@ export async function renderWelcome() {
         }
     }
 
-    async function sendFriendRequest(friendId) {
+    async function sendFriendRequest(username) {
         try {
             const csrftoken = getCookie('csrftoken');
-            const response = await fetch(`/send_friend_request/${friendId}/`, {
+            const response = await fetch(`/send_friend_request/${username}/`, {
                 method: 'GET',
                 credentials: 'include'
             });
