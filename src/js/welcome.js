@@ -171,21 +171,10 @@ export function renderWelcome() {
         </div>
     </div>
     `;
-
-    const friendsOnlineList = document.getElementById('friendsOnlineList');
-    const friendsOfflineList = document.getElementById('friendsOfflineList');
-        
-    for (let i = 0; i < freundesliste.length; i++)
-    {
-        if (freundesliste[i].status === 'online')
-            addListItem(freundesliste[i].username, friendsOnlineList);
-        else
-            addListItem(freundesliste[i].username, friendsOfflineList);
-    }
     
     const addButton = document.getElementById('friends-options-add-button');
     const friendsOfflineDiv = document.getElementById('friendsOffline');
-    const removeButton = document.getElementById('friends-options-remove-button');
+    // const removeButton = document.getElementById('friends-options-remove-button');
 
     addButton.addEventListener('click', () => {
 

@@ -1,5 +1,6 @@
 import { handleLogoutSubmit } from './utils.js';
 
+let wsBool;
 wsBool = false;
 
 let ws;
@@ -67,6 +68,44 @@ async function renderLoginLogoutButton(isAuthenticated, section) {
     }
 }
 
+function initOnlineStatus() {
+    ws = new WebSocket(`ws://${window.location.host}/ws/online-status/`);
+
+    ws.onopen =  function() {
+        console.log("Connected to WebSocket Online Status");
+    };
+
+    ws.onmessage = function(event) {
+        try {
+            const data = JSON.parse(event.data);
+            // console.log("Online Friends:", data.online_users);
+            
+            const friendsOnlineList = document.getElementById('friendsOnlineList');
+            const friendsOfflineList = document.getElementById('friendsOfflineList');
+                
+            if (!friendsOnlineList || !friendsOfflineList)
+                return;
+
+            console.log("data: ", data.friendList);            
+
+            for (let i = 0; i < freundesliste.length; i++)
+            {
+                if (freundesliste[i].status === 'online')
+                    addListItem(freundesliste[i].username, friendsOnlineList);
+                else
+                    addListItem(freundesliste[i].username, friendsOfflineList);
+            }
+        }
+        catch (error){
+            console.error("Error Parsing online status");
+        }
+    };
+
+    ws.onclose = function() {
+        console.log("WebSocket Online Status connection closed");
+    };
+}
+
 export async function showSection(section, lobbyId)
 {
     console.log('section:' + section);
@@ -112,10 +151,6 @@ export async function showSection(section, lobbyId)
         });
         section = 'login';
     }
-    console.log('Header section: ' + section);
-    import('./header.js').then(module => {
-        module.renderHeader(section);
-    });
 }
 
 
