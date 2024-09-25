@@ -52,29 +52,41 @@ class UserStatus(AsyncWebsocketConsumer):
 			for user_id in online_users_ids
 		]
 		online_friend_ids = await sync_to_async(list)(Friendship.objects.filter(
-			Q(user_id=self.user.id, friend_id__in=online_users_ids, status='accepted') |
-			Q(friend_id=self.user.id, user_id__in=online_users_ids, status='accepted')
+			Q(user_id=self.user.id, friend_id__in=online_users_ids) |
+			Q(friend_id=self.user.id, user_id__in=online_users_ids)
 			).select_related('user', 'friend')
 		)
 
 		offline_friend_ids = await sync_to_async(list)(Friendship.objects.filter(
 			Q(user_id=self.user.id) | Q(friend_id=self.user.id)
 		).filter(
-			(~Q(user_id__in=online_users_ids) & Q(friend_id=self.user.id, status='accepted'))| 
-			(Q(user_id=self.user.id, status='accepted') & ~Q(friend_id__in=online_users_ids))
+			(~Q(user_id__in=online_users_ids) & Q(friend_id=self.user.id))| 
+			(Q(user_id=self.user.id) & ~Q(friend_id__in=online_users_ids))
 		).select_related('user', 'friend'))
 
 		friendList = []
 		for user in online_friend_ids:
 			if (user.friend_id == self.user.id):
-				friendList.append({'username': user.user.username, 'status': 'online'})
+				if (user.status == 'accepted'):
+					friendList.append({'username': user.user.username, 'status': 'online'})
+				else:
+					friendList.append({'username': user.user.username, 'status': user.status})
+					
 			elif(user.user_id == self.user.id):
-				friendList.append({'username': user.friend.username, 'status': 'online'})
+				if (user.status == 'accepted'):
+					friendList.append({'username': user.friend.username, 'status': 'online'})
+				else:
+					friendList.append({'username': user.friend.username, 'status': user.status})
 
 		for user in offline_friend_ids:
 			if(user.friend_id == self.user.id):
-				friendList.append({'username': user.user.username, 'status': 'offline'})
+				if (user.status == 'accepted'):
+					friendList.append({'username': user.user.username, 'status': 'offline'})
+				else:
+					friendList.append({'username': user.user.username, 'status': user.status})	
 			elif(user.user_id == self.user.id):
-				friendList.append({'username': user.friend.username, 'status': 'offline'})		
-		
+				if (user.status == 'accepted'):
+					friendList.append({'username': user.friend.username, 'status': 'offline'})		
+				else:
+					friendList.append({'username': user.friend.username, 'status': user.status})		
 		await self.send(text_data=json.dumps({'friendList': friendList}))
