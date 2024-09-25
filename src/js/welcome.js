@@ -61,6 +61,15 @@ export function renderWelcome() {
                     </div>
                     <ul id="friendsOfflineList" class="friends-offline-list"></ul>
                 </div>
+                <hr class="friends-divider">
+                <div class="friends-options">
+                    <div class="friends-options-add">
+                        <p>ADD</p>
+                    </div>
+                    <div class="friends-options-remove">
+                        <p>REMOVE</p>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="menu-gamemodes">
