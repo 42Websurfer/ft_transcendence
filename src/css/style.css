@@ -238,6 +238,7 @@ body {
     width: 35%;
     padding: 4vh;
     padding-right: 0;
+    font-family: 'Press Start 2P';
 }
 
 .menu-gamemodes {
@@ -254,17 +255,60 @@ body {
     height: 77vh;
     width: 100%;
     background-color: rgba(0, 0, 0, 0.4);
-    padding: 3.5vh 2vw 3.5vh 2vw;
+    padding: 3vh 2vw 3.5vh 2vw;
     border-radius: 8px;
     border: 0.1em solid #000000;
+    overflow: hidden;
 }
 
 .menu-friends-header {
-    font-family: 'Press Start 2P';
-    font-size:1.4vw;
+    font-size:1.6vw;
     color: #d8d3d3;
     text-shadow: 1px 1px 2px #000000;
-    text-align: center;    
+    text-align: center;
+}
+
+.menu-friends-header > p {
+    margin-top: 1vh;
+    margin-bottom: 0;
+}
+
+.friends-divider {
+    height: 4px;
+    background-color: #d8d3d3;
+    margin-bottom: 3vh;
+}
+
+.friends-online-header {
+    color: #049127;
+    font-size:1.4vw;
+    text-shadow: 1px 1px 2px #000000;
+}
+
+.friends-online-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    color: #d8d3d3;
+    text-shadow: 1px 1px 2px #000000;
+    font-size:1vw;
+    margin-left: 1vw;
+}
+
+.friends-offline-header {
+    color: #af210e;
+    font-size:1.4vw;
+    text-shadow: 1px 1px 2px #000000;
+}
+
+.friends-offline-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    color: #d8d3d3;
+    text-shadow: 1px 1px 2px #000000;
+    font-size:1vw;
+    margin-left: 1vw;
 }
 
 .menu-item {
