@@ -128,15 +128,15 @@ export function renderWelcome() {
                         <p>ONLINE</p>
                     </div>
                     <ul id="friendsOnlineList" class="friends-online-list"></ul>
+                    <hr class="friends-divider">
                 </div>
-                <hr class="friends-divider">
                 <div id="friendsOffline" class="friends-offline">
                     <div class="friends-offline-header">
                         <p>OFFLINE</p>
                     </div>
                     <ul id="friendsOfflineList" class="friends-offline-list"></ul>
+                    <hr class="friends-divider">
                 </div>
-                <hr class="friends-divider">
                 <div class="friends-options">
                     <div class="friends-options-add">
                         <button id="friends-options-add-button">ADD</button>
@@ -183,4 +183,16 @@ export function renderWelcome() {
             addListItem(freundesliste[i].username, friendsOfflineList);
     }
     
+    const addButton = document.getElementById('friends-options-add-button');
+    const friendsOfflineDiv = document.getElementById('friendsOffline');
+    const removeButton = document.getElementById('friends-options-remove-button');
+
+    addButton.addEventListener('click', () => {
+
+        if (friendsOfflineDiv.style.display === 'none')
+            friendsOfflineDiv.style.display = 'block';
+        else
+            friendsOfflineDiv.style.display = 'none';
+    });
+
 }
