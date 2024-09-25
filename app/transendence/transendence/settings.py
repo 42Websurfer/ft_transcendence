@@ -148,6 +148,10 @@ ASGI_APPLICATION = "transendence.asgi.application"
 
 CHANNEL_LAYERS = {
     'default': {
-        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('redis', 6379)],
+            "expiry": 10, #messages will be deleted after 10 sec
+        },
     },
 }

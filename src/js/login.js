@@ -49,7 +49,6 @@ async function handleLoginFormSubmit(event)
 		username: formData.get('login-username'),
         password: formData.get('login-password')
     };
-	console.log('DATA: ', data);
     const csrftoken = getCookie('csrftoken');
 
     const response = await fetch('/login/', {

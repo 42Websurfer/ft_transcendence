@@ -1,5 +1,8 @@
 import { handleLogoutSubmit } from './utils.js';
 
+wsBool = false;
+
+let ws;
 async function checkAuthentication() {
     const response = await fetch('/checkauth/', {
         method: 'GET',
@@ -64,7 +67,7 @@ async function renderLoginLogoutButton(isAuthenticated, section) {
     }
 }
 
-export async function showSection(section)
+export async function showSection(section, lobbyId)
 {
     console.log('section:' + section);
     const isAuthenticated = await checkAuthentication();
@@ -78,6 +81,13 @@ export async function showSection(section)
             module.renderLogin();    
         });
     if (isAuthenticated) {
+        if (!wsBool)
+        {
+            initOnlineStatus();
+            wsBool = true;
+        }
+        else 
+            console.log("WARUM IST ES NICHT EINGELOGGT?!");
         if (section === 'welcome')
                 import('./welcome.js').then(module => {
                     module.renderWelcome();
@@ -89,7 +99,12 @@ export async function showSection(section)
         else if (section === 'pong')
             import('./pong.js').then(module => {
                 module.renderPong();
-            });        
+            });
+        else if (section === 'lobby') {
+            import('./lobby.js').then(module => {
+                module.renderLobby(lobbyId);
+            });
+        }
     }
     else if (section != 'login' && section != 'register') {
         import('./login.js').then(module => {
@@ -97,6 +112,10 @@ export async function showSection(section)
         });
         section = 'login';
     }
+    console.log('Header section: ' + section);
+    import('./header.js').then(module => {
+        module.renderHeader(section);
+    });
 }
 
 
