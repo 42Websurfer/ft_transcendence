@@ -70,6 +70,8 @@ export function renderWelcome() {
                     <button id="sendInvitationButton">INVITE</button>
                 </div>
 
+                <div id="invitationMessage" class="invitation-message"></div>
+
                 <div class="friends-add-lists">
                 <div id="friendsRequests" class="friends-add-list-item">
                     <div class="friends-add-list-header">
@@ -103,6 +105,7 @@ export function renderWelcome() {
     const friendsAddModal = document.getElementById('friendsAddModal');
     const closeModalButton = document.getElementById('closeModalButton');
     const inviteButton = document.getElementById('sendInvitationButton');
+    const invitationMessage = document.getElementById('invitationMessage');
 
     async function sendFriendRequest(username) {
         try {
@@ -115,7 +118,7 @@ export function renderWelcome() {
             });
             return await response.json();
         } catch (error) {
-            return { 'type': 'error', 'message': 'Failed to send friend request.' };
+            return { 'type': 'error', 'message': 'User does not exist!' };
         }
     }
 
@@ -124,9 +127,18 @@ export function renderWelcome() {
         if (!friendUsername.value)
             return;
         var response = await sendFriendRequest(friendUsername.value);
-        console.log("Response: "+ response.type);
-        if (response.type === 'error')
-            
+        console.log("Response_type: "+ response.type);            
+        console.log("Response_msg: "+ response.message);  
+        invitationMessage.textContent = response.message;
+
+        if (response.type === 'Success Request')
+            invitationMessage.style.color = 'green';
+        else
+            invitationMessage.style.color = 'red';
+        
+        invitationMessage.style.animation = 'none'; // Reset animation
+        invitationMessage.offsetHeight; // Trigger reflow
+        invitationMessage.style.animation = 'wiggle 0.5s ease-in-out';
     });
 
     addButton.addEventListener('click', () => {
@@ -135,6 +147,7 @@ export function renderWelcome() {
 
     closeModalButton.addEventListener('click', () => {
         friendsAddModal.style.display = 'none';
+        invitationMessage.textContent = '';
     });
 
     window.addEventListener('click', (event) => {

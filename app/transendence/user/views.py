@@ -113,22 +113,23 @@ def send_friend_request(request, username):
 			if friendship.status == 'pending':
 				return JsonResponse({
 					'type': 'error',
-					'message': 'Friend request already send.'
+					'message': 'Request already sent!'
 				}, status=400)
 			elif friendship.status == 'rejected':
 				return JsonResponse({
 					'type': 'error',
-					'message': 'Friend request blocked.'
+					'message': 'Request blocked!'
 				}, status=400)
 			else:
 				return JsonResponse({
 					'type': 'error',
-					'message': 'Your are already friends.'
+					'message': 'You are already friends!'
 				}, status=400)
 	except Friendship.DoesNotExist:
 		newFriend = Friendship.objects.create(user=user, friend=friend, status='pending')
 		return JsonResponse({
 			'type': 'Success Request',
+			'message': 'Request sent successfully!'
 		})
 
 @login_required

@@ -454,6 +454,7 @@ body {
     overflow: auto; /* Enable scroll if needed */
     background-color: rgb(0,0,0); /* Fallback color */
     background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    font-family: 'Press Start 2P';
 }
 
 .modal-content {
@@ -478,6 +479,7 @@ body {
     cursor: pointer;
     padding: 0;
     line-height: 1;
+    font-family: 'Courier New', Courier, monospace;
 }
 
 .close-button:hover,
@@ -488,7 +490,6 @@ body {
 }
 
 .friends-add-header {
-    font-family: 'Press Start 2P';
     text-shadow: 1px 1px 2px #000000;
     color:#ffffff !important;
     font-size:1vw;
@@ -518,6 +519,7 @@ body {
     width: 16vw; /* Adjust the width as needed */
     height: 4vh;
     margin-left: 0.4vw;
+    font-family: 'Courier New', Courier, monospace;
 }
 
 #sendInvitationButton {
@@ -527,7 +529,6 @@ body {
     cursor: pointer;
     text-decoration: none;
     transition: color 0.3s ease;
-    font-family: 'Press Start 2P';
     text-shadow: 1px 1px 2px #000000;
     overflow: hidden;
     white-space: nowrap;
@@ -569,7 +570,6 @@ body {
     font-size:1vw;
     text-shadow: 1px 1px 2px #000000;
     margin-top: 0.8vh;
-    font-family: 'Press Start 2P';
     text-shadow: 1px 1px 2px #000000;
 }
 
@@ -580,14 +580,51 @@ body {
     color: #d8d3d3;
     text-shadow: 1px 1px 2px #000000;
     font-size:1vw;
-    margin-left: 1vw;
+    margin-left: 2vw;
     min-height: 4vh;
     max-height: 20vh;
+    max-width: 67%;
     overflow: scroll;
     -ms-overflow-style: none;
     scrollbar-width: none;
+    background-color: #047e0e;
+    text-align: left;
 }
 
 .friends-add-list::-webkit-scrollbar {
     display: none;
+}
+
+/* .invitation-message {
+    margin-top: 10px;
+    font-size: 0.6vw;
+    color: #ff0000;
+    text-align: center;
+} */
+
+.invitation-message {
+    position: absolute; /* Position it absolutely within the modal content */
+    top: 14vh; /* Adjust as needed */
+    left: 2vw;
+    font-size: 0.6vw;
+    color: #ff0000;
+    text-align: left;
+    width: auto; /* Adjust the width as needed */
+    transform-origin: center;
+    text-shadow: 1px 1px 1px #000000;
+}
+
+@keyframes wiggle {
+    0%, 100% {
+        transform: rotateZ(2deg)
+    }
+    25% {
+        transform: rotateZ(-2deg);
+    }
+    50% {
+        transform: rotateZ(2deg);
+    }
+    75% {
+        transform: rotateZ(-2deg);
+    }
 }

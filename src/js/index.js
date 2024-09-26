@@ -117,6 +117,8 @@ function initOnlineStatus() {
 
             for (let i = 0; i < freundesliste.length; i++)
             {
+                console.log("friend: ", freundesliste[i].username);
+
                 if (freundesliste[i].status === 'online')
                     addListItem(freundesliste[i].username, friendsOnlineList);
                 else if (freundesliste[i].status === 'offline')
