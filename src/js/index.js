@@ -95,7 +95,9 @@ function addListItem(content, ul, list)
         li.innerHTML = `<span class="list-item-content">${content}</span>`;
         ul.appendChild(li);
 
-        li.addEventListener('click', () => {
+        const textSpan = li.querySelector('.list-item-content');
+
+        textSpan.addEventListener('click', () => {
             friendsModifyModal.style.display = 'block';
             removeFriendButton.style.display = 'block';
             blockFriendButton.style.display = 'block';
@@ -122,7 +124,9 @@ function addListItem(content, ul, list)
         li.innerHTML = `<span class="list-item-content">${content}</span>`;
         ul.appendChild(li);
 
-        li.addEventListener('click', () => {
+        const textSpan = li.querySelector('.list-item-content');
+
+        textSpan.addEventListener('click', () => {
             friendsModifyModal.style.display = 'block';
             acceptFriendButton.style.display = 'block';
             denyFriendButton.style.display = 'block';
@@ -152,7 +156,9 @@ function addListItem(content, ul, list)
         li.innerHTML = `<span class="list-item-content">${content}</span>`;
         ul.appendChild(li);
 
-        li.addEventListener('click', () => {
+        const textSpan = li.querySelector('.list-item-content');
+
+        textSpan.addEventListener('click', () => {
             friendsModifyModal.style.display = 'block';
             withdrawFriendButton.style.display = 'block';
             blockFriendButton.style.display = 'block';
@@ -179,7 +185,9 @@ function addListItem(content, ul, list)
         li.innerHTML = `<span class="list-item-content">${content}</span>`;
         ul.appendChild(li);
 
-        li.addEventListener('click', () => {
+        const textSpan = li.querySelector('.list-item-content');
+
+        textSpan.addEventListener('click', () => {
             friendsModifyModal.style.display = 'block';
             unblockFriendButton.style.display = 'block';
             friendsModifyModalUsername.textContent = "\"" + content + "\"";
