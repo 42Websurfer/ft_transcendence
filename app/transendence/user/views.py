@@ -158,6 +158,64 @@ def accept_friend_request(request, username):
 			'type': 'error',
 			'message': 'Friendship doesn\'t exist or you are not responsible'
 		})
+@login_required
+def accept_friend_request(request, username):
+	user = request.user
+	friend = get_object_or_404(User, username=username)
+	try:
+		friendship = Friendship.objects.get(user=friend, friend=user)
+		if (friendship.status == 'accepted'):
+			return JsonResponse({
+				'type': 'error',
+				'message': 'Your are already friends.'
+			}, status=400)
+		elif (friendship.status == 'rejected'):
+			return JsonResponse({
+				'type': 'error',
+				'message': 'Your are already blocked.'
+			}, status=400)
+		else:
+			friendship.status = 'accepted'
+			friendship.save()
+		return (JsonResponse({
+			'type': 'success'
+		}))
+	except Friendship.DoesNotExist:
+		return JsonResponse({
+			'type': 'error',
+			'message': 'Friendship doesn\'t exist or you are not responsible'
+		})
+
+@login_required
+def block_friend_request(request, username):
+	user = request.user
+	friend = get_object_or_404(User, username=username)
+	try:
+		friendship = Friendship.objects.get(user=friend, friend=user)
+		friendship.status = 'rejected'
+		friendship.save()
+		return (JsonResponse({
+			'type': 'success'
+		}))
+	except Friendship.DoesNotExist:
+		return JsonResponse({
+			'type': 'error',
+			'message': 'Friendship doesn\'t exist or you are not responsible'
+		})
+
+def remove_friendship(request, username):
+	user = request.user
+	friend = get_object_or_404(User, username=username)
+	try:
+		friendship = Friendship.objects.filter(user=friend, friend=user).delete()
+		return (JsonResponse({
+			'type': 'success'
+		}))
+	except Friendship.DoesNotExist:
+		return JsonResponse({
+			'type': 'error',
+			'message': 'Friendship doesn\'t exist.'
+		})
 
 @login_required
 def friend_requests(request):
