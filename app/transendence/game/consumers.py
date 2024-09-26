@@ -14,21 +14,12 @@ class MyConsumer(AsyncWebsocketConsumer):
 		User = get_user_model()
 		self.group_name = self.scope['url_route']['kwargs']['group_name']
 		self.user = self.scope["user"]
+		self.player = None
 		try: 
 			user = await sync_to_async(User.objects.get)(id=self.user.id)
 		except User.DoesNotExist:
 			print('User does not exist')	
 		print(f"ANZAHL GROUP: {redis.scard(self.group_name)}")
-
-		world.addEntity(Player(100, 300))
-
-		if (redis.exists(self.group_name) and redis.scard(self.group_name) > 0):
-			self.player = 'Player2'
-			print('PLAYER2')
-		else:
-			self.player = 'Player1'
-			print('PLAYER1')
-
 
 		await self.channel_layer.group_add(
 			self.group_name,
@@ -36,16 +27,12 @@ class MyConsumer(AsyncWebsocketConsumer):
 		)
 		await self.accept()
 		redis.sadd(self.group_name, self.user.id)
-		await self.channel_layer.group_send(
-			self.group_name,
-			{
-				'type': 'newPlayerMsg',
-				'player': self.player,
-				'uid': self.user.id,
-				'username': user.username
-			}
-		)
 
+		await remoteHandler.addPlayer(self)
+
+
+
+	
 	async def disconnect(self, close_code):
 		await self.channel_layer.group_discard(
 			self.group_name,
@@ -72,8 +59,7 @@ class MyConsumer(AsyncWebsocketConsumer):
 				{
 					'type': 'update_playerMsg',
 					'sender': self.player,
-					'foes_posX': text_data_json.get('x'),
-					'foes_posY': text_data_json.get('y')
+					'transform': text_data_json.get('transform')
 				}
 			)
 		elif (ws_type == 'game'):
@@ -98,24 +84,31 @@ class MyConsumer(AsyncWebsocketConsumer):
 				}
 			)
 
+	async def initLocal(self, event):
+		await self.send(text_data=json.dumps({
+			'type': 'initLocal',
+			'id': event.get('id')
+		}))
 
+	async def client_create_entity(self, event):
+		print('client_create_entity event received:', event)
+		await self.send(text_data=json.dumps({
+			'type': 'newEntity',
+			'entType': event.get('entType'),
+			'id': event.get('id'),
+			'transform': event.get('transform'),
+			'constr': event.get('constr')
+		}))
+		print('client_create_entity event processed')
 
-	async def newPlayerMsg(self,event):
-		# if self.player == event.get('player'):
-		# 	print('-------------------')
-		# 	print('PLAYER:')
-		# 	print(self.player)
-		# 	print(event.get('player'))
-		# 	print('------------------')
-		# 	return 
-		# print(f"NEWPLAYER: {self.player}")
-		users_data = {
-				'type': 'newPlayer',
-				'player': event.get('player'),
-				'uid': event.get('uid'),
-				'username': event.get('username')
-		}
-		await self.send(text_data=json.dumps(users_data))
+	async def move_entity(self, event):
+		print('move_entity event received:', event)
+		await self.send(text_data=json.dumps({
+			'type': 'updatePos',
+			'id': event.get('id'),
+			'transform': event.get('transform'),
+		}))
+		print('move_entity event processed')
 
 	async def disconnectedMsg(self, event):
 		users_data = {

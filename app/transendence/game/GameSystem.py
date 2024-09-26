@@ -1,5 +1,7 @@
 import math
 
+G_ID = 0
+
 class Vector:
 	def __init__(self, x, y):
 		self.x = x
@@ -80,6 +82,16 @@ class Transform:
 	def set_pos(self, x, y):
 		self.position.x = x
 		self.position.y = y
+	
+	def serialize(self):
+		return ({
+			'position':
+			{
+				'x': self.position.x,
+				'y': self.position.y
+			},
+			'rotation': self.rotation
+		})
 
 class Component:
 	def __init__(self):
@@ -153,6 +165,9 @@ class Box(Mesh):
 class Entity(Transform):
 	def __init__(self, x, y):
 		super().__init__(x, y)
+		global G_ID
+		self.id = G_ID + 1
+		G_ID += 1
 		self.components = {}
 
 	def on_collision(self, other, collision_point=None):
@@ -169,7 +184,7 @@ class Entity(Transform):
 
 	def has_component(self, component_type):
 		return component_type in self.components
-
+	
 	def update(self):
 		pass
 
@@ -198,6 +213,9 @@ class World:
 	def addEntity(self, ent):
 		self.entities.append(ent)
 
+	def removeEntity(self, ent):
+		self.entities.remove(ent)
+
 	def addSystem(self, sys):
 		self.systems.append(sys)
 
@@ -205,6 +223,5 @@ class World:
 		for sys in self.systems:
 			sys.execute(self.entities)
 		
-		print(self.entities)
 		for ent in self.entities:
 			ent.update()

@@ -2,7 +2,6 @@ export const canvas = document.createElement('canvas');
 canvas.width = 1640;
 canvas.height = 780;
 export const ctx = canvas.getContext('2d');
-var G_ID = 0;
 
 export function renderPong() {
 	const app = document.getElementById('app');
@@ -67,6 +66,12 @@ export class Vector{
 		return (Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2)));
 	}
 
+	lerp(other, alpha) {
+		return new Vector(
+			this.x + (other.x - this.x) * alpha,
+			this.y + (other.y - this.y) * alpha
+		);
+	}
 }
 
 export class Plane{
@@ -102,6 +107,17 @@ export class Transform{
 		this.up.rotate(this.rotation);
 	}
 
+	getData(){
+		return ({
+			position: 
+			{
+				x: this.position.x,
+				y: this.position.y
+			},
+			rotation: this.rotation
+			});
+	}
+
 	rotate(deg){
 		this.up.rotate(deg - this.rotation);
 		this.rotation = deg;
@@ -119,8 +135,9 @@ export class Component{
 }
 
 export class Network extends Component{
-	constructor(isLocal = false){
+	constructor(socket, isLocal = false){
 		super();
+		this.socket = socket;
 		this.isLocal = isLocal;
 	}
 }
@@ -254,7 +271,7 @@ export class Box extends Mesh{
 export class Entity extends Transform{
 	constructor(x, y){
 		super(x, y);
-		this.id = G_ID++;
+		this.id = 0
 		this.components = {};
 	}
 
@@ -316,8 +333,8 @@ export class MovementSystem extends System{
 				if (phys.hasGravity){
 					phys.setVelocity(phys.velocity.x, phys.velocity.y + 0.0981);
 				}
-				if (net && !net.isLocal)
-					return;
+				// if (net && !net.isLocal)
+				// 	return;
 				entity.move(phys.velocity.x, phys.velocity.y);
 			}
 		});
@@ -404,7 +421,6 @@ export class World{
 		});
 	}
 }
-
 
 export function drawText(text, x, y, textStyle = undefined, colour = 'black'){
 	let save = ctx.font;
