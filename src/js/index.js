@@ -69,6 +69,12 @@ async function renderLoginLogoutButton(isAuthenticated, section) {
     }
 }
 
+const settingsButton = document.getElementById('settings-button');
+settingsButton.addEventListener('click', () => {
+    showSection('settings');
+})
+
+
 function addListItem(content, ul)
 {
     const li = document.createElement('li');
@@ -166,9 +172,9 @@ export async function showSection(section, lobbyId)
                 import('./welcome.js').then(module => {
                     module.renderWelcome();
                 });
-        else if (section === 'websocket')
-            import('./test.js').then(module => {
-                module.renderWebsocket();
+        else if (section === 'settings')
+            import('./settings.js').then(module => {
+                module.renderSettings();
             });
         else if (section === 'pong')
             import('./pong.js').then(module => {
