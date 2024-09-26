@@ -100,8 +100,6 @@ export function renderWelcome() {
             return;
         var response = await sendFriendRequest(friendUsername.value);
         console.log("Response: "+ response.type);
-        if (response.type === 'error')
-            
     });
 
     addButton.addEventListener('click', () => {
