@@ -77,6 +77,32 @@ export function renderWelcome() {
     const addButton = document.getElementById('friends-options-add-button');
     const friendsAddModal = document.getElementById('friendsAddModal');
     const closeModalButton = document.getElementById('closeModalButton');
+    const inviteButton = document.getElementById('sendInvitationButton');
+
+    async function sendFriendRequest(username) {
+        try {
+            if (!username)
+                return;
+            const csrftoken = getCookie('csrftoken');
+            const response = await fetch(`/send_friend_request/${username}/`, {
+                method: 'GET',
+                credentials: 'include'
+            });
+            return await response.json();
+        } catch (error) {
+            return { 'type': 'error', 'message': 'Failed to send friend request.' };
+        }
+    }
+
+    inviteButton.addEventListener('click', async () => {
+        const friendUsername = document.getElementById('friendUsername');
+        if (!friendUsername.value)
+            return;
+        var response = await sendFriendRequest(friendUsername.value);
+        console.log("Response: "+ response.type);
+        if (response.type === 'error')
+            
+    });
 
     addButton.addEventListener('click', () => {
         friendsAddModal.style.display = 'block';
