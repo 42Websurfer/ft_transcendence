@@ -179,7 +179,8 @@ def block_friend_request(request, username):
 	user = request.user
 	friend = get_object_or_404(User, username=username)
 	try:
-		friendship = Friendship.objects.get(user=friend, friend=user)
+		friendship = Friendship.objects.get(
+			Q(user=friend, friend=user) | Q(user=user, friend=friend))
 		friendship.status = 'rejected'
 		friendship.save()
 		updateOnlineStatusChannel()
