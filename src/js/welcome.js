@@ -62,13 +62,38 @@ export function renderWelcome() {
             <div class="modal-content">
                 <span class="close-button" id="closeModalButton">&times;</span>
                 <div class="friends-add-header">
-                    <p>ADD FRIEND BY USERNAME</p>
+                    <p>ADD A FRIEND</p>
                 </div>
-                <hr class="friends-add-divider">
+                <hr class="friends-add-divider1">
                 <div class="friends-add-input-container">
                     <input type="text" id="friendUsername" placeholder="Enter username">
                     <button id="sendInvitationButton">INVITE</button>
                 </div>
+
+                <div class="friends-add-lists">
+                <div id="friendsRequests" class="friends-add-list-item">
+                    <div class="friends-add-list-header">
+                        <p>REQUESTS</p>
+                    </div>
+                    <hr class="friends-add-divider2">
+                    <ul id="friendsRequestsList" class="friends-add-list"></ul>
+                </div>
+                    <div id="friendsPending" class="friends-add-list-item">
+                        <div class="friends-add-list-header">
+                            <p>PENDING</p>
+                        </div>
+                        <hr class="friends-add-divider2">
+                        <ul id="friendsPendingList" class="friends-add-list"></ul>
+                    </div>
+                    <div id="friendsBlocked" class="friends-add-list-item">
+                        <div class="friends-add-list-header">
+                            <p>BLOCKED</p>
+                        </div>
+                        <hr class="friends-add-divider2">
+                        <ul id="friendsBlockedList" class="friends-add-list"></ul>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
