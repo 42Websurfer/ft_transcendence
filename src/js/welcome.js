@@ -62,12 +62,12 @@ export function renderWelcome() {
             <div class="modal-content">
                 <span class="close-button" id="closeModalButton">&times;</span>
                 <div class="friends-add-header">
-                    <p>ADD FRIENDS BY USERNAME</p>
+                    <p>ADD FRIEND BY USERNAME</p>
                 </div>
                 <hr class="friends-add-divider">
                 <div class="friends-add-input-container">
                     <input type="text" id="friendUsername" placeholder="Enter username">
-                    <button id="sendInvitationButton">Send Invitation</button>
+                    <button id="sendInvitationButton">INVITE</button>
                 </div>
             </div>
         </div>

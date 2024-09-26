@@ -83,7 +83,6 @@ body {
     text-shadow: 1px 1px 2px #000000;
     overflow: hidden;
     white-space: nowrap;
-    font-size:0.8vw;
 }
 
 .login-logout-button:hover {
@@ -500,7 +499,7 @@ body {
     height: 4px;
     background-color: #d8d3d3;
     margin: 0.5vh;
-    width: 88%;
+    width: 84%;
 }
 
 .friends-add-input-container {
@@ -516,20 +515,26 @@ body {
     font-size: 1em;
     border: 1px solid #ccc;
     border-radius: 4px;
-    width: 70%; /* Adjust the width as needed */
+    width: 20vw; /* Adjust the width as needed */
+    height: 4vh;
 }
 
 #sendInvitationButton {
-    padding: 10px 20px;
-    font-size: 1em;
-    font-family: Arial, sans-serif; /* Same font as the header */
+    background: none;
     border: none;
-    border-radius: 4px;
-    background-color: #4CAF50; /* Green background */
-    color: white; /* White text */
+    color: inherit;
     cursor: pointer;
+    text-decoration: none;
+    transition: color 0.3s ease;
+    font-family: 'Press Start 2P';
+    text-shadow: 1px 1px 2px #000000;
+    overflow: hidden;
+    white-space: nowrap;
+    font-size: 1vw;
+    color:#047e0e !important;
 }
 
 #sendInvitationButton:hover {
-    background-color: #45a049; /* Darker green on hover */
+    color: #2d2c2e;
+    text-shadow: 1px 1px 2px #ffffff;
 }
