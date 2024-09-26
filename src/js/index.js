@@ -69,7 +69,7 @@ async function renderLoginLogoutButton(isAuthenticated, section) {
     }
 }
 
-async function handleFriendRequest(url) {
+export async function handleFriendRequest(url) {
     try {
         const response = await fetch(`${url}`, {
             method: 'GET',
@@ -79,6 +79,12 @@ async function handleFriendRequest(url) {
     } catch (error) {
         return { 'type': 'error', 'message': 'User does not exist!' };
     }
+}
+
+export let selectedListItem = null;
+
+export function setSelectedListItem(item) {
+    selectedListItem = item;
 }
 
 async function addListItem(content, ul, list)
@@ -114,13 +120,14 @@ async function addListItem(content, ul, list)
             removeFriendButton.style.display = 'block';
             blockFriendButton.style.display = 'block';
             friendsModifyModalUsername.textContent = "\"" + content + "\"";
+            selectedListItem = li;
         });
 
-        removeFriendButton.addEventListener('click', async () => {
-            console.log(`/remove_friendship/${content}/`)
-            const response = await handleFriendRequest(`/remove_friendship/${content}/`)
-            console.log(response.type + ' + ' + response.message);
-        });
+        // removeFriendButton.addEventListener('click', async () => {
+        //     console.log(`/remove_friendship/${content}/`)
+        //     const response = await handleFriendRequest(`/remove_friendship/${content}/`)
+        //     console.log(response.type + ' + ' + response.message);
+        // });
 
         closeModalButton.addEventListener('click', () => {
             friendsModifyModal.style.display = 'none';
@@ -150,6 +157,7 @@ async function addListItem(content, ul, list)
             denyFriendButton.style.display = 'block';
             blockFriendButton.style.display = 'block';
             friendsModifyModalUsername.textContent = "\"" + content + "\"";
+            selectedListItem = li;
         });
 
         closeModalButton.addEventListener('click', () => {
@@ -181,6 +189,7 @@ async function addListItem(content, ul, list)
             withdrawFriendButton.style.display = 'block';
             blockFriendButton.style.display = 'block';
             friendsModifyModalUsername.textContent = "\"" + content + "\"";
+            selectedListItem = li;
         });
 
         closeModalButton.addEventListener('click', () => {
@@ -209,6 +218,7 @@ async function addListItem(content, ul, list)
             friendsModifyModal.style.display = 'block';
             unblockFriendButton.style.display = 'block';
             friendsModifyModalUsername.textContent = "\"" + content + "\"";
+            selectedListItem = li;
         });
 
         closeModalButton.addEventListener('click', () => {
@@ -341,7 +351,6 @@ export async function showSection(section, lobbyId)
         section = 'login';
     }
 }
-
 
 async function initApp() {
     const isAuthenticated = await checkAuthentication();

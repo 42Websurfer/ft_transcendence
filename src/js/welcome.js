@@ -1,4 +1,5 @@
 import { getCookie, displayMessages } from './utils.js';
+import { selectedListItem, setSelectedListItem, handleFriendRequest } from './index.js';
 
 export function renderWelcome() {
 
@@ -193,4 +194,23 @@ export function renderWelcome() {
             friendsAddModal.style.display = 'none';
         }
     });
+
+    const removeFriendButton = document.getElementById('removeFriendButton');
+    const friendsModifyModal = document.getElementById('friendsModifyModal');
+    
+    if (!removeFriendButton)
+        return;
+    
+    removeFriendButton.addEventListener('click', async () => {
+        if (selectedListItem) {
+            const content = selectedListItem.textContent;
+            // selectedListItem.parentNode.removeChild(selectedListItem);
+            setSelectedListItem(null);
+            friendsModifyModal.style.display = 'none';
+            console.log(`/remove_friendship/${content}/`)
+            const response = await handleFriendRequest(`/remove_friendship/${content}/`)
+            console.log(response.type + ' + ' + response.message);
+        }
+    });
+
 }
