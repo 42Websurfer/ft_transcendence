@@ -6,6 +6,8 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from .models import User, Friendship, PongMatches
 from django.db.models import Q
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 import json
 import logging
 import redis
@@ -98,6 +100,16 @@ def register(request):
 					return JsonResponse({'error': 'Invalid JSON.'}, status=400)
 
 @login_required
+def get_user_information(request):
+	user = request.user
+	return JsonResponse({
+		'email': user.email,
+		'firstname': user.first_name,
+		'lastname': user.last_name,
+		'username': user.username
+	})
+
+@login_required
 def send_friend_request(request, username):
 	user = request.user
 	friend = get_object_or_404(User, username=username)
@@ -184,14 +196,18 @@ def remove_friendship(request, username):
 		friendship = Friendship.objects.filter(
 			Q(user=friend, friend=user) | Q(user=user, friend=friend)
 			).delete()
-		if (friendship):
-			return (JsonResponse({
-				'type': 'success'
-			}))
-		else:
-			return (JsonResponse({
-				'type': 'error'
-			}))
+		channel_layer = get_channel_layer()
+		group_name = "online_status"
+		async_to_sync(channel_layer.group_send)(
+			group_name,
+			{
+				'type': 'send_online_users',
+				
+			}
+		)
+		return (JsonResponse({
+			'type': 'success'
+		}))
 	except Friendship.DoesNotExist:
 		return JsonResponse({
 			'type': 'error',
