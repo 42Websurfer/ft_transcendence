@@ -8,13 +8,13 @@ export function renderLogin() {
 	<div class="login">
 		<div class="login-container">
 			<form id="loginForm">
-				<div id="messages"></div>
 				<input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
-
+				
 				<div class="login-instructions">
 					<p>Welcome, please sign in!</p>
 				</div>
 				
+				<div class="login-messages" id="messages"></div>
 
 				<div class="login-form-field form-floating">
 					<input type="text" name="login-username" class="form-control-new form-control" id="floatingInput" placeholder="Username" required>
@@ -27,7 +27,7 @@ export function renderLogin() {
 				</div> 
 
 				<button class="signin-button btn btn-primary w-100 py-2" type="submit">Sign in</button>
-				
+					
 			</form>
 			<div class="signin-or-text">
 				<p>OR</p>
