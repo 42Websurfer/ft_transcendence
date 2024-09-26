@@ -129,7 +129,7 @@ def send_friend_request(request, username):
 			elif friendship.status == 'rejected':
 				return JsonResponse({
 					'type': 'error',
-					'message': 'Request blocked!'
+					'message': 'This user blocked you!'
 				}, status=400)
 			else:
 				return JsonResponse({
