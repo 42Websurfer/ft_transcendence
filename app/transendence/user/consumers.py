@@ -68,25 +68,28 @@ class UserStatus(AsyncWebsocketConsumer):
 		for user in online_friend_ids:
 			if (user.friend_id == self.user.id):
 				if (user.status == 'accepted'):
-					friendList.append({'username': user.user.username, 'status': 'online', 'type': 'receiver'})
+					friendList.append({'id': user.id, 'username': user.user.username, 'status': 'online', 'type': 'receiver'})
 				else:
-					friendList.append({'username': user.user.username, 'status': user.status, 'type': 'receiver'})
+					friendList.append({'id': user.id, 'username': user.user.username, 'status': user.status, 'type': 'receiver'})
 					
 			elif(user.user_id == self.user.id):
 				if (user.status == 'accepted'):
-					friendList.append({'username': user.friend.username, 'status': 'online', 'type': 'sender'})
+					friendList.append({'id': user.id, 'username': user.friend.username, 'status': 'online', 'type': 'sender'})
 				else:
-					friendList.append({'username': user.friend.username, 'status': user.status, 'type': 'sender'})
+					friendList.append({'id': user.id, 'username': user.friend.username, 'status': user.status, 'type': 'sender'})
 
 		for user in offline_friend_ids:
 			if(user.friend_id == self.user.id):
 				if (user.status == 'accepted'):
-					friendList.append({'username': user.user.username, 'status': 'offline', 'type': 'receiver'})
+					friendList.append({'id': user.id, 'username': user.user.username, 'status': 'offline', 'type': 'receiver'})
 				else:
-					friendList.append({'username': user.user.username, 'status': user.status, 'type': 'receiver'})	
+					friendList.append({'id': user.id, 'username': user.user.username, 'status': user.status, 'type': 'receiver'})	
 			elif(user.user_id == self.user.id):
 				if (user.status == 'accepted'):
-					friendList.append({'username': user.friend.username, 'status': 'offline', 'type': 'sender'})		
+					friendList.append({'id': user.id, 'username': user.friend.username, 'status': 'offline', 'type': 'sender'})		
 				else:
-					friendList.append({'username': user.friend.username, 'status': user.status, 'type': 'sender'})	
+					friendList.append({'id': user.id, 'username': user.friend.username, 'status': user.status, 'type': 'sender'})	
+		
+		friendList = sorted(friendList, key=lambda x: x['id'])
+		
 		await self.send(text_data=json.dumps({'friendList': friendList}))
