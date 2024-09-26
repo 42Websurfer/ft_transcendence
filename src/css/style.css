@@ -628,3 +628,32 @@ body {
         transform: rotateZ(-2deg);
     }
 }
+
+.login-form-field {
+    font-family: 'Press Start 2P';
+}
+
+.settings-label {
+    color: white;
+    font-size: 0.6vw;
+}
+
+.settings-input {
+    font-size: 0.6vw;
+
+}
+
+#settingsForm > div{
+    margin: 20px;
+}
+
+.login-messages {
+    top: 14vh; /* Adjust as needed */
+    left: 2vw;
+    font-size: 0.8vw;
+    color: #ff0000;
+    text-align: left;
+    width: auto; /* Adjust the width as needed */
+    transform-origin: center;
+    text-shadow: 1px 1px 1px #000000;
+}
