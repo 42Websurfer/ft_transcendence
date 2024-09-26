@@ -104,7 +104,7 @@ def send_friend_request(request, username):
 	if user == friend: 
 		return JsonResponse({
 			'type': 'error',
-			'message': 'User and friend have same id',
+			'message': 'You can\'t invite yourself.',
 		}, status=400)
 	try:
 		friendship = Friendship.objects.get(
@@ -129,9 +129,6 @@ def send_friend_request(request, username):
 		newFriend = Friendship.objects.create(user=user, friend=friend, status='pending')
 		return JsonResponse({
 			'type': 'Success Request',
-			'username': newFriend.user.username,
-			'friendname': newFriend.friend.username,
-			'status': newFriend.status,
 		})
 
 @login_required
