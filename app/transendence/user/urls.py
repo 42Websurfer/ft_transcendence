@@ -13,6 +13,8 @@ urlpatterns = [
     path('match_history/', views.getMatchHistory, name='match_history'),
     path('online-users/', views.get_all_online_users, name='online-users'),
     path('accept_friend_request/<str:username>/', views.accept_friend_request, name='accept_friend_request'),
+    path('block_friend_request/<str:username>/', views.block_friend_request, name='block_friend_request'),
+    path('remove_friendship/<str:username>/', views.remove_friendship, name='remove_friendship'),
 
 ]
 
