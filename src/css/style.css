@@ -454,6 +454,7 @@ body {
     overflow: auto; /* Enable scroll if needed */
     background-color: rgb(0,0,0); /* Fallback color */
     background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    font-family: 'Press Start 2P';
 }
 
 .modal-content {
@@ -462,13 +463,13 @@ body {
     margin: 15% auto; /* 15% from the top and centered */
     padding: 20px;
     /* border: 1px solid #888; */
-    width: 30%; /* Could be more or less, depending on screen size */
+    width: 40%; /* Could be more or less, depending on screen size */
 }
 
 .close-button {
     position: absolute;
-    top: 0.5vh;
-    right: 0.7vw;
+    top: 0.3vh;
+    right: 0.5vw;
     color: #aaa;
     float: right;
     font-size: 2vw;
@@ -478,6 +479,7 @@ body {
     cursor: pointer;
     padding: 0;
     line-height: 1;
+    font-family: 'Courier New', Courier, monospace;
 }
 
 .close-button:hover,
@@ -488,23 +490,22 @@ body {
 }
 
 .friends-add-header {
-    font-family: 'Press Start 2P';
     text-shadow: 1px 1px 2px #000000;
     color:#ffffff !important;
     font-size:1vw;
     margin-left: 1vw;
 }
 
-.friends-add-divider {
-    height: 4px;
+.friends-add-divider1 {
+    height: 5px;
     background-color: #d8d3d3;
     margin: 0.5vh;
-    width: 84%;
+    width: 13.2vw;
 }
 
 .friends-add-input-container {
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
     gap: 10px; /* Space between input and button */
     margin-top: 20px; /* Space above the input container */
@@ -515,8 +516,10 @@ body {
     font-size: 1em;
     border: 1px solid #ccc;
     border-radius: 4px;
-    width: 20vw; /* Adjust the width as needed */
+    width: 16vw; /* Adjust the width as needed */
     height: 4vh;
+    margin-left: 0.4vw;
+    font-family: 'Courier New', Courier, monospace;
 }
 
 #sendInvitationButton {
@@ -526,7 +529,6 @@ body {
     cursor: pointer;
     text-decoration: none;
     transition: color 0.3s ease;
-    font-family: 'Press Start 2P';
     text-shadow: 1px 1px 2px #000000;
     overflow: hidden;
     white-space: nowrap;
@@ -537,4 +539,92 @@ body {
 #sendInvitationButton:hover {
     color: #2d2c2e;
     text-shadow: 1px 1px 2px #ffffff;
+}
+
+.friends-add-lists {
+    color: #d8d3d3;
+    text-shadow: 1px 1px 2px #000000;
+    flex-direction: row;
+    display: flex;
+    font-size:1.4vw;
+    margin-top: 4vh;
+}
+
+.friends-add-list-item {
+    width: 33.333333%;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+}
+
+.friends-add-divider2 {
+    height: 3px;
+    background-color: #d8d3d3;
+    margin: 0.5vh;
+    width: 10vw;
+    align-self: center;
+}
+
+.friends-add-list-header {
+    color: #ffffff;
+    font-size:1vw;
+    text-shadow: 1px 1px 2px #000000;
+    margin-top: 0.8vh;
+    text-shadow: 1px 1px 2px #000000;
+}
+
+.friends-add-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    color: #d8d3d3;
+    text-shadow: 1px 1px 2px #000000;
+    font-size:1vw;
+    margin-left: 2vw;
+    min-height: 4vh;
+    max-height: 20vh;
+    max-width: 67%;
+    overflow: scroll;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    background-color: #047e0e;
+    text-align: left;
+}
+
+.friends-add-list::-webkit-scrollbar {
+    display: none;
+}
+
+/* .invitation-message {
+    margin-top: 10px;
+    font-size: 0.6vw;
+    color: #ff0000;
+    text-align: center;
+} */
+
+.invitation-message {
+    position: absolute; /* Position it absolutely within the modal content */
+    top: 14vh; /* Adjust as needed */
+    left: 2vw;
+    font-size: 0.6vw;
+    color: #ff0000;
+    text-align: left;
+    width: auto; /* Adjust the width as needed */
+    transform-origin: center;
+    text-shadow: 1px 1px 1px #000000;
+}
+
+@keyframes wiggle {
+    0%, 100% {
+        transform: rotateZ(2deg)
+    }
+    25% {
+        transform: rotateZ(-2deg);
+    }
+    50% {
+        transform: rotateZ(2deg);
+    }
+    75% {
+        transform: rotateZ(-2deg);
+    }
 }

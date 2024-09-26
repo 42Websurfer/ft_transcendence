@@ -89,13 +89,19 @@ function initOnlineStatus() {
             // console.log("Online Friends:", data.online_users);
             
             const friendsOnlineList = document.getElementById('friendsOnlineList');
-            const friendsOfflineList = document.getElementById('friendsOfflineList'); 
+            const friendsOfflineList = document.getElementById('friendsOfflineList');
+            const friendsPendingList = document.getElementById('friendsPendingList');
+            const friendsRequestsList = document.getElementById('friendsRequestsList'); 
+            const friendsBlockedList = document.getElementById('friendsBlockedList'); 
                 
-            if (!friendsOnlineList || !friendsOfflineList)
+            if (!friendsOnlineList || !friendsOfflineList || !friendsPendingList || !friendsRequestsList || !friendsBlockedList)
                 return;
 
             friendsOnlineList.innerHTML = "";
             friendsOfflineList.innerHTML = "";
+            friendsPendingList.innerHTML = "";
+            friendsRequestsList.innerHTML = "";
+            friendsBlockedList.innerHTML = "";
 
             console.log("data: ", data.friendList);
             
@@ -111,10 +117,18 @@ function initOnlineStatus() {
 
             for (let i = 0; i < freundesliste.length; i++)
             {
+                console.log("friend: ", freundesliste[i].username);
+
                 if (freundesliste[i].status === 'online')
                     addListItem(freundesliste[i].username, friendsOnlineList);
-                else
+                else if (freundesliste[i].status === 'offline')
                     addListItem(freundesliste[i].username, friendsOfflineList);
+                else if (freundesliste[i].status === 'pending' && freundesliste[i].type === 'sender')
+                    addListItem(freundesliste[i].username, friendsPendingList);
+                else if (freundesliste[i].status === 'pending' && freundesliste[i].type === 'receiver')
+                    addListItem(freundesliste[i].username, friendsRequestsList);
+                else
+                    addListItem(freundesliste[i].username, friendsBlockedList);
             }
         }
         catch (error){
