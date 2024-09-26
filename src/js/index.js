@@ -69,7 +69,19 @@ async function renderLoginLogoutButton(isAuthenticated, section) {
     }
 }
 
-function addListItem(content, ul, list)
+async function handleFriendRequest(url) {
+    try {
+        const response = await fetch(`${url}`, {
+            method: 'GET',
+            credentials: 'include'
+        });
+        return await response.json();
+    } catch (error) {
+        return { 'type': 'error', 'message': 'User does not exist!' };
+    }
+}
+
+async function addListItem(content, ul, list)
 {
     const li = document.createElement('li');
 
@@ -102,6 +114,12 @@ function addListItem(content, ul, list)
             removeFriendButton.style.display = 'block';
             blockFriendButton.style.display = 'block';
             friendsModifyModalUsername.textContent = "\"" + content + "\"";
+        });
+
+        removeFriendButton.addEventListener('click', async () => {
+            console.log(`/remove_friendship/${content}/`)
+            const response = await handleFriendRequest(`/remove_friendship/${content}/`)
+            console.log(response.type + ' + ' + response.message);
         });
 
         closeModalButton.addEventListener('click', () => {

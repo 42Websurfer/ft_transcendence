@@ -181,10 +181,17 @@ def remove_friendship(request, username):
 	user = request.user
 	friend = get_object_or_404(User, username=username)
 	try:
-		friendship = Friendship.objects.filter(user=friend, friend=user).delete()
-		return (JsonResponse({
-			'type': 'success'
-		}))
+		friendship = Friendship.objects.filter(
+			Q(user=friend, friend=user) | Q(user=user, friend=friend)
+			).delete()
+		if (friendship):
+			return (JsonResponse({
+				'type': 'success'
+			}))
+		else:
+			return (JsonResponse({
+				'type': 'error'
+			}))
 	except Friendship.DoesNotExist:
 		return JsonResponse({
 			'type': 'error',
