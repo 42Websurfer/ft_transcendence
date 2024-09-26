@@ -131,11 +131,12 @@ def send_friend_request(request, username):
 			'type': 'Success Request',
 		}, status=201)
 
+@login_required
 def accept_friend_request(request, username):
 	user = request.user
 	friend = get_object_or_404(User, username=username)
 	try:
-		friendship = Friendship.objects.get(user=user, friend=friend)
+		friendship = Friendship.objects.get(user=friend, friend=user)
 		if (friendship.status == 'accepted'):
 			return JsonResponse({
 				'type': 'error',
@@ -144,16 +145,18 @@ def accept_friend_request(request, username):
 		elif (friendship.status == 'rejected'):
 			return JsonResponse({
 				'type': 'error',
-				'message': 'Your are already friends.'
+				'message': 'Your are already blocked.'
 			}, status=400)
-		Friendship.objects.update(status='accepted')
+		else:
+			friendship.status = 'accepted'
+			friendship.save()
 		return (JsonResponse({
 			'type': 'success'
 		}))
 	except Friendship.DoesNotExist:
 		return JsonResponse({
 			'type': 'error',
-			'message': 'Friendship doesn\'t exist'
+			'message': 'Friendship doesn\'t exist or you are not responsible'
 		})
 
 @login_required
