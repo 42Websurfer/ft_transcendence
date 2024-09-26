@@ -28,10 +28,7 @@ export function renderWelcome() {
                 </div>
                 <div class="friends-options">
                     <div class="friends-options-add">
-                        <button id="friends-options-add-button">ADD</button>
-                    </div>
-                    <div class="friends-options-remove">
-                        <button id="friends-options-remove-button">REMOVE</button>
+                        <button id="friends-options-add-button">ADD FRIEND</button>
                     </div>
                 </div>
             </div>
@@ -60,7 +57,7 @@ export function renderWelcome() {
         </div>
         <div class="modal" id="friendsAddModal">
             <div class="modal-content">
-                <span class="close-button" id="closeModalButton">&times;</span>
+                <span class="close-button" id="closeModal1Button">&times;</span>
                 <div class="friends-add-header">
                     <p>ADD A FRIEND</p>
                 </div>
@@ -98,12 +95,52 @@ export function renderWelcome() {
 
             </div>
         </div>
+        
+        <div class="modal-modify" id="friendsModifyModal">
+            <div class="modal-content-modify">
+                <span class="close-button" id="closeFriendsModifyModalButton">&times;</span>
+                <div class="friends-add-header">
+                    <p>MODIFY FRIENDSHIP</p>
+                </div>
+                <hr class="friends-add-divider3">
+
+                <div class="friends-modify-username">
+                    <p>FRIEND: </p>
+                    <p id="friendsModifyModalUsername"></p>
+                </div>
+
+                <div class="friends-modify-button">
+                    <button id="removeFriendButton">REMOVE FRIEND</button>
+                </div>
+                
+                <div class="friends-modify-button">
+                <button id="acceptFriendButton">ACCEPT FRIEND REQUEST</button>
+                </div>
+                
+                <div class="friends-modify-button">
+                <button id="denyFriendButton">DENY FRIEND REQUEST</button>
+                </div>
+                
+                <div class="friends-modify-button">
+                <button id="withdrawFriendButton">WITHDRAW FRIEND REQUEST</button>
+                </div>
+                
+                <div class="friends-modify-button">
+                <button id="unblockFriendButton">UNBLOCK USER</button>
+                </div>
+                
+                <div class="friends-modify-button">
+                    <button id="blockFriendButton">BLOCK USER</button>
+                </div>
+
+            </div>
+        </div>
     </div>
     `;
     
     const addButton = document.getElementById('friends-options-add-button');
     const friendsAddModal = document.getElementById('friendsAddModal');
-    const closeModalButton = document.getElementById('closeModalButton');
+    const closeModalButton = document.getElementById('closeModal1Button');
     const inviteButton = document.getElementById('sendInvitationButton');
     const invitationMessage = document.getElementById('invitationMessage');
 
@@ -143,6 +180,7 @@ export function renderWelcome() {
 
     addButton.addEventListener('click', () => {
         friendsAddModal.style.display = 'block';
+        // friendSelectOnlineOffline.style.display = 'block';   
     });
 
     closeModalButton.addEventListener('click', () => {
@@ -155,5 +193,4 @@ export function renderWelcome() {
             friendsAddModal.style.display = 'none';
         }
     });
-
 }

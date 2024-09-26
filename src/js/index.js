@@ -74,12 +74,166 @@ settingsButton.addEventListener('click', () => {
     showSection('settings');
 })
 
+async function handleFriendRequest(url) {
+    try {
+        const response = await fetch(`${url}`, {
+            method: 'GET',
+            credentials: 'include'
+        });
+        return await response.json();
+    } catch (error) {
+        return { 'type': 'error', 'message': 'User does not exist!' };
+    }
+}
 
-function addListItem(content, ul)
+async function addListItem(content, ul, list)
 {
     const li = document.createElement('li');
-    li.textContent = content;
-    ul.appendChild(li);
+
+    const friendsModifyModal = document.getElementById('friendsModifyModal');
+    const closeModalButton = document.getElementById('closeFriendsModifyModalButton');
+    const friendsModifyModalUsername = document.getElementById('friendsModifyModalUsername');
+    const removeFriendButton = document.getElementById('removeFriendButton');
+    const blockFriendButton = document.getElementById('blockFriendButton');
+    const acceptFriendButton = document.getElementById('acceptFriendButton');
+    const denyFriendButton = document.getElementById('denyFriendButton');
+    const withdrawFriendButton = document.getElementById('withdrawFriendButton');
+    const unblockFriendButton = document.getElementById('unblockFriendButton');
+
+    if (!friendsModifyModal || !closeModalButton)
+        return;
+
+    friendsModifyModalUsername.textContent = "\"" + content + "\"";
+    friendsModifyModalUsername.style.color = '#1792ca';
+
+    if (list === 'offline' || list === 'online')
+    {
+        li.className = 'friends-add-list-user';
+        li.innerHTML = `<span class="list-item-content">${content}</span>`;
+        ul.appendChild(li);
+
+        const textSpan = li.querySelector('.list-item-content');
+
+        textSpan.addEventListener('click', () => {
+            friendsModifyModal.style.display = 'block';
+            removeFriendButton.style.display = 'block';
+            blockFriendButton.style.display = 'block';
+            friendsModifyModalUsername.textContent = "\"" + content + "\"";
+        });
+
+        removeFriendButton.addEventListener('click', async () => {
+            console.log(`/remove_friendship/${content}/`)
+            const response = await handleFriendRequest(`/remove_friendship/${content}/`)
+            console.log(response.type + ' + ' + response.message);
+        });
+
+        closeModalButton.addEventListener('click', () => {
+            friendsModifyModal.style.display = 'none';
+            removeFriendButton.style.display = 'none';
+            blockFriendButton.style.display = 'none';
+        });
+    
+        window.addEventListener('click', (event) => {
+            if (event.target === friendsModifyModal) {
+                friendsModifyModal.style.display = 'none';
+                removeFriendButton.style.display = 'none';
+                blockFriendButton.style.display = 'none';
+            }
+        });
+    }
+    else if (list === 'request')
+    {
+        li.className = 'friends-add-list-user';
+        li.innerHTML = `<span class="list-item-content">${content}</span>`;
+        ul.appendChild(li);
+
+        const textSpan = li.querySelector('.list-item-content');
+
+        textSpan.addEventListener('click', () => {
+            friendsModifyModal.style.display = 'block';
+            acceptFriendButton.style.display = 'block';
+            denyFriendButton.style.display = 'block';
+            blockFriendButton.style.display = 'block';
+            friendsModifyModalUsername.textContent = "\"" + content + "\"";
+        });
+
+        closeModalButton.addEventListener('click', () => {
+            friendsModifyModal.style.display = 'none';
+            acceptFriendButton.style.display = 'none';
+            denyFriendButton.style.display = 'none';
+            blockFriendButton.style.display = 'none';
+        });
+    
+        window.addEventListener('click', (event) => {
+            if (event.target === friendsModifyModal) {
+                friendsModifyModal.style.display = 'none';
+                acceptFriendButton.style.display = 'none';
+                denyFriendButton.style.display = 'none';
+                blockFriendButton.style.display = 'none';
+            }
+        });
+    }
+    else if (list === 'pending')
+    {
+        li.className = 'friends-add-list-user';
+        li.innerHTML = `<span class="list-item-content">${content}</span>`;
+        ul.appendChild(li);
+
+        const textSpan = li.querySelector('.list-item-content');
+
+        textSpan.addEventListener('click', () => {
+            friendsModifyModal.style.display = 'block';
+            withdrawFriendButton.style.display = 'block';
+            blockFriendButton.style.display = 'block';
+            friendsModifyModalUsername.textContent = "\"" + content + "\"";
+        });
+
+        closeModalButton.addEventListener('click', () => {
+            friendsModifyModal.style.display = 'none';
+            withdrawFriendButton.style.display = 'none';
+            blockFriendButton.style.display = 'none';
+        });
+    
+        window.addEventListener('click', (event) => {
+            if (event.target === friendsModifyModal) {
+                friendsModifyModal.style.display = 'none';
+                withdrawFriendButton.style.display = 'none';
+                blockFriendButton.style.display = 'none';
+            }
+        });
+    }
+    else if (list === 'blocked')
+    {
+        li.className = 'friends-add-list-user';
+        li.innerHTML = `<span class="list-item-content">${content}</span>`;
+        ul.appendChild(li);
+
+        const textSpan = li.querySelector('.list-item-content');
+
+        textSpan.addEventListener('click', () => {
+            friendsModifyModal.style.display = 'block';
+            unblockFriendButton.style.display = 'block';
+            friendsModifyModalUsername.textContent = "\"" + content + "\"";
+        });
+
+        closeModalButton.addEventListener('click', () => {
+            friendsModifyModal.style.display = 'none';
+            unblockFriendButton.style.display = 'none';
+        });
+    
+        window.addEventListener('click', (event) => {
+            if (event.target === friendsModifyModal) {
+                friendsModifyModal.style.display = 'none';
+                unblockFriendButton.style.display = 'none';
+            }
+        });
+    }
+    else
+    {
+        li.className = 'friends-add-list-user';
+        li.innerHTML = `<span class="list-item-content">${content}</span>`;
+        ul.appendChild(li);
+    }
 }
 
 function initOnlineStatus() {
@@ -92,7 +246,6 @@ function initOnlineStatus() {
     ws.onmessage = function(event) {
         try {
             const data = JSON.parse(event.data);
-            // console.log("Online Friends:", data.online_users);
             
             const friendsOnlineList = document.getElementById('friendsOnlineList');
             const friendsOfflineList = document.getElementById('friendsOfflineList');
@@ -126,15 +279,15 @@ function initOnlineStatus() {
                 console.log("friend: ", freundesliste[i].username);
 
                 if (freundesliste[i].status === 'online')
-                    addListItem(freundesliste[i].username, friendsOnlineList);
+                    addListItem(freundesliste[i].username, friendsOnlineList, 'online');
                 else if (freundesliste[i].status === 'offline')
-                    addListItem(freundesliste[i].username, friendsOfflineList);
+                    addListItem(freundesliste[i].username, friendsOfflineList, 'offline');
                 else if (freundesliste[i].status === 'pending' && freundesliste[i].type === 'sender')
-                    addListItem(freundesliste[i].username, friendsPendingList);
+                    addListItem(freundesliste[i].username, friendsPendingList, 'pending');
                 else if (freundesliste[i].status === 'pending' && freundesliste[i].type === 'receiver')
-                    addListItem(freundesliste[i].username, friendsRequestsList);
+                    addListItem(freundesliste[i].username, friendsRequestsList, 'request');
                 else
-                    addListItem(freundesliste[i].username, friendsBlockedList);
+                    addListItem(freundesliste[i].username, friendsBlockedList, 'blocked');
             }
         }
         catch (error){
