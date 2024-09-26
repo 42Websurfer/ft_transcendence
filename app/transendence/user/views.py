@@ -98,28 +98,41 @@ def register(request):
 					return JsonResponse({'error': 'Invalid JSON.'}, status=400)
 
 @login_required
-def send_friend_request(request, friend_id):
+def send_friend_request(request, username):
 	user = request.user
-	friend = get_object_or_404(User, id=friend_id)
+	friend = get_object_or_404(User, username=username)
 	if user == friend: 
 		return JsonResponse({
-			'type': 'Failed Request',
+			'type': 'error',
 			'message': 'User and friend have same id',
 		}, status=400)
-	if Friendship.objects.filter(user=user, friend=friend, status='pending').exists():
+	try:
+		friendship = Friendship.objects.get(
+			Q(user=user, friend=friend) | Q(user=friend, friend=user))
+		if (friendship):
+			if friendship.status == 'pending':
+				return JsonResponse({
+					'type': 'error',
+					'message': 'Friend request already send.'
+				}, status=400)
+			elif friendship.status == 'rejected':
+				return JsonResponse({
+					'type': 'error',
+					'message': 'Friend request blocked.'
+				}, status=400)
+			else:
+				return JsonResponse({
+					'type': 'error',
+					'message': 'Your are already friends.'
+				}, status=400)
+	except Friendship.DoesNotExist:
+		newFriend = Friendship.objects.create(user=user, friend=friend, status='pending')
 		return JsonResponse({
-			'type': 'Already requested',
-			'username': user.username,
-			'friendname': friend.username,
-			'status': 'pending'
-		}, status=201)
-	newFriend = Friendship.objects.create(user=user, friend=friend, status='pending')
-	return JsonResponse({
-		'type': 'Success Request',
-		'username': newFriend.user.username,
-		'friendname': newFriend.friend.username,
-		'status': newFriend.status,
-	})
+			'type': 'Success Request',
+			'username': newFriend.user.username,
+			'friendname': newFriend.friend.username,
+			'status': newFriend.status,
+		})
 
 @login_required
 def friend_requests(request):
