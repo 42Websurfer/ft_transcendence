@@ -6,8 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from .models import User, Friendship, PongMatches
 from django.db.models import Q
-from channels.layers import get_channel_layer
-from asgiref.sync import async_to_sync
+from user.utils import updateOnlineStatusChannel
 import json
 import logging
 import redis
@@ -139,10 +138,12 @@ def send_friend_request(request, username):
 				}, status=400)
 	except Friendship.DoesNotExist:
 		newFriend = Friendship.objects.create(user=user, friend=friend, status='pending')
+		updateOnlineStatusChannel()
 		return JsonResponse({
 			'type': 'Success Request',
 			'message': 'Request sent successfully!'
 		}, status=201)
+
 
 @login_required
 def accept_friend_request(request, username):
@@ -163,6 +164,7 @@ def accept_friend_request(request, username):
 		else:
 			friendship.status = 'accepted'
 			friendship.save()
+			updateOnlineStatusChannel()
 		return (JsonResponse({
 			'type': 'success'
 		}))
@@ -180,6 +182,7 @@ def block_friend_request(request, username):
 		friendship = Friendship.objects.get(user=friend, friend=user)
 		friendship.status = 'rejected'
 		friendship.save()
+		updateOnlineStatusChannel()
 		return (JsonResponse({
 			'type': 'success'
 		}))
@@ -196,18 +199,11 @@ def remove_friendship(request, username):
 		friendship = Friendship.objects.filter(
 			Q(user=friend, friend=user) | Q(user=user, friend=friend)
 			).delete()
-		channel_layer = get_channel_layer()
-		group_name = "online_status"
-		async_to_sync(channel_layer.group_send)(
-			group_name,
-			{
-				'type': 'send_online_users',
-				
-			}
-		)
-		return (JsonResponse({
-			'type': 'success'
-		}))
+		if (friendship):
+			updateOnlineStatusChannel()
+			return (JsonResponse({
+				'type': 'success'
+			}))
 	except Friendship.DoesNotExist:
 		return JsonResponse({
 			'type': 'error',
