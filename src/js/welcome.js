@@ -192,19 +192,76 @@ export function renderWelcome() {
     window.addEventListener('click', (event) => {
         if (event.target === friendsAddModal) {
             friendsAddModal.style.display = 'none';
+            invitationMessage.textContent = '';
         }
     });
 
-    const removeFriendButton = document.getElementById('removeFriendButton');
     const friendsModifyModal = document.getElementById('friendsModifyModal');
-    
-    if (!removeFriendButton)
-        return;
+    const removeFriendButton = document.getElementById('removeFriendButton');
+    const blockFriendButton = document.getElementById('blockFriendButton');
+    const acceptFriendButton = document.getElementById('acceptFriendButton');
+    const denyFriendButton = document.getElementById('denyFriendButton');
+    const withdrawFriendButton = document.getElementById('withdrawFriendButton');
+    const unblockFriendButton = document.getElementById('unblockFriendButton');
     
     removeFriendButton.addEventListener('click', async () => {
         if (selectedListItem) {
             const content = selectedListItem.textContent;
-            // selectedListItem.parentNode.removeChild(selectedListItem);
+            setSelectedListItem(null);
+            friendsModifyModal.style.display = 'none';
+            console.log(`/remove_friendship/${content}/`)
+            const response = await handleFriendRequest(`/remove_friendship/${content}/`)
+            console.log(response.type + ' + ' + response.message);
+        }
+    });
+
+    blockFriendButton.addEventListener('click', async () => {
+        if (selectedListItem) {
+            const content = selectedListItem.textContent;
+            setSelectedListItem(null);
+            friendsModifyModal.style.display = 'none';
+            console.log(`/block_friend_request/${content}/`)
+            const response = await handleFriendRequest(`/block_friend_request/${content}/`)
+            console.log(response.type + ' + ' + response.message);
+        }
+    });
+
+    acceptFriendButton.addEventListener('click', async () => {
+        if (selectedListItem) {
+            const content = selectedListItem.textContent;
+            setSelectedListItem(null);
+            friendsModifyModal.style.display = 'none';
+            console.log(`/accept_friend_request/${content}/`)
+            const response = await handleFriendRequest(`/accept_friend_request/${content}/`)
+            console.log(response.type + ' + ' + response.message);
+        }
+    });
+
+    denyFriendButton.addEventListener('click', async () => {
+        if (selectedListItem) {
+            const content = selectedListItem.textContent;
+            setSelectedListItem(null);
+            friendsModifyModal.style.display = 'none';
+            console.log(`/remove_friendship/${content}/`)
+            const response = await handleFriendRequest(`/remove_friendship/${content}/`)
+            console.log(response.type + ' + ' + response.message);
+        }
+    });
+
+    withdrawFriendButton.addEventListener('click', async () => {
+        if (selectedListItem) {
+            const content = selectedListItem.textContent;
+            setSelectedListItem(null);
+            friendsModifyModal.style.display = 'none';
+            console.log(`/remove_friendship/${content}/`)
+            const response = await handleFriendRequest(`/remove_friendship/${content}/`)
+            console.log(response.type + ' + ' + response.message);
+        }
+    });
+
+    unblockFriendButton.addEventListener('click', async () => {
+        if (selectedListItem) {
+            const content = selectedListItem.textContent;
             setSelectedListItem(null);
             friendsModifyModal.style.display = 'none';
             console.log(`/remove_friendship/${content}/`)
