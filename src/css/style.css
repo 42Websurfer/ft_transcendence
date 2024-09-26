@@ -279,7 +279,7 @@ body {
 }
 
 .friends-divider {
-    height: 4px;
+    height: 0.5vh;
     background-color: #d8d3d3;
 }
 
@@ -298,7 +298,7 @@ body {
     text-shadow: 1px 1px 2px #000000;
     font-size:1vw;
     margin-left: 1vw;
-    height: 17vh;
+    height: 19vh;
     overflow: scroll;
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -323,7 +323,7 @@ body {
     text-shadow: 1px 1px 2px #000000;
     font-size:1vw;
     margin-left: 1vw;
-    height: 17vh;
+    height: 19vh;
     overflow: scroll;
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -334,22 +334,17 @@ body {
 }
 
 .friends-options {
-    color: #d8d3d3;
+    color: #d8d7d3;
     text-shadow: 1px 1px 2px #000000;
     flex-direction: row;
     display: flex;
-    font-size:1.4vw;
+    font-size:1vw;
     margin-top: auto;
 }
 
 .friends-options-add {
-    width: 50%;
-    text-align: left;
-}
-
-.friends-options-remove {
-    width: 50%;
-    text-align: right;
+    width: 100%;
+    text-align: center;
 }
 
 .friends-options button {
@@ -455,6 +450,22 @@ body {
     background-color: rgb(0,0,0); /* Fallback color */
     background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
     font-family: 'Press Start 2P';
+    overflow: hidden;
+}
+
+.modal-modify {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.8); /* Black w/ opacity */
+    font-family: 'Press Start 2P';
+    overflow: hidden;
 }
 
 .modal-content {
@@ -464,6 +475,17 @@ body {
     padding: 20px;
     /* border: 1px solid #888; */
     width: 40%; /* Could be more or less, depending on screen size */
+    border-radius: 0.5vw;
+}
+
+.modal-content-modify {
+    background-color: rgba(54, 52, 52, 1.0);
+    border: 0.1em solid #000000;
+    margin: 15% auto; /* 15% from the top and centered */
+    padding: 20px;
+    /* border: 1px solid #888; */
+    width: 40%; /* Could be more or less, depending on screen size */
+    border-radius: 0.5vw;
 }
 
 .close-button {
@@ -497,7 +519,7 @@ body {
 }
 
 .friends-add-divider1 {
-    height: 5px;
+    height: 0.5vh;
     background-color: #d8d3d3;
     margin: 0.5vh;
     width: 13.2vw;
@@ -508,7 +530,7 @@ body {
     justify-content: flex-start;
     align-items: center;
     gap: 10px; /* Space between input and button */
-    margin-top: 20px; /* Space above the input container */
+    margin-top: 2vh; /* Space above the input container */
 }
 
 #friendUsername {
@@ -558,7 +580,7 @@ body {
 }
 
 .friends-add-divider2 {
-    height: 3px;
+    height: 0.3vh;
     background-color: #d8d3d3;
     margin: 0.5vh;
     width: 10vw;
@@ -627,4 +649,62 @@ body {
     75% {
         transform: rotateZ(-2deg);
     }
+}
+
+.friends-add-list-user {
+    position: relative;
+}
+
+.remove-button {
+    display: none; /* Hide the button by default */
+    position: absolute; /* Position it absolutely within the list item */
+    top: 50%; /* Center vertically */
+    right: 10px; /* Position it to the right */
+    transform: translateY(-50%); /* Adjust for vertical centering */
+    background: red; /* Red background */
+    color: white; /* White text */
+    border: none; /* Remove border */
+    border-radius: 50%; /* Make it circular */
+    cursor: pointer; /* Pointer cursor on hover */
+    padding: 5px; /* Adjust padding as needed */
+}
+
+.list-item-content:hover {
+    color: #504948;
+}
+
+.friends-add-divider3 {
+    height: 0.5vh;
+    background-color: #d8d3d3;
+    margin: 0.5vh;
+    margin-bottom: 0;
+    width: 18.4vw;
+}
+
+.friends-modify-username {
+    color: #ffffff;
+    text-shadow: 1px 1px 2px #000000;
+    flex-direction: row;
+    display: flex;
+    font-size: 1vw;
+    margin-top: 2vh;
+    margin-left: 0.4vw;
+    margin-bottom: 2vh;
+    overflow: hidden;
+}
+
+.friends-modify-button button {
+    margin-bottom: 1.2vh;
+    display: none;
+}
+
+.friends-modify-button:hover button{
+    background-color: #1792ca;
+    color: white;
+}
+
+#closeFriendsModifyModalButton {
+    position: absolute;
+    top: 33vh;
+    right: 30.5vw;
 }
