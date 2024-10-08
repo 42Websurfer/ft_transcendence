@@ -680,16 +680,12 @@ body {
 
 .settings-label {
     color: white;
-    font-size: 0.6vw;
+    font-size: 0.8em;
+    text-shadow: 1px 1px 1px #000000;
 }
 
 .settings-input {
     font-size: 0.6vw;
-
-}
-
-#settingsForm > div{
-    margin: 20px;
 }
 
 .login-messages {
