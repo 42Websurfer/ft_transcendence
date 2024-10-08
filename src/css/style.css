@@ -20,8 +20,6 @@ p {
     margin: 0;
     width: 100%;
     height: 100%;
-    background-image: url(../img/aurora.jpg);
-    background-size: cover;
 }
 
 body {
@@ -30,12 +28,14 @@ body {
     padding: 0;
     display: flex;
     flex-direction: column;
-    animation: gradientAnimation 15s ease infinite, changeColor 10s linear infinite;
-    background: #5c57ad;
+    /* animation: gradientAnimation 15s ease infinite, changeColor 10s linear infinite; */
+    /* background: #5c57ad; */
+    background-image: url(../img/aurora.jpg);
+    background-size: cover;
 }
 
 .header {
-    height: 12vh;
+    height: 6em;
     background-color: #f0f0f0;
     font-family: 'Press Start 2P';
     text-shadow: 1px 1px 2px #000000;
@@ -45,6 +45,9 @@ body {
     display: flex;
     align-items: center;
     border-bottom: 0.06em solid #353333;
+    position: sticky;
+    top: 0;
+    width: 100%;
 }
 
 .header-col {
@@ -52,28 +55,30 @@ body {
 }
 
 .header-logo {
-    margin-left: 0.7vw;
+    margin-left: 0.5em;
 }
 
 .header-logo > img {
     border: 0.02em solid #353333;
+    max-height: 5em;
 }
 
 .header-text {
     display: flex;
     justify-content: center;
-    font-size:2vw;
+    font-size: 3em;
+    text-shadow: 1px 1px 2px #000000;
 }
 
 .header-text > p {
-    margin: 0.8vh 0 0 0;
+    margin: 0.15em 0 0 0;
 }
 
 .header-login-logout-button {
     display: flex;
     justify-content: flex-end;
-    margin-right: 1vw;
-    margin-bottom: 0.5vh;
+    margin-right: 1em;
+    margin-top: 0.2em;
 }
 
 .login-logout-button {
@@ -97,16 +102,20 @@ body {
 }
 
 .footer {
-    height: 5.6vh;
+    height: 3em;
     background: linear-gradient(to bottom,#4740a8 0,#8581c7 100%);
     font-family: 'Press Start 2P';
     text-shadow: 1px 1px 2px #000000;
     border-top:  0.12em solid #353333;
     color:#ffffff !important;
-    font-size:0.8vw;
+    font-size:1em;
     flex-direction: row;
     display: flex;
     align-items: center;
+    /* position: fixed; */
+    bottom: 0;
+    width: 100%;
+    position: sticky;
 }
 
 .footer-col {
@@ -234,12 +243,14 @@ body {
 .menu {
     flex-direction: row;
     display: flex;
-    height: 100%;
+    padding: 3em;
+    /* height: calc(100vh - 9em); */
+    /* margin-top: 6em; */
 }
 
 .menu-friends {
     width: 35%;
-    padding: 4vh;
+    /* padding: 4vh; */
     padding-right: 0;
     font-family: 'Press Start 2P';
 }
@@ -248,46 +259,46 @@ body {
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 1.75vh;
-    justify-content: center;
+    gap: 1em;
+    /* justify-content: center; */
     align-items: flex-end;
     padding-left: 10vw;
 }
 
 .menu-friends-container {
-    height: 77vh;
+    /* height: calc(100vh - 9em); */
     width: 100%;
     background-color: rgba(0, 0, 0, 0.4);
-    padding: 3vh 2vw 2vh 2vw;
+    padding: 2em;
+    padding-bottom: 1em;
     border-radius: 8px;
     border: 0.1em solid #000000;
-    overflow: hidden;
+    overflow: scroll;
     flex-direction: column;
     display: flex;
 }
 
 .menu-friends-header {
-    font-size:1.6vw;
+    font-size: 1.6em;
     color: #d8d3d3;
     text-shadow: 1px 1px 2px #000000;
     text-align: center;
 }
 
-.menu-friends-header > p {
-    margin-top: 1vh;
+/* .menu-friends-header > p {
+    margin-top: 1em;
     margin-bottom: 0;
-}
+} */
 
 .friends-divider {
-    height: 0.5vh;
+    height: 4px;
     background-color: #d8d3d3;
 }
 
 .friends-online-header {
     color: #049127;
-    font-size:1.4vw;
+    font-size: 1.6em;
     text-shadow: 1px 1px 2px #000000;
-    margin-top: 1vh;
 }
 
 .friends-online-list {
@@ -296,9 +307,9 @@ body {
     margin: 0;
     color: #d8d3d3;
     text-shadow: 1px 1px 2px #000000;
-    font-size:1vw;
-    margin-left: 1vw;
-    height: 19vh;
+    font-size:1em;
+    margin-left: 1em;
+    height: 13.6em;
     overflow: scroll;
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -310,9 +321,8 @@ body {
 
 .friends-offline-header {
     color: #af210e;
-    font-size:1.4vw;
+    font-size: 1.6em;
     text-shadow: 1px 1px 2px #000000;
-    margin-top: 1vh;
 }
 
 .friends-offline-list {
@@ -321,9 +331,9 @@ body {
     margin: 0;
     color: #d8d3d3;
     text-shadow: 1px 1px 2px #000000;
-    font-size:1vw;
-    margin-left: 1vw;
-    height: 19vh;
+    font-size:1em;
+    margin-left: 1em;
+    height: 13.6em;
     overflow: scroll;
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -338,7 +348,7 @@ body {
     text-shadow: 1px 1px 2px #000000;
     flex-direction: row;
     display: flex;
-    font-size:1vw;
+    font-size: 1.2em;
     margin-top: auto;
 }
 
@@ -365,20 +375,26 @@ body {
 
 .menu-item {
     text-align: left;
-    height: 14vh;
+    /* height: 8.78em; */
     width: 110%;
     border-radius: 4px;
     position: relative;
     font-family: 'Press Start 2P';
-    font-size:0.8vw;
-    padding-left: 2vw;
-    padding-top: 2.6vh;
+    padding: 1.35em;
     color: #d8d3d3;
     text-shadow: 1px 1px 2px #000000;
     transition: transform 0.3s ease;
     border: 0.1em solid #292424;
     filter:brightness(100%);
     overflow: hidden;
+}
+
+.menu-item > h1 {
+    font-size: 3em;
+}
+
+.menu-item > p {
+    font-size: 1em;
 }
 
 .menu-item:hover {
