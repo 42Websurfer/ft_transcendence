@@ -974,18 +974,19 @@ body {
 .copy-message {
     display: none;
     position: fixed;
-    top: 50%;
-    left: 50%;
+    top: 37%;
+    left: 87.2%;
     transform: translate(-50%, -50%);
     background: linear-gradient(to bottom, #8581c7,#4740a8 100%);
     color: white;
-    padding: 0.6em;
+    padding: 0.3em;
     border-radius: 0.4em;
     z-index: 1000;
     border: 0.1em solid #000000;
-    font-size: 1.2em;
+    font-size: 0.8em;
     text-shadow: 1px 1px 2px #000000;
     font-family: 'Press Start 2P';
+    white-space: nowrap;
 }
 
 .tournament-lobby-header {

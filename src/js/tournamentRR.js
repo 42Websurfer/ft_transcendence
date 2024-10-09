@@ -52,9 +52,9 @@ export function renderTournamentRR() {
                             <button id="copyLobbyIdButton"><span class="button-text">&#x2398;</span></button>
                         </div>
                     </div>
-                    <button id="tournamentStartButton"><span class="button-text">Start tournament</span></button>  
-                </div>
-                <div id="copyMessage" class="copy-message">Copied to clipboard!</div>  
+                    <button id="tournamentStartButton"><span class="button-text">Start tournament</span></button>
+                    <div id="copyMessage" class="copy-message">Copied to clipboard!</div>  
+                </div>  
             </div>
         </div>
     </div>
