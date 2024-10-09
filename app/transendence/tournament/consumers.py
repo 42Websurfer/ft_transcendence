@@ -5,10 +5,6 @@ from django.contrib.auth import get_user_model
 from asgiref.sync import sync_to_async
 import redis
 from .utils import change_admin
-import logging
-
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
 
 redis = redis.Redis(host='redis', port=6379, db=0)
 
@@ -62,20 +58,13 @@ class Tournament(AsyncWebsocketConsumer):
 	async def send_tournament_users(self, event):
 		User = get_user_model()
 		tournament_users = redis.hgetall(self.group_name)
-		
-		print(f"tournament_users: {tournament_users}")
-		
 		tournament_user_ids = [int(user_id) for user_id in tournament_users.keys()]
 		tournament_user_info = await sync_to_async(list)(User.objects.filter(id__in=tournament_user_ids))
-		
-		for user in tournament_user_info:
-			print(f"user.id: {user.id}, role: {tournament_users.get(str(user.id).encode('utf-8')).decode()}")
-	
 		
 		users_data = [
 			{
 				'username': user.username,
-				'role': tournament_users[str(user.id).encode('utf-8')].decode()
+				'role': tournament_users.get(str(user.id).encode('utf-8')).decode() #redis safes everything in bytes 
 			}
 			for user in tournament_user_info
 		]
