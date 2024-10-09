@@ -861,14 +861,161 @@ body {
 .tournament-container-divider {
     height: 4px;
     background-color: #d8d3d3;
+    margin-bottom: 1.6em;
+}
+
+.tournament-container-inside {
+    display: flex;
+    flex-direction: row;
+}
+
+.tournament-container-left {
+    width: 80%;
+    display: flex;
+    flex-direction: row;
+    background-color: rgba(245, 244, 244, 0.4);
+    border-radius: 8px;
+    border: 0.1em solid #000000;
+}
+
+.tournament-vertical-divider {
+    width: 4px; 
+    height: 95%;
+    background-color: #221e1e;
+    margin: 1em 1.4em;
+    margin-bottom: 1em;
+}
+
+.tournament-lobby {
+    width: 38%;
+    padding: 2em;
+}
+
+.tournament-controls {
+    width: 58%;
+    padding: 1.25em;
+    font-size: 1.6em;
+    text-shadow: 1px 1px 2px #000000;
+    font-family: 'Press Start 2P';
+}
+
+.tournament-buttons {
+    width: 20%;
+    margin-left: 5%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .tournament-lobby-id {
-    /* width: 10em; */
+    width: 9.5em;
     /* height: 5em; */
     background-color: rgba(245, 244, 244, 0.6);
     border-radius: 8px;
     border: 0.1em solid #000000;
-    flex-direction: column;
+    font-size: 1.2em;
     display: flex;
+    flex-direction: column;
+    text-shadow: 1px 1px 2px #000000;
+    text-align: center;
+    font-family: 'Press Start 2P';
+    padding: 0.4em 0;
+}
+
+#copyLobbyIdButton {
+    background: none;
+    border: none;
+    font: inherit;
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 0.3s ease;
+    text-shadow: 2px 1px 2px #000000;
+    margin-top: 0.15em;
+    pointer-events: none;
+    color: #4740a8;
+}
+    
+#copyLobbyIdButton .button-text {
+    pointer-events: auto;
+}
+
+#copyLobbyIdButton .button-text:hover {
+    color: #ae4fdd;
+    text-shadow: 2px 2px 2px #000000;
+}
+
+#tournamentStartButton {
+    /* align-self: flex-end; */
+    width: 17.4em;
+    background-color: rgba(245, 244, 244, 0.6);
+    border-radius: 8px;
+    border: 0.1em solid #000000;
+    font-size: 1.2em;
+    display: flex;
+    flex-direction: column;
+    text-shadow: 1px 1px 2px #000000;
+    text-align: center;
+    font-family: 'Press Start 2P';
+    padding: 0.6em;
+    white-space: nowrap;
+    margin-top: 23.8em;
+    color: white;
+}
+
+#tournamentStartButton .button-text {
+    pointer-events: auto;
+}
+
+#tournamentStartButton .button-text:hover {
+    color: #e6e4e7;
+    text-shadow: 2px 2px 2px #000000;
+}
+
+.copy-message {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(to bottom, #8581c7,#4740a8 100%);
+    color: white;
+    padding: 0.6em;
+    border-radius: 0.4em;
+    z-index: 1000;
+    border: 0.1em solid #000000;
+    font-size: 1.2em;
+    text-shadow: 1px 1px 2px #000000;
+    font-family: 'Press Start 2P';
+}
+
+.tournament-lobby-header {
+    color: #049127;
+    font-size: 1.6em;
+    text-shadow: 1px 1px 2px #000000;
+    font-family: 'Press Start 2P';
+    margin-bottom: 0.6em;
+}
+
+.tournament-lobby-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    color: #d8d3d3;
+    text-shadow: 1px 1px 2px #000000;
+    font-size:1em;
+    margin-left: 1em;
+    height: 29em;
+    overflow: scroll;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    background-color: #047e0e;
+}
+
+.tournament-lobby-list::-webkit-scrollbar {
+    display: none;
+}
+
+.tournament-controls-header {
+    color: #dd8015;
+    margin-bottom: 0.6em;
 }
