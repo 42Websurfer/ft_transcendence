@@ -4,6 +4,11 @@ from channels.layers import get_channel_layer
 from django.contrib.auth import get_user_model
 from asgiref.sync import sync_to_async
 import redis
+from .utils import change_admin
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 redis = redis.Redis(host='redis', port=6379, db=0)
 
@@ -18,7 +23,11 @@ class Tournament(AsyncWebsocketConsumer):
 				self.channel_name
 			)
 			await self.accept()
-			redis.sadd(self.group_name, self.user.id)
+			if redis.exists(self.group_name):
+				redis.hset(self.group_name, self.user.id, 'member')
+			else: 
+				redis.hset(self.group_name, self.user.id, 'admin')
+			#redis.sadd(self.group_name, self.user.id)
 			await self.channel_layer.group_send(
 				self.group_name,
 				{
@@ -32,7 +41,14 @@ class Tournament(AsyncWebsocketConsumer):
 				self.group_name,
 				self.channel_name
 			)
-			redis.srem(self.group_name, self.user.id)
+			if redis.hlen(self.group_name) == 1: 
+				print(redis.hlen(self.group_name))
+				redis.delete(self.group_name)
+				return
+			role = redis.hget(self.group_name, self.user.id)
+			redis.hdel(self.group_name, self.user.id)
+			if role.decode() == 'admin':
+				change_admin(redis, self.group_name)
 			await self.channel_layer.group_send(
 				self.group_name,
 				{
@@ -41,14 +57,25 @@ class Tournament(AsyncWebsocketConsumer):
 			)
 			#wenn es der admin war, dann muss ein neuer Admin gesetzt werden
 	
+
+	#nochmal überarbeiten und dann mal testen! nicht mehr in set sondern in hasheses
 	async def send_tournament_users(self, event):
 		User = get_user_model()
-		tournament_user_ids = redis.smembers(self.group_name)
-		tournament_users_ids = [int(user_id) for user_id in tournament_user_ids]
+		tournament_users = redis.hgetall(self.group_name)
+		
+		print(f"tournament_users: {tournament_users}")
+		
+		tournament_user_ids = [int(user_id) for user_id in tournament_users.keys()]
 		tournament_user_info = await sync_to_async(list)(User.objects.filter(id__in=tournament_user_ids))
+		
+		for user in tournament_user_info:
+			print(f"user.id: {user.id}, role: {tournament_users.get(str(user.id).encode('utf-8')).decode()}")
+	
+		
 		users_data = [
 			{
-				'username': user.username
+				'username': user.username,
+				'role': tournament_users[str(user.id).encode('utf-8')].decode()
 			}
 			for user in tournament_user_info
 		]
