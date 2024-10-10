@@ -20,8 +20,9 @@ p {
     margin: 0;
     width: 100%;
     height: 100%;
-    background-image: url(../img/aurora.jpg);
-    background-size: cover;
+    /* display: flex;
+    flex-direction: column;
+    justify-content: center; */
 }
 
 body {
@@ -30,12 +31,14 @@ body {
     padding: 0;
     display: flex;
     flex-direction: column;
-    animation: gradientAnimation 15s ease infinite, changeColor 10s linear infinite;
-    background: #5c57ad;
+    /* animation: gradientAnimation 15s ease infinite, changeColor 10s linear infinite; */
+    /* background: #5c57ad; */
+    background-image: url(../img/aurora.jpg);
+    background-size: cover;
 }
 
 .header {
-    height: 12vh;
+    height: 6em;
     background-color: #f0f0f0;
     font-family: 'Press Start 2P';
     text-shadow: 1px 1px 2px #000000;
@@ -45,6 +48,9 @@ body {
     display: flex;
     align-items: center;
     border-bottom: 0.06em solid #353333;
+    position: sticky;
+    top: 0;
+    width: 100%;
 }
 
 .header-col {
@@ -52,28 +58,47 @@ body {
 }
 
 .header-logo {
-    margin-left: 0.7vw;
+    margin-left: 0.5em;
 }
 
 .header-logo > img {
     border: 0.02em solid #353333;
+    max-height: 4em;
 }
 
 .header-text {
     display: flex;
     justify-content: center;
-    font-size:2vw;
+    font-size: 3em;
 }
 
-.header-text > p {
-    margin: 0.8vh 0 0 0;
+#webpong-button {
+    background: none;
+    border: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 0.3s ease;
+    text-shadow: 2px 1px 2px #000000;
+    margin-top: 0.15em;
+    pointer-events: none;
+}
+
+#webpong-button .button-text {
+    pointer-events: auto;
+}
+
+#webpong-button .button-text:hover {
+    color: #e6e4e7;
+    text-shadow: 2px 2px 2px #000000;
 }
 
 .header-login-logout-button {
     display: flex;
     justify-content: flex-end;
-    margin-right: 1vw;
-    margin-bottom: 0.5vh;
+    margin-right: 1em;
+    margin-top: 0.2em;
 }
 
 .login-logout-button {
@@ -87,8 +112,8 @@ body {
 
 .login-logout-button:hover {
     border: 0.1em solid #353333;
-    color: #2d2c2e;
-    text-shadow: 1px 1px 2px #ffffff;
+    color: #e6e4e7;
+    text-shadow: 2px 2px 2px #000000;
 }
 
 .main-content {
@@ -97,16 +122,20 @@ body {
 }
 
 .footer {
-    height: 5.6vh;
+    height: 3em;
     background: linear-gradient(to bottom,#4740a8 0,#8581c7 100%);
     font-family: 'Press Start 2P';
     text-shadow: 1px 1px 2px #000000;
     border-top:  0.12em solid #353333;
     color:#ffffff !important;
-    font-size:0.8vw;
+    font-size:1em;
     flex-direction: row;
     display: flex;
     align-items: center;
+    /* position: fixed; */
+    bottom: 0;
+    width: 100%;
+    position: sticky;
 }
 
 .footer-col {
@@ -144,27 +173,24 @@ body {
 }
 
 .footer-settings button:hover {
-    color: #2d2c2e;
-    text-shadow: 1px 1px 2px #ffffff;
+    color: #e6e4e7;
+    text-shadow: 2px 2px 2px #000000;
 }
 
 .login {
     display: flex;
     flex-direction: column;
-    gap: 1vh;
     justify-content: center;
     align-items:center;
-    height: 85vh;
     width: 100%;
+    padding: 3em;
 }
 
 .login-container {
     background-color: rgba(0, 0, 0, 0.4);
-    padding: 32px 48px 48px 48px;
+    padding: 32px 48px 38px 48px;
     border-radius: 8px;
     border: 0.1em solid #000000;
-    width: 40vw;
-    min-width: 500px;
 }
 
 .login-instructions {
@@ -172,7 +198,7 @@ body {
     text-shadow: 1px 1px 2px #000000;
     color:#ffffff !important;
     font-size:1em;
-    margin-bottom: 3.2vh;
+    margin-bottom: 1.8em;
 }
 
 .login-instructions > p{
@@ -234,12 +260,14 @@ body {
 .menu {
     flex-direction: row;
     display: flex;
-    height: 100%;
+    padding: 3em;
+    /* height: calc(100vh - 9em); */
+    /* margin-top: 6em; */
 }
 
 .menu-friends {
     width: 35%;
-    padding: 4vh;
+    /* padding: 4vh; */
     padding-right: 0;
     font-family: 'Press Start 2P';
 }
@@ -248,46 +276,46 @@ body {
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 1.75vh;
-    justify-content: center;
+    gap: 1em;
+    /* justify-content: center; */
     align-items: flex-end;
     padding-left: 10vw;
 }
 
 .menu-friends-container {
-    height: 77vh;
+    /* height: calc(100vh - 9em); */
     width: 100%;
     background-color: rgba(0, 0, 0, 0.4);
-    padding: 3vh 2vw 2vh 2vw;
+    padding: 2em;
+    padding-bottom: 1em;
     border-radius: 8px;
     border: 0.1em solid #000000;
-    overflow: hidden;
+    overflow: scroll;
     flex-direction: column;
     display: flex;
 }
 
 .menu-friends-header {
-    font-size:1.6vw;
+    font-size: 1.6em;
     color: #d8d3d3;
     text-shadow: 1px 1px 2px #000000;
     text-align: center;
 }
 
-.menu-friends-header > p {
-    margin-top: 1vh;
+/* .menu-friends-header > p {
+    margin-top: 1em;
     margin-bottom: 0;
-}
+} */
 
 .friends-divider {
-    height: 0.5vh;
+    height: 4px;
     background-color: #d8d3d3;
 }
 
 .friends-online-header {
     color: #049127;
-    font-size:1.4vw;
+    font-size: 1.6em;
     text-shadow: 1px 1px 2px #000000;
-    margin-top: 1vh;
 }
 
 .friends-online-list {
@@ -296,9 +324,9 @@ body {
     margin: 0;
     color: #d8d3d3;
     text-shadow: 1px 1px 2px #000000;
-    font-size:1vw;
-    margin-left: 1vw;
-    height: 19vh;
+    font-size:1em;
+    margin-left: 1em;
+    height: 13.6em;
     overflow: scroll;
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -310,9 +338,8 @@ body {
 
 .friends-offline-header {
     color: #af210e;
-    font-size:1.4vw;
+    font-size: 1.6em;
     text-shadow: 1px 1px 2px #000000;
-    margin-top: 1vh;
 }
 
 .friends-offline-list {
@@ -321,9 +348,9 @@ body {
     margin: 0;
     color: #d8d3d3;
     text-shadow: 1px 1px 2px #000000;
-    font-size:1vw;
-    margin-left: 1vw;
-    height: 19vh;
+    font-size:1em;
+    margin-left: 1em;
+    height: 13.6em;
     overflow: scroll;
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -338,7 +365,7 @@ body {
     text-shadow: 1px 1px 2px #000000;
     flex-direction: row;
     display: flex;
-    font-size:1vw;
+    font-size: 1.2em;
     margin-top: auto;
 }
 
@@ -359,26 +386,32 @@ body {
 }
 
 .friends-options button:hover {
-    color: #2d2c2e;
-    text-shadow: 1px 1px 2px #ffffff;
+    color: #a7a3aa;
+    text-shadow: 2px 2px 2px #000000;
 }
 
 .menu-item {
     text-align: left;
-    height: 14vh;
+    /* height: 8.78em; */
     width: 110%;
     border-radius: 4px;
     position: relative;
     font-family: 'Press Start 2P';
-    font-size:0.8vw;
-    padding-left: 2vw;
-    padding-top: 2.6vh;
+    padding: 1.35em;
     color: #d8d3d3;
     text-shadow: 1px 1px 2px #000000;
     transition: transform 0.3s ease;
     border: 0.1em solid #292424;
     filter:brightness(100%);
     overflow: hidden;
+}
+
+.menu-item > h1 {
+    font-size: 3em;
+}
+
+.menu-item > p {
+    font-size: 1em;
 }
 
 .menu-item:hover {
@@ -653,20 +686,23 @@ body {
 
 .login-form-field {
     font-family: 'Press Start 2P';
+    overflow: scroll;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.login-form-field::-webkit-scrollbar {
+    display: none;
 }
 
 .settings-label {
     color: white;
-    font-size: 0.6vw;
+    font-size: 0.8em;
+    text-shadow: 1px 1px 1px #000000;
 }
 
 .settings-input {
     font-size: 0.6vw;
-
-}
-
-#settingsForm > div{
-    margin: 20px;
 }
 
 .login-messages {
@@ -736,4 +772,251 @@ body {
     position: absolute;
     top: 33vh;
     right: 30.5vw;
+}
+
+.tournament-or-text {
+    display: flex;
+    justify-content: center; /* Center text horizontally */
+    align-items: center; /* Center text vertically */
+    width: 110%;
+}
+
+.tournament-or-text > p{
+    font-family: 'Press Start 2P';
+    text-shadow: 1px 1px 2px #000000;
+    color:#ffffff !important;
+    font-size: 1.2em;
+    margin: 0;
+    text-align: center;
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+
+.tournament-enter-lobby {
+    display: flex;
+    /* justify-content: center; */
+    width: 110%;
+}
+
+#tournamentLobbyId {
+    font-size: 1.6em;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    height: 2em;
+    width: 110%;
+    font-family: 'Courier New', Courier, monospace;
+    text-align: left;
+    padding-left: 0.6em;
+    color: #000000;
+}
+
+#joinLobbyButton {
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 0.3s ease;
+    text-shadow: 1px 1px 2px #000000;
+    overflow: hidden;
+    white-space: nowrap;
+    font-size: 1vw;
+    color:#047e0e !important;
+}
+
+#joinLobbyButton:hover {
+    color: #2d2c2e;
+    text-shadow: 1px 1px 2px #ffffff;
+}
+
+#tournamentItemRR {
+    background: linear-gradient(to bottom, rgba(221, 88, 10, 0.7) 0%, rgba(226, 121, 60, 0.7) 100%);
+}
+
+#tournamentItemKO {
+    background: linear-gradient(to bottom, rgba(7, 112, 24, 0.7) 0%, rgba(15, 156, 39, 0.7) 100%);
+}
+
+.tournament-container {
+    width: 100%;
+    height: 46.3em;
+    background-color: rgba(0, 0, 0, 0.4);
+    padding: 2em;
+    padding-bottom: 1em;
+    border-radius: 8px;
+    border: 0.1em solid #000000;
+    overflow: scroll;
+    flex-direction: column;
+    display: flex;
+}
+
+.tournament-container-header {
+    font-size: 1.6em;
+    color: #d8d3d3;
+    text-shadow: 1px 1px 2px #000000;
+    text-align: center;
+    font-family: 'Press Start 2P';
+}
+
+.tournament-container-divider {
+    height: 4px;
+    background-color: #d8d3d3;
+    margin-bottom: 1.6em;
+}
+
+.tournament-container-inside {
+    display: flex;
+    flex-direction: row;
+}
+
+.tournament-container-left {
+    width: 80%;
+    display: flex;
+    flex-direction: row;
+    background-color: rgba(245, 244, 244, 0.4);
+    border-radius: 8px;
+    border: 0.1em solid #000000;
+}
+
+.tournament-vertical-divider {
+    width: 4px; 
+    height: 95%;
+    background-color: #221e1e;
+    margin: 1em 1.4em;
+    margin-bottom: 1em;
+}
+
+.tournament-lobby {
+    width: 38%;
+    padding: 2em;
+}
+
+.tournament-controls {
+    width: 58%;
+    padding: 1.25em;
+    font-size: 1.6em;
+    text-shadow: 1px 1px 2px #000000;
+    font-family: 'Press Start 2P';
+}
+
+.tournament-buttons {
+    width: 20%;
+    margin-left: 5%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.tournament-lobby-id {
+    width: 9.5em;
+    /* height: 5em; */
+    background-color: rgba(245, 244, 244, 0.6);
+    border-radius: 8px;
+    border: 0.1em solid #000000;
+    font-size: 1.2em;
+    display: flex;
+    flex-direction: column;
+    text-shadow: 1px 1px 2px #000000;
+    text-align: center;
+    font-family: 'Press Start 2P';
+    padding: 0.4em 0;
+}
+
+#copyLobbyIdButton {
+    background: none;
+    border: none;
+    font: inherit;
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 0.3s ease;
+    text-shadow: 2px 1px 2px #000000;
+    margin-top: 0.15em;
+    pointer-events: none;
+    color: #4740a8;
+}
+    
+#copyLobbyIdButton .button-text {
+    pointer-events: auto;
+}
+
+#copyLobbyIdButton .button-text:hover {
+    color: #ae4fdd;
+    text-shadow: 2px 2px 2px #000000;
+}
+
+#tournamentStartButton {
+    /* align-self: flex-end; */
+    width: 17.4em;
+    background-color: rgba(245, 244, 244, 0.6);
+    border-radius: 8px;
+    border: 0.1em solid #000000;
+    font-size: 1.2em;
+    display: flex;
+    flex-direction: column;
+    text-shadow: 1px 1px 2px #000000;
+    text-align: center;
+    font-family: 'Press Start 2P';
+    padding: 0.6em;
+    white-space: nowrap;
+    margin-top: 23.8em;
+    color: white;
+}
+
+#tournamentStartButton .button-text {
+    pointer-events: auto;
+}
+
+#tournamentStartButton .button-text:hover {
+    color: #e6e4e7;
+    text-shadow: 2px 2px 2px #000000;
+}
+
+.copy-message {
+    display: none;
+    position: fixed;
+    top: 37%;
+    left: 87.2%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(to bottom, #8581c7,#4740a8 100%);
+    color: white;
+    padding: 0.3em;
+    border-radius: 0.4em;
+    z-index: 1000;
+    border: 0.1em solid #000000;
+    font-size: 0.8em;
+    text-shadow: 1px 1px 2px #000000;
+    font-family: 'Press Start 2P';
+    white-space: nowrap;
+}
+
+.tournament-lobby-header {
+    color: #049127;
+    font-size: 1.6em;
+    text-shadow: 1px 1px 2px #000000;
+    font-family: 'Press Start 2P';
+    margin-bottom: 0.6em;
+}
+
+.tournament-lobby-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    color: #d8d3d3;
+    text-shadow: 1px 1px 2px #000000;
+    font-size:1em;
+    margin-left: 1em;
+    height: 29em;
+    overflow: scroll;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    background-color: #047e0e;
+}
+
+.tournament-lobby-list::-webkit-scrollbar {
+    display: none;
+}
+
+.tournament-controls-header {
+    color: #dd8015;
+    margin-bottom: 0.6em;
 }

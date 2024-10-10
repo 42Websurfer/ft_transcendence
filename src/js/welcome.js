@@ -1,5 +1,5 @@
 import { getCookie, displayMessages } from './utils.js';
-import { selectedListItem, setSelectedListItem, handleFriendRequest } from './index.js';
+import { selectedListItem, setSelectedListItem, handleFriendRequest, showSection } from './index.js';
 
 export function renderWelcome() {
 
@@ -41,7 +41,7 @@ export function renderWelcome() {
             </div>  
             <div class="menu-item" id="menu-item-online">
                 <h1>Online</h1>
-                <p>Play online with friends<p>
+                <p>Play 1 vs 1 with a friend<p>
             </div>
             <div class="menu-item" id="menu-item-tournament">
                 <h1>Tournament</h1>
@@ -268,6 +268,12 @@ export function renderWelcome() {
             const response = await handleFriendRequest(`/remove_friendship/${content}/`)
             console.log(response.type + ' + ' + response.message);
         }
+    });
+
+    const tournamentButton = document.getElementById('menu-item-tournament');
+    tournamentButton.addEventListener('click', () => {
+        console.log("clicked");
+        showSection('tournament');
     });
 
 }

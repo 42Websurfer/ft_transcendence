@@ -74,6 +74,11 @@ settingsButton.addEventListener('click', () => {
     showSection('settings');
 });
 
+const homeButton = document.getElementById('webpong-button');
+homeButton.addEventListener('click', () => {
+    showSection('welcome');
+});
+
 export async function handleFriendRequest(url) {
     try {
         const response = await fetch(`${url}`, {
@@ -364,6 +369,14 @@ export async function showSection(section, lobbyId)
         else if (section === 'settings')
             import('./settings.js').then(module => {
                 module.renderSettings();
+            });
+        else if (section === 'tournament')
+            import('./tournament.js').then(module => {
+                module.renderTournament();
+            });
+        else if (section === 'tournamentRR')
+            import('./tournamentRR.js').then(module => {
+                module.renderTournamentRR();
             });
         else if (section === 'pong')
             import('./pong.js').then(module => {

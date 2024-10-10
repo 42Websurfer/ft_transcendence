@@ -11,7 +11,7 @@ export async function renderSettings() {
 				<div id="messages"></div>
 				<input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
 				<div class="login-instructions">
-					<p>Update your User Information!</p>
+					<p>Update your account information!</p>
 				</div>
 				
 
@@ -20,11 +20,11 @@ export async function renderSettings() {
 					<input id="settings-email" type="email" name="settings-email" class="form-control" placeholder="name@example.com">
 				</div>
 				<div class="login-form-field">
-                    <label for="floatingPassword" class="settings-label">New Password</label>
+                    <label for="floatingPassword" class="settings-label">New password</label>
 					<input type="password" name="settings-password" class="form-control" placeholder="Password">
 				</div>
 				<div class="login-form-field">
-                    <label for="floatingPassword" class="settings-label">New Password Confirmation</label>
+                    <label for="floatingPassword" class="settings-label">Confirm new password</label>
 					<input type="password" name="settings-password" class="form-control" placeholder="Password">
 				</div>
 				<div class="login-form-field">
@@ -41,7 +41,7 @@ export async function renderSettings() {
 				</div>
 
 
-				<button class="signin-button btn btn-primary w-100 py-2" type="submit">Update User Details</button>
+				<button class="signin-button btn btn-primary w-100 py-2" type="submit">Update</button>
 				
 			</form>
 		</div>
