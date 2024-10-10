@@ -4,6 +4,8 @@ import string
 import redis
 import json
 from .utils import tournament_string
+from django.views.decorators.csrf import csrf_exempt
+
 
 redis = redis.Redis(host='redis', port=6379, db=0)
 
@@ -36,22 +38,13 @@ def start_group_tournament(request, lobby_id):
 	]
 	if (len(players_id) % 2 != 0):
 		players_id.append(-1)
-	
-	user_data = [
-		{
-			'id': players_id
-		}
-		for i in range(len(players_id))
-	]
-	print(players_id)
-	matchList = []
+
 	num_rounds = len(players_id) - 1
 	num_matches_per_round = len(players_id) // 2
 
 	tournament_dict = {'tournament_id': lobby_id, 'matches': []}
 	match_id = 1
 	for round in range(num_rounds):
-		round_matches = []
 		for match in range(num_matches_per_round):
 			home = (round + match) % (len(players_id) - 1)
 			away = (len(players_id) - 1 - match + round) % (len(players_id) - 1)
@@ -70,12 +63,27 @@ def start_group_tournament(request, lobby_id):
 			}
 			match_id += 1
 			tournament_dict['matches'].append(new_match)
-			round_matches.append((players_id[home], players_id[away]))
-		matchList.extend(round_matches)
 		tournament_json = json.dumps(tournament_dict)
 		redis.set(tournament_string(lobby_id), tournament_json)
 	return (JsonResponse(tournament_dict))
-	# 
 
+@csrf_exempt
+def set_match(request):
+	data = json.loads(request.body)		
+	tournament_id = data.get('tournament_id')
+	match_id = data.get('match_id')
+	score_home = data.get('score_home')
+	score_away = data.get('score_away')
+	
+	tournament = redis.get(tournament_string(tournament_id))
+	if tournament is None:
+		return JsonResponse({'error': 'Tournament not found'})
+	tournament_dic = json.loads(tournament)
+	match = tournament_dic['matches'][match_id - 1]
 
-#nach der pause mal die funktion laufen lassen! und schauen ob das alles funktioniert! 
+	print(f"match: {match}")
+	match['score_home'] = score_home
+	match['score_away'] = score_away
+	match['status'] = 'completed'
+	redis.set(tournament_string(tournament_id), json.dumps(tournament_dic))
+	return JsonResponse(tournament_dic)
