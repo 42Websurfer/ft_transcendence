@@ -97,7 +97,7 @@ export function setSelectedListItem(item) {
     selectedListItem = item;
 }
 
-async function addListItem(content, ul, list)
+export async function addListItem(content, ul, list, role)
 {
     const li = document.createElement('li');
 
@@ -110,14 +110,22 @@ async function addListItem(content, ul, list)
     const denyFriendButton = document.getElementById('denyFriendButton');
     const withdrawFriendButton = document.getElementById('withdrawFriendButton');
     const unblockFriendButton = document.getElementById('unblockFriendButton');
+    
+    if (list != 'lobby')
+    {
+        if (!friendsModifyModal || !closeModalButton)
+            return;
+        friendsModifyModalUsername.textContent = "\"" + content + "\"";
+        friendsModifyModalUsername.style.color = '#1792ca';
+    }
 
-    if (!friendsModifyModal || !closeModalButton)
-        return;
-
-    friendsModifyModalUsername.textContent = "\"" + content + "\"";
-    friendsModifyModalUsername.style.color = '#1792ca';
-
-    if (list === 'offline' || list === 'online')
+    if (list === 'lobby')
+    {
+        li.className = 'friends-add-list-user';
+        li.innerHTML = `<span class="list-item-content">${content}</span>`;
+        ul.appendChild(li); 
+    }
+    else if (list === 'offline' || list === 'online')
     {
         li.className = 'friends-add-list-user';
         li.innerHTML = `<span class="list-item-content">${content}</span>`;
@@ -302,23 +310,11 @@ function initOnlineStatus() {
             friendsPendingList.innerHTML = "";
             friendsRequestsList.innerHTML = "";
             friendsBlockedList.innerHTML = "";
-
-            console.log("data: ", data.friendList);
             
             const freundesliste = data.friendList;
             
-            console.log("freundesliste len: ", freundesliste.length);
-            console.log("freundesliste: ", freundesliste);
-            
-            console.log("freund[0]: ", freundesliste[0]);
-            console.log("freund[0].status: ", freundesliste[0].status);
-            console.log("freund[0].username: ", freundesliste[0].username);
-
-
             for (let i = 0; i < freundesliste.length; i++)
             {
-                console.log("friend: ", freundesliste[i].username);
-
                 if (freundesliste[i].status === 'online')
                     addListItem(freundesliste[i].username, friendsOnlineList, 'online');
                 else if (freundesliste[i].status === 'offline')
@@ -343,7 +339,6 @@ function initOnlineStatus() {
 
 export async function showSection(section, lobbyId)
 {
-    console.log('section:' + section);
     const isAuthenticated = await checkAuthentication();
     renderLoginLogoutButton(isAuthenticated, section);
     if (section === 'register')
@@ -360,8 +355,6 @@ export async function showSection(section, lobbyId)
             initOnlineStatus();
             wsBool = true;
         }
-        else 
-            console.log("WARUM IST ES NICHT EINGELOGGT?!");
         if (section === 'welcome')
                 import('./welcome.js').then(module => {
                     module.renderWelcome();
@@ -376,7 +369,7 @@ export async function showSection(section, lobbyId)
             });
         else if (section === 'tournamentRR')
             import('./tournamentRR.js').then(module => {
-                module.renderTournamentRR();
+                module.renderTournamentRR(lobbyId);
             });
         else if (section === 'pong')
             import('./pong.js').then(module => {
