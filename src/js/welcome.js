@@ -8,6 +8,7 @@ export async function renderWelcome() {
     <h2>Tournament Stuff</h2>
     <button id="createTournament">Create Tournament</button>
     <button id="joinTournament">Join Tournament</button>
+    <button id="showMatches">Show Matches</button>
     <hr>
     <button id="sendFriendRequest">Send Friend Request</button>
     <div id="responseDisplay"></div>
@@ -63,7 +64,34 @@ export async function renderWelcome() {
     displayStatusResponse(response);
 
     const joinTournament = document.getElementById('joinTournament');
-    
+    const showMatches = document.getElementById('showMatches');
+
+    async function showTournamentMatches(lobby_id) {
+        try {
+            const response = await fetch(`/tm/join/${lobby_id}/`, {
+                method: 'GET',
+                credentials: 'include'
+            });
+            return await response.json();
+        } catch (error) {
+            return { error: 'Failed to tournament create request.' };
+        }
+
+    };
+
+    showMatches.addEventListener('click', async() => {
+
+        const lobbyId = prompt('Enter the lobby_id!');
+        const response = await joinTournamentLobby(lobbyId);
+        console.log("RESPONE TYPE: " + response.type);
+        if (response.type === 'success')
+            showSection('lobby', lobbyId);
+        else {
+            console.log("ERRROR");
+        }
+    });
+
+
     async function joinTournamentLobby(lobby_id) {
         try {
             const response = await fetch(`/tm/join/${lobby_id}/`, {
