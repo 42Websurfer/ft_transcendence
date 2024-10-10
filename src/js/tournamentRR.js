@@ -1,7 +1,50 @@
 import { getCookie, displayMessages } from './utils.js';
 import { selectedListItem, setSelectedListItem, handleFriendRequest, showSection } from './index.js';
+import { addListItem } from './index.js';
 
-export function renderTournamentRR() {
+export function runWebsocket(socket) {
+
+
+    socket.onopen = function() {
+        console.log("Connected to Websocket of a Tournament")
+    };
+
+    socket.onmessage = function(event) {
+        try {
+            const data = JSON.parse(event.data);
+
+            const tournamentList = document.getElementById("tournamentLobbyList");
+            if (!tournamentList) 
+                return;
+            const userList = data.tournaments_user;
+            tournamentList.innerHTML = '';
+            for (let index = 0; index < userList.length; index++) {
+                const user = userList[index];
+                let content = user.username;
+                if (userList[index].role === 'admin')
+                    content += ' *Game Master*';
+                addListItem(content, tournamentList, 'lobby', user.role);
+            }
+        }
+        catch (error) {
+            console.error("Error with Parsing Tournament user");
+        }
+    };
+    
+    socket.onclose = function(event) {
+        console.log('WebSocket connection closed');
+    };
+
+}
+
+function closeWebsocket(socket) {
+    const logoutButton = document.getElementById('logoutButton');
+    const homeButton = document.getElementById('webpong-button');
+    homeButton.addEventListener('click', () => {socket.close(1000)})
+    logoutButton.addEventListener('click', () => {socket.close(1000)});
+}
+
+export function renderTournamentRR(lobbyId) {
 
     const app = document.getElementById('app');
 
@@ -48,7 +91,7 @@ export function renderTournamentRR() {
                             <p style="color: white; margin-bottom: 0.2em">Lobby-ID</p>
                         </div>
                         <div style="display: flex; flex-direction: row; justify-content: center;">
-                            <p id="lobbyId" style="color: #4740a8; margin: 0 0.4em;">XP5G9</p>
+                            <p id="lobbyId" style="color: #4740a8; margin: 0 0.4em;">${lobbyId}</p>
                             <button id="copyLobbyIdButton"><span class="button-text">&#x2398;</span></button>
                         </div>
                     </div>
@@ -59,6 +102,10 @@ export function renderTournamentRR() {
         </div>
     </div>
     `;
+
+    const socket = new WebSocket(`ws://${window.location.host}/ws/tm/${lobbyId}/`);
+    runWebsocket(socket);
+    closeWebsocket(socket);
 
     function copyToClipboard() {
         var copyText = document.getElementById("lobbyId");
