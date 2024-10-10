@@ -28,22 +28,52 @@ export function renderTournament() {
     </div>
     `;
 
-    const tournamentLobbyInput = document.getElementById('tournamentLobbyId');
+    
+    
+    async function joinTournamentLobby(lobby_id) {
+        try {
+            const response = await fetch(`/tm/join/${lobby_id}/`, {
+                method: 'GET',
+                credentials: 'include'
+            });
+            return await response.json();
+        } catch (error) {
+            return { error: 'Failed to tournament create request.' };
+        }
+    };
 
-    tournamentLobbyInput.addEventListener('keydown', (event) => {
+    const tournamentLobbyInput = document.getElementById('tournamentLobbyId');
+    tournamentLobbyInput.addEventListener('keydown', async (event) => {
         if (event.key === 'Enter') {
             const lobbyId = tournamentLobbyInput.value.trim();
             if (lobbyId) {
                 console.log(`Trying to enter lobby with id: ${lobbyId}`);
-                showSection('welcome');
+                const response = await joinTournamentLobby(lobbyId);
+                if (response.type === 'success')
+                    showSection('tournamentRR', lobbyId);
+                else 
+                    console.log(response.type); //Need to be shown at frontend
             }
         }
     });
 
+    async function createTournamentLobby() {
+        try {
+            const response = await fetch(`/tm/create/`, {
+                method: 'GET',
+                credentials: 'include'
+            });            
+            return await response.json();
+        } catch (error) {
+            return { error: 'Failed to tournament create request.' };
+        }
+
+    }
+
     const tournamentRRButton = document.getElementById('tournamentItemRR');
-    tournamentRRButton.addEventListener('click', () => {
-        console.log("clicked");
-        showSection('tournamentRR');
+    tournamentRRButton.addEventListener('click', async () => {
+        const response = await createTournamentLobby();
+        showSection('tournamentRR', response.lobby.id);
     });
 
 }
