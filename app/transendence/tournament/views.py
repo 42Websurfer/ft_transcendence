@@ -28,7 +28,7 @@ def join_lobby(request, lobby_id):
 	if redis.exists(lobby_id):
 		return(JsonResponse({'type': 'success'}))
 	else: 
-		return(JsonResponse({'type': 'error'}))
+		return(JsonResponse({'type': 'Error: Lobby does not exist.'}))
 
 def start_group_tournament(request, lobby_id):
 	players_id = redis.hgetall(lobby_id)
