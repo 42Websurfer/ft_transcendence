@@ -107,8 +107,6 @@ export function renderLobby(groupName) {
         })
         .then(response => response.json())
         .then(data => {
-            console.log('Score updated successfully:', data);
-            console.log('Round = ' + round);
             check_completion(tournament_id, round).then(response => response.json())
             .then (data => {
                 console.log(data.type);
