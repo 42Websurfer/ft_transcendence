@@ -3,7 +3,7 @@ import random
 import string
 import redis
 import json
-from .utils import tournament_string
+from .utils import tournament_string, round_completed
 from django.views.decorators.csrf import csrf_exempt
 
 
@@ -87,3 +87,13 @@ def set_match(request):
 	match['status'] = 'completed'
 	redis.set(tournament_string(tournament_id), json.dumps(tournament_dic))
 	return JsonResponse(tournament_dic)
+
+def check_round_completion(request, lobby_id, round):
+	tournament = redis.get(tournament_string(lobby_id))
+
+	tournament = json.loads(tournament)
+	matches = tournament['matches']
+	if round_completed(matches, round):
+		return JsonResponse({'type': 'Round is completed'})
+	else:
+		return JsonResponse({'type': 'Round is NOT completed'})

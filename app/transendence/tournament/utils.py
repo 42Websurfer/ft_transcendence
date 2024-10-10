@@ -7,3 +7,11 @@ def change_admin(redis, group_name):
 
 def tournament_string(lobby_id):
 	return (f"tournament_{lobby_id}")
+
+def round_completed(matches, round):
+	for match in matches:
+		if match['round'] > round:
+			return True
+		elif match['status'] != 'completed':
+			return False
+	return True
