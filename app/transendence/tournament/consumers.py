@@ -1,10 +1,9 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
-from channels.layers import get_channel_layer
 from django.contrib.auth import get_user_model
 from asgiref.sync import sync_to_async
 import redis
-from .utils import create_user_structure
+from .utils import create_user_structure, tournament_string
 
 redis = redis.Redis(host='redis', port=6379, db=0)
 
@@ -73,7 +72,17 @@ class Tournament(AsyncWebsocketConsumer):
 			)
 	
 	async def send_tournament_users(self, event):
-		User = get_user_model()
 		results = json.loads(redis.get(self.group_name))
-		
-		await self.send(text_data=json.dumps(results))
+		data = {
+			'type': 'send_tournament_users',
+			'results': results
+		}		
+		await self.send(text_data=json.dumps(data))
+
+	async def match_list(self, event):
+			matchList = json.loads(redis.get(tournament_string(self.group_name)))			
+			data = {
+				'type': 'match_list',
+				'matches': matchList
+			}
+			await self.send(text_data=json.dumps(data))
