@@ -80,7 +80,7 @@ function addMatchItem(player_home, player_away, score, status) {
     const li = document.createElement('li');
 
     li.style = `
-        background: linear-gradient(to bottom, rgba(97, 23, 101, 0.8), rgba(74, 19, 77, 0.8) 100%);
+        background: linear-gradient(to bottom, rgba(133, 129, 199, 0.8), rgba(71, 64, 168, 0.8) 100%);
         border: 1px solid #ccc;
         border-radius: 0.6em;
         margin-bottom: 0.6em;
