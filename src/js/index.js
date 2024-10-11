@@ -111,21 +111,13 @@ export async function addListItem(content, ul, list, role)
     const withdrawFriendButton = document.getElementById('withdrawFriendButton');
     const unblockFriendButton = document.getElementById('unblockFriendButton');
     
-    if (list != 'lobby')
-    {
-        if (!friendsModifyModal || !closeModalButton)
-            return;
-        friendsModifyModalUsername.textContent = "\"" + content + "\"";
-        friendsModifyModalUsername.style.color = '#1792ca';
-    }
+    if (!friendsModifyModal || !closeModalButton)
+        return;
 
-    if (list === 'lobby')
-    {
-        li.className = 'friends-add-list-user';
-        li.innerHTML = `<span class="list-item-content">${content}</span>`;
-        ul.appendChild(li); 
-    }
-    else if (list === 'offline' || list === 'online')
+    friendsModifyModalUsername.textContent = "\"" + content + "\"";
+    friendsModifyModalUsername.style.color = '#1792ca';
+
+    if (list === 'offline' || list === 'online')
     {
         li.className = 'friends-add-list-user';
         li.innerHTML = `<span class="list-item-content">${content}</span>`;

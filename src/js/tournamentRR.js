@@ -13,17 +13,27 @@ export function runWebsocket(socket) {
         try {
             const data = JSON.parse(event.data);
 
-            const tournamentList = document.getElementById("tournamentLobbyList");
-            if (!tournamentList) 
+            const tournamentStandingsTable = document.getElementById("tournamentStandingsTable");
+            if (!tournamentStandingsTable) 
                 return;
-            const userList = data.tournaments_user;
-            tournamentList.innerHTML = '';
-            for (let index = 0; index < userList.length; index++) {
-                const user = userList[index];
-                let content = user.username;
-                if (userList[index].role === 'admin')
-                    content += ' *Game Master*';
-                addListItem(content, tournamentList, 'lobby', user.role);
+
+            console.log("test");
+            console.log("data: ", data);
+
+
+            for (let index = 0; index < data.length; index++) {
+
+                const user = data[index];
+                let rank = user.rank;
+                let player = user.player;
+                let games = user.games;
+                let wins = user.won;
+                let losses = user.lost;
+                let goals = user.goals;
+                let diff = user.diff;
+                let points = user.points;
+
+                addRowToStandingsTable(rank, player, games, wins, losses, goals, diff, points);
             }
         }
         catch (error) {
@@ -36,6 +46,32 @@ export function runWebsocket(socket) {
     };
 
 }
+
+function addRowToStandingsTable(rank, player, games, wins, losses, goals, diff, points) {
+    const tableBody = document.getElementById('tournamentStandingsTableBody');
+
+    if (!tableBody)
+        return;
+
+    const row = document.createElement('tr');
+
+    row.innerHTML = `
+        <td>${rank}</td>
+        <td>${player}</td>
+        <td>${games}</td>
+        <td>${wins}</td>
+        <td>${losses}</td>
+        <td>${goals}</td>
+        <td>${diff}</td>
+        <td>${points}</td>
+    `;
+
+    tableBody.appendChild(row);
+}
+
+// Example usage
+addRowToStandingsTable(1, 'Player 1', 10, 7, 2, 20, 15, 23);
+addRowToStandingsTable(2, 'Player 2', 10, 6, 3, 18, 12, 21);
 
 function closeWebsocket(socket) {
     const logoutButton = document.getElementById('logoutButton');
@@ -92,28 +128,7 @@ export function renderTournamentRR(lobbyId) {
                                         <th>POINTS</th>
                                     </tr>
                                 </thead>
-                                <tbody id="tournamentStandingsTableBody" class="tournament-table-body">
-                                    <tr>
-                                        <td>1</td>
-                                        <td>fheid</td>
-                                        <td>1</td>
-                                        <td>1</td>
-                                        <td>0</td>
-                                        <td>4:0</td>
-                                        <td>4</td>
-                                        <td>3</td>
-                                    </tr>
-                                    <tr>
-                                        <td>2</td>
-                                        <td>fwechsle</td>
-                                        <td>1</td>
-                                        <td>0</td>
-                                        <td>1</td>
-                                        <td>0:4</td>
-                                        <td>-4</td>
-                                        <td>0</td>
-                                    </tr>
-                                </tbody>
+                                <tbody id="tournamentStandingsTableBody" class="tournament-table-body"></tbody>
                             </table>
 
 
