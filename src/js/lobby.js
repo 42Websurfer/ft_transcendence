@@ -86,8 +86,8 @@ export function renderLobby(groupName) {
 
 
     function submitScore(match_id, tournament_id, round) {
-        const score_home = document.getElementById(`score_home_${match_id}`).value;
-        const score_away = document.getElementById(`score_away_${match_id}`).value;
+        const score_home = parseInt(document.getElementById(`score_home_${match_id}`).value);
+        const score_away = parseInt(document.getElementById(`score_away_${match_id}`).value);
     
         const csrftoken = getCookie('csrftoken');
 
