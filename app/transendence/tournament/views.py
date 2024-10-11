@@ -3,7 +3,9 @@ import random
 import string
 import redis
 import json
+from django.contrib.auth import get_user_model
 from .utils import tournament_string, round_completed
+from asgiref.sync import sync_to_async
 from django.views.decorators.csrf import csrf_exempt
 
 
@@ -30,41 +32,40 @@ def join_lobby(request, lobby_id):
 	else: 
 		return(JsonResponse({'type': 'error'}))
 
-def start_group_tournament(request, lobby_id):
-	players_id = redis.hgetall(lobby_id)
-	players_id = [
-		int(user)
-		for user in players_id.keys()
-	]
-	if (len(players_id) % 2 != 0):
-		players_id.append(-1)
+async def start_group_tournament(request, lobby_id):
+	results = json.loads(redis.get(lobby_id))
+	if (len(results) % 2 != 0):
+		results.append({'user_id': -1})
 
-	num_rounds = len(players_id) - 1
-	num_matches_per_round = len(players_id) // 2
+	num_rounds = len(results) - 1
+	num_matches_per_round = len(results) // 2
 
 	tournament_dict = {'tournament_id': lobby_id, 'matches': []}
 	match_id = 1
 	for round in range(num_rounds):
 		for match in range(num_matches_per_round):
-			home = (round + match) % (len(players_id) - 1)
-			away = (len(players_id) - 1 - match + round) % (len(players_id) - 1)
+			home = (round + match) % (len(results) - 1)
+			away = (len(results) - 1 - match + round) % (len(results) - 1)
 			if match == 0:
-				away = len(players_id) - 1
-			if (players_id[home] == -1 or players_id[away] == -1): 
+				away = len(results) - 1
+			if (results[home]['user_id'] == -1 or results[away]['user_id'] == -1): 
 				continue
 			new_match = {
 				'match_id': match_id,
 				'round': round,
-				'home': players_id[home],
-				'away': players_id[away],
+				'home': results[home]['user_id'],
+				'away': results[away]['user_id'],
+				'player_home': results[home]['username'],
+				'player_away': results[away]['username'],
 				'score_home': 0,
 				'score_away': 0,
 				'status': 'pending',
 			}
 			match_id += 1
 			tournament_dict['matches'].append(new_match)
-		tournament_json = json.dumps(tournament_dict)
-		redis.set(tournament_string(lobby_id), tournament_json)
+	tournament_json = json.dumps(tournament_dict)
+	redis.set(tournament_string(lobby_id), tournament_json)
+	
 	return (JsonResponse(tournament_dict))
 
 @csrf_exempt
