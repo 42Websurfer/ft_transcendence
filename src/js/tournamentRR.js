@@ -17,19 +17,20 @@ export function runWebsocket(socket) {
             if (!tournamentStandingsTable) 
                 return;
 
-            console.log("test");
-            console.log("data: ", data);
-
+            const tableBody = document.getElementById('tournamentStandingsTableBody');
+            if (tableBody)
+                tableBody.innerHTML = '';
 
             for (let index = 0; index < data.length; index++) {
 
                 const user = data[index];
+
                 let rank = user.rank;
                 let player = user.player;
                 let games = user.games;
                 let wins = user.won;
                 let losses = user.lost;
-                let goals = user.goals;
+                let goals = user.goals + ":" + user.goals_against;
                 let diff = user.diff;
                 let points = user.points;
 
@@ -48,6 +49,7 @@ export function runWebsocket(socket) {
 }
 
 function addRowToStandingsTable(rank, player, games, wins, losses, goals, diff, points) {
+
     const tableBody = document.getElementById('tournamentStandingsTableBody');
 
     if (!tableBody)
@@ -69,9 +71,26 @@ function addRowToStandingsTable(rank, player, games, wins, losses, goals, diff, 
     tableBody.appendChild(row);
 }
 
-// Example usage
-addRowToStandingsTable(1, 'Player 1', 10, 7, 2, 20, 15, 23);
-addRowToStandingsTable(2, 'Player 2', 10, 6, 3, 18, 12, 21);
+function addRowToRoundTable(player_home, player_away, score_home, score_away, status) {
+
+    const tableBody = document.getElementById('tournamentRoundTableBody');
+
+    if (!tableBody)
+        return;
+
+    const row = document.createElement('tr');
+
+    row.innerHTML = `
+        <td>${player_home}</td>
+        <td>${score_home}</td>
+        <td>:</td>
+        <td>${score_away}</td>
+        <td>${player_away}</td>
+        <td>${status}</td>
+    `;
+
+    tableBody.appendChild(row);
+}
 
 function closeWebsocket(socket) {
     const logoutButton = document.getElementById('logoutButton');
@@ -146,11 +165,12 @@ export function renderTournamentRR(lobbyId) {
 
                             <table id="tournamentRoundTable" class="tournament-round-table">
                                 <colgroup>
-                                    <col style="width: 35%;">
+                                    <col style="width: 30%;">
                                     <col style="width: 12.5%;">
                                     <col style="width: 5%;">
                                     <col style="width: 12.5%;">
-                                    <col style="width: 35%;">
+                                    <col style="width: 30%;">
+                                    <col style="width: 10%;">
                                 </colgroup>
                                 <tbody id="tournamentRoundTableBody" class="tournament-table-body">
                                     <tr>
@@ -159,6 +179,7 @@ export function renderTournamentRR(lobbyId) {
                                         <td>:</td>
                                         <td>1</td>
                                         <td>Team B</td>
+                                        <td>XX</td>
                                     </tr>
                                     <tr>
                                         <td>Team C</td>
@@ -166,6 +187,7 @@ export function renderTournamentRR(lobbyId) {
                                         <td>:</td>
                                         <td>0</td>
                                         <td>Team D</td>
+                                        <td>XX</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -217,8 +239,38 @@ export function renderTournamentRR(lobbyId) {
 
     function copyToClipboard() {
         var copyText = document.getElementById("lobbyId");
-        navigator.clipboard.writeText(copyText.textContent);
-        showCopyMessage();
+
+
+        console.log("lobbyID: ", lobbyId);
+        console.log("copyText.textContent ", copyText.textContent);
+
+        var textToCopy = copyText.tagName === 'INPUT' || copyText.tagName === 'TEXTAREA' ? copyText.value : copyText.textContent;
+
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                showCopyMessage();
+            }).catch(err => {
+                console.error("Failed to copy text: ", err);
+            });
+        } else {
+            const textarea = document.createElement('textarea');
+            textarea.value = textToCopy;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.focus();
+            textarea.select();
+
+            try {
+                document.execCommand('copy');
+                showCopyMessage();
+            } catch (err) {
+                console.error('Fallback: Oops, unable to copy', err);
+            }
+
+            document.body.removeChild(textarea);
+        }
+
     }
 
     const copyLobbyIdButton = document.getElementById('copyLobbyIdButton');
@@ -244,5 +296,56 @@ export function renderTournamentRR(lobbyId) {
 
     closeControlsModalButton.addEventListener('click', () => {
         controlsModal.style.display = 'none';
+    });
+
+    async function showTournamentMatches() {
+        try {
+            const response = await fetch(`/tm/start_tournament/${lobbyId}/`, {
+                method: 'GET',
+                credentials: 'include'
+            });
+            return await response.json();
+        } catch (error) {
+            return { error: 'Failed to tournament create request.' };
+        }
+
+    };
+
+    function displayMatches(response)
+    {
+
+        const tournamentRoundTable = document.getElementById("tournamentRoundTable");
+        if (!tournamentRoundTable) 
+            return;
+
+        const tableBody = document.getElementById('tournamentRoundTableBody');
+        if (tableBody)
+            tableBody.innerHTML = '';
+
+        const matches = response.matches;
+
+        console.log("matches: ", matches);
+
+        for (let index = 0; index < matches.length; index++) {
+
+            const match = matches[index];
+
+            let player_home = user.player_home;
+            let player_away = user.player_away;
+            let score_home = user.score_home;
+            let score_away = user.score_away;
+            let status = user.status;
+
+            addRowToRoundTable(player_home, player_away, score_home, score_away, status);
+
+        }
+    }
+
+
+    const tournamentStartButton = document.getElementById('tournamentStartButton');
+
+    tournamentStartButton.addEventListener('click', async() => {
+        const response = await showTournamentMatches();
+        displayMatches(response);
     });
 }
