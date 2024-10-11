@@ -3,8 +3,12 @@ import random
 import string
 import redis
 import json
+import sys
 from .utils import tournament_string, round_completed, update_tournament_group
 from django.views.decorators.csrf import csrf_exempt
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+
 
 
 redis = redis.Redis(host='redis', port=6379, db=0)
@@ -63,6 +67,13 @@ async def start_group_tournament(request, lobby_id):
 			tournament_dict['matches'].append(new_match)
 	tournament_json = json.dumps(tournament_dict)
 	redis.set(tournament_string(lobby_id), tournament_json)
+	channel_layer = get_channel_layer()
+	await channel_layer.group_send(
+		lobby_id,
+		{
+			'type': 'match_list',
+		}
+	)
 	return (JsonResponse(tournament_dict))
 
 @csrf_exempt
@@ -84,6 +95,13 @@ def set_match(request):
 	match['status'] = 'completed'
 	redis.set(tournament_string(tournament_id), json.dumps(tournament_dic))
 	update_tournament_group(tournament_id, match)
+	channel_layer = get_channel_layer()
+	async_to_sync(channel_layer.group_send)(
+		tournament_id,
+		{
+			'type': 'match_list',
+		}
+	)
 	return JsonResponse(tournament_dic)
 
 def check_round_completion(request, lobby_id, round):
