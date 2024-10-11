@@ -4,7 +4,7 @@ from channels.layers import get_channel_layer
 from django.contrib.auth import get_user_model
 from asgiref.sync import sync_to_async
 import redis
-from .utils import change_admin, create_user_structure
+from .utils import create_user_structure
 
 redis = redis.Redis(host='redis', port=6379, db=0)
 
@@ -19,13 +19,15 @@ class Tournament(AsyncWebsocketConsumer):
 				self.channel_name
 			)
 			await self.accept()
+			User = get_user_model()
+			user = await sync_to_async(User.objects.get)(id=self.user.id)		
 			if redis.exists(self.group_name):
 				results = json.loads(redis.get(self.group_name))
-				results.append(create_user_structure(self.user.id, 'member'))
+				results.append(create_user_structure(self.user.id, 'member', user.username))
 				redis.set(self.group_name, json.dumps(results))
 			else:
 				results = [] 
-				results.append(create_user_structure(self.user.id, 'admin'))
+				results.append(create_user_structure(self.user.id, 'admin', user.username))
 				redis.set(self.group_name, json.dumps(results))
 				
 			#redis.sadd(self.group_name, self.user.id)
@@ -73,20 +75,5 @@ class Tournament(AsyncWebsocketConsumer):
 	async def send_tournament_users(self, event):
 		User = get_user_model()
 		results = json.loads(redis.get(self.group_name))
-
-		user_ids = [
-			result['user_id']
-			for result in results
-		]
-
-		usernames = await sync_to_async(list)(User.objects.filter(id__in=user_ids))
-		
-		user_id_to_username = {
-			user.id: user.username
-			for user in usernames
-		}
-
-		for result in results: 
-			result['username'] = user_id_to_username.get(result['user_id'], 'Unkown')
 		
 		await self.send(text_data=json.dumps(results))
