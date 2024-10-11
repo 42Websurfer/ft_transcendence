@@ -11,33 +11,48 @@ export function runWebsocket(socket) {
     socket.onmessage = function(event) {
         try {
             const data = JSON.parse(event.data);
-
-            const tournamentStandingsTable = document.getElementById("tournamentStandingsTable");
-            if (!tournamentStandingsTable) 
-                return;
-
-            const tableBody = document.getElementById('tournamentStandingsTableBody');
-            if (tableBody)
-                tableBody.innerHTML = '';
-
-            for (let index = 0; index < data.length; index++) {
-
-                const user = data[index];
-
-                let rank = user.rank;
-                let player = user.player;
-                let games = user.games;
-                let wins = user.won;
-                let losses = user.lost;
-                let goals = user.goals + ":" + user.goals_against;
-                let diff = user.diff;
-                let points = user.points;
-
-                addRowToStandingsTable(rank, player, games, wins, losses, goals, diff, points);
+            if (data.type === 'send_tournament_users')
+            {
+                
+                const tournamentStandingsTable = document.getElementById("tournamentStandingsTable");
+                if (!tournamentStandingsTable) 
+                    return;
+                
+                const tableBody = document.getElementById('tournamentStandingsTableBody');
+                if (tableBody)
+                    tableBody.innerHTML = '';
+                const results = data.results;
+                for (let index = 0; index < results.length; index++) {
+                    
+                    const user = results[index];
+                    
+                    let rank = user.rank;
+                    let player = user.player;
+                    let games = user.games;
+                    let wins = user.won;
+                    let losses = user.lost;
+                    let goals = user.goals + ":" + user.goals_against;
+                    let diff = user.diff;
+                    let points = user.points;
+                    
+                    addRowToStandingsTable(rank, player, games, wins, losses, goals, diff, points);
+                }
             }
+            else if (data.type === 'match_list')
+            {
+                console.log('SOCKET MESSAGE: ' + data.matches);  
+                if (!data.matches)
+                    return;
+                console.log(data.matches);
+                if (!data.matches)
+                    return;
+                
+                const matches = data.matches
+                displayMatches(matches);
+            } 
         }
         catch (error) {
-            console.error("Error with Parsing Tournament user");
+            console.error("Error with Parsing Tournament user:", error);
         }
     };
     
@@ -45,6 +60,24 @@ export function runWebsocket(socket) {
         console.log('WebSocket connection closed');
     };
 
+}
+
+function displayMatches(response)
+{
+    const matches = response.matches;
+
+    console.log(matches);
+    for (let index = 0; index < matches.length; index++) {
+        
+        const match = matches[index];
+        
+        let player_home = match.player_home;
+        let player_away = match.player_away;
+        let score = match.score_home + ":" + match.score_away;
+        let status = match.status;
+        
+        addMatchItem(player_home, player_away, score, status);
+    }
 }
 
 function addRowToStandingsTable(rank, player, games, wins, losses, goals, diff, points) {
@@ -298,26 +331,6 @@ export function renderTournamentRR(lobbyId) {
         }
 
     };
-
-    function displayMatches(response)
-    {
-        const matches = response.matches;
-
-        console.log("matches: ", matches);
-
-        for (let index = 0; index < matches.length; index++) {
-
-            const match = matches[index];
-
-            let player_home = match.player_home;
-            let player_away = match.player_away;
-            let score = match.score_home + ":" + match.score_away;
-            let status = match.status;
-
-            addMatchItem(player_home, player_away, score, status);
-        }
-    }
-
 
     const tournamentStartButton = document.getElementById('tournamentStartButton');
 
