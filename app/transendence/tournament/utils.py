@@ -21,7 +21,7 @@ def create_user_structure(user_id, role, username):
 		'diff': 0,
 		'points': 0,
 		'role': role,
-		'username': username,
+		'player': username,
 	}
 	return user_data
 
