@@ -43,45 +43,50 @@ class Tournament(AsyncWebsocketConsumer):
 				self.channel_name
 			)
 			results = json.loads(redis.get(self.group_name))
-			print(len(results))
-			new_results = [
-				result 
-				for result in results if result['user_id'] != self.user.id
-				]
-			#neeeeeed to update admin!
-			if results: 
-				redis.set(self.group_name, json.dumps(results))
+			
+			new_results = []
+			admin_disconnected = False
+
+			for result in results:
+				if result['user_id'] == self.user.id:
+					if result['role'] == 'admin':
+						admin_disconnected = True
+				else:
+					new_results.append(result)
+
+			if (admin_disconnected and new_results):
+				new_results[0]['role'] = 'admin'
+			
+			if new_results: 
+				redis.set(self.group_name, json.dumps(new_results))
 			else:
 				redis.delete(self.group_name)
 				return
-			# role = redis.hget(self.group_name, self.user.id)
-			# redis.hdel(self.group_name, self.user.id)
-			# if role.decode() == 'admin':
-			# 	change_admin(redis, self.group_name)
+			
 			await self.channel_layer.group_send(
 				self.group_name,
 				{
 					'type': 'send_tournament_users',
 				}
 			)
-			#wenn es der admin war, dann muss ein neuer Admin gesetzt werden
 	
-
-	#nochmal überarbeiten und dann mal testen! nicht mehr in set sondern in hasheses
 	async def send_tournament_users(self, event):
 		User = get_user_model()
 		results = json.loads(redis.get(self.group_name))
-		print(results)
+
 		user_ids = [
 			result['user_id']
 			for result in results
 		]
-		print(user_ids)
+
 		usernames = await sync_to_async(list)(User.objects.filter(id__in=user_ids))
+		
 		user_id_to_username = {
 			user.id: user.username
 			for user in usernames
 		}
+
 		for result in results: 
 			result['username'] = user_id_to_username.get(result['user_id'], 'Unkown')
+		
 		await self.send(text_data=json.dumps(results))
