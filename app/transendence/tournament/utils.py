@@ -15,3 +15,18 @@ def round_completed(matches, round):
 		elif match['status'] != 'completed':
 			return False
 	return True
+
+def create_user_structure(user_id, role):
+	user_data = {
+		'ranking': 1,
+		'user_id': user_id,
+		'games': 0,
+		'wins': 0,
+		'loses': 0,
+		'goals': 0,
+		'goals_against': 0,
+		'difference': 0,
+		'points': 0,
+		'role': role,
+	}
+	return user_data
