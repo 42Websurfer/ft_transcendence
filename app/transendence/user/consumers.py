@@ -1,6 +1,5 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
-from channels.layers import get_channel_layer
 import redis
 from asgiref.sync import sync_to_async
 from django.contrib.auth import get_user_model

@@ -3,9 +3,7 @@ import random
 import string
 import redis
 import json
-from django.contrib.auth import get_user_model
-from .utils import tournament_string, round_completed
-from asgiref.sync import sync_to_async
+from .utils import tournament_string, round_completed, update_tournament_group
 from django.views.decorators.csrf import csrf_exempt
 
 
@@ -65,7 +63,6 @@ async def start_group_tournament(request, lobby_id):
 			tournament_dict['matches'].append(new_match)
 	tournament_json = json.dumps(tournament_dict)
 	redis.set(tournament_string(lobby_id), tournament_json)
-	
 	return (JsonResponse(tournament_dict))
 
 @csrf_exempt
@@ -75,18 +72,18 @@ def set_match(request):
 	match_id = data.get('match_id')
 	score_home = data.get('score_home')
 	score_away = data.get('score_away')
-	
+
 	tournament = redis.get(tournament_string(tournament_id))
 	if tournament is None:
 		return JsonResponse({'error': 'Tournament not found'})
 	tournament_dic = json.loads(tournament)
 	match = tournament_dic['matches'][match_id - 1]
 
-	print(f"match: {match}")
 	match['score_home'] = score_home
 	match['score_away'] = score_away
 	match['status'] = 'completed'
 	redis.set(tournament_string(tournament_id), json.dumps(tournament_dic))
+	update_tournament_group(tournament_id, match)
 	return JsonResponse(tournament_dic)
 
 def check_round_completion(request, lobby_id, round):
