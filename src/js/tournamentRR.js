@@ -1,6 +1,5 @@
 import { getCookie, displayMessages } from './utils.js';
 import { selectedListItem, setSelectedListItem, handleFriendRequest, showSection } from './index.js';
-import { addListItem } from './index.js';
 
 export function runWebsocket(socket) {
 
@@ -71,25 +70,32 @@ function addRowToStandingsTable(rank, player, games, wins, losses, goals, diff, 
     tableBody.appendChild(row);
 }
 
-function addRowToRoundTable(player_home, player_away, score_home, score_away, status) {
+function addMatchItem(player_home, player_away, score, status) {
 
-    const tableBody = document.getElementById('tournamentRoundTableBody');
+    const tournamentMatchesList = document.getElementById('tournamentMatches');
 
-    if (!tableBody)
+    if (!tournamentMatchesList)
         return;
 
-    const row = document.createElement('tr');
+    const li = document.createElement('li');
 
-    row.innerHTML = `
-        <td>${player_home}</td>
-        <td>${score_home}</td>
-        <td>:</td>
-        <td>${score_away}</td>
-        <td>${player_away}</td>
-        <td>${status}</td>
+    li.style = `
+        background: linear-gradient(to bottom, rgba(133, 129, 199, 0.8), rgba(71, 64, 168, 0.8) 100%);
+        border: 1px solid #ccc;
+        border-radius: 0.6em;
+        margin-bottom: 0.6em;
     `;
 
-    tableBody.appendChild(row);
+    li.innerHTML = `
+    <div class="tournament-match">
+        <div class="tournament-match-item">${player_home}</div>
+        <div class="tournament-match-item" style="font-size: 1em;">${score}</div>
+        <div class="tournament-match-item">${player_away}</div>
+        <div class="tournament-match-item">${status}</div>
+    </div>    
+    `;
+
+    tournamentMatchesList.appendChild(li);
 }
 
 function closeWebsocket(socket) {
@@ -162,36 +168,7 @@ export function renderTournamentRR(lobbyId) {
                                 <p>ROUND X</p>
                             </div>  
 
-
-                            <table id="tournamentRoundTable" class="tournament-round-table">
-                                <colgroup>
-                                    <col style="width: 30%;">
-                                    <col style="width: 12.5%;">
-                                    <col style="width: 5%;">
-                                    <col style="width: 12.5%;">
-                                    <col style="width: 30%;">
-                                    <col style="width: 10%;">
-                                </colgroup>
-                                <tbody id="tournamentRoundTableBody" class="tournament-table-body">
-                                    <tr>
-                                        <td>Team A</td>
-                                        <td>2</td>
-                                        <td>:</td>
-                                        <td>1</td>
-                                        <td>Team B</td>
-                                        <td>XX</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Team C</td>
-                                        <td>42</td>
-                                        <td>:</td>
-                                        <td>0</td>
-                                        <td>Team D</td>
-                                        <td>XX</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-
+                            <ul id="tournamentMatches" style="list-style-type: none; padding: 0; margin: 0;"></ul>
 
                         </div>
                     </div>
@@ -232,6 +209,17 @@ export function renderTournamentRR(lobbyId) {
 
     </div>
     `;
+
+
+    // <table id="tournamentMatches" class="tournament-matches">
+    // <colgroup>
+    //     <col style="width: 35%;">
+    //     <col style="width: 20%;">
+    //     <col style="width: 35%;">
+    //     <col style="width: 10%;">
+    // </colgroup>
+    // <tbody id="tournamentRoundTableBody" class="tournament-table-body"></tbody>
+    // </table>
 
     const socket = new WebSocket(`ws://${window.location.host}/ws/tm/${lobbyId}/`);
     runWebsocket(socket);
@@ -313,15 +301,6 @@ export function renderTournamentRR(lobbyId) {
 
     function displayMatches(response)
     {
-
-        const tournamentRoundTable = document.getElementById("tournamentRoundTable");
-        if (!tournamentRoundTable) 
-            return;
-
-        const tableBody = document.getElementById('tournamentRoundTableBody');
-        if (tableBody)
-            tableBody.innerHTML = '';
-
         const matches = response.matches;
 
         console.log("matches: ", matches);
@@ -330,14 +309,12 @@ export function renderTournamentRR(lobbyId) {
 
             const match = matches[index];
 
-            let player_home = user.player_home;
-            let player_away = user.player_away;
-            let score_home = user.score_home;
-            let score_away = user.score_away;
-            let status = user.status;
+            let player_home = match.player_home;
+            let player_away = match.player_away;
+            let score = match.score_home + ":" + match.score_away;
+            let status = match.status;
 
-            addRowToRoundTable(player_home, player_away, score_home, score_away, status);
-
+            addMatchItem(player_home, player_away, score, status);
         }
     }
 

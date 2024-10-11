@@ -1062,7 +1062,11 @@ body {
 
 .tournament-standings-table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 0.4em;
+    overflow: hidden;
+    border: 1px solid #ccc;
 }
 
 .tournament-standings-table th, .tournament-standings-table td {
@@ -1085,15 +1089,19 @@ body {
     color: white;
 }
 
-.tournament-round-table {
-    width: 100%;
-    border-collapse: collapse;
+.tournament-match {
+    display: flex;
+    flex-direction: row;
+    text-align: center;
 }
 
-.tournament-round-table td {
-    border: 1px solid #ccc;
-    padding: 8px;
-    text-align: center;
+.tournament-match-item {
+    width: 25%;
+    padding: 0.5em 0em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-family: 'Press Start 2P';
+    color: white;
     font-size: 0.8em;
 }
