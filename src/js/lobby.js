@@ -57,7 +57,7 @@ export function renderLobby(groupName) {
         listMatches.innerHTML = response.matches.map(match => `
             <div class="match">
                 <h2>Match ID: ${match.match_id}, Round: ${match.round}</h2>
-                <p>${match.home} vs ${match.away}</p>
+                <p>${match.player_home} vs ${match.player_away}</p>
                 <label for="score_home_${match.match_id}">Home Score:</label>
                 <input type="number" id="score_home_${match.match_id}" value="${match.score_home}">
                 <label for="score_away_${match.match_id}">Away Score:</label>
