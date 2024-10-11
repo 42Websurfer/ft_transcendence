@@ -884,19 +884,17 @@ body {
     background-color: #221e1e;
     margin: 1em 1.4em;
     margin-bottom: 1em;
+    margin-right: 2em;
 }
 
-.tournament-lobby {
-    width: 38%;
+.tournament-table1 {
+    width: 58%;
     padding: 2em;
 }
 
-.tournament-controls {
-    width: 58%;
-    padding: 1.25em;
-    font-size: 1.6em;
-    text-shadow: 1px 1px 2px #000000;
-    font-family: 'Press Start 2P';
+.tournament-table2 {
+    width: 38%;
+    padding: 2em;
 }
 
 .tournament-buttons {
@@ -958,7 +956,6 @@ body {
     font-family: 'Press Start 2P';
     padding: 0.6em;
     white-space: nowrap;
-    margin-top: 23.8em;
     color: white;
 }
 
@@ -989,34 +986,114 @@ body {
     white-space: nowrap;
 }
 
-.tournament-lobby-header {
-    color: #049127;
+.tournament-table-header {
+    color: white;
     font-size: 1.6em;
     text-shadow: 1px 1px 2px #000000;
     font-family: 'Press Start 2P';
     margin-bottom: 0.6em;
 }
 
-.tournament-lobby-list {
-    list-style-type: none;
+.tournament-controls {
     padding: 0;
-    margin: 0;
-    color: #d8d3d3;
-    text-shadow: 1px 1px 2px #000000;
-    font-size:1em;
-    margin-left: 1em;
-    height: 29em;
-    overflow: scroll;
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-    background-color: #047e0e;
+    padding-left: 1em;
+    color: white;
+    font-size: 1em;
+    white-space: nowrap;
 }
 
-.tournament-lobby-list::-webkit-scrollbar {
-    display: none;
-}
-
-.tournament-controls-header {
-    color: #dd8015;
+.controls-divider {
+    height: 4px; 
+    background-color: #ffffff;
+    margin: 0.3em;
     margin-bottom: 0.6em;
+    width: 17.25em;
+}
+
+.close-controls-button {
+    position: relative;
+    transform: translate(20%, -30%);
+    color: #aaa;
+    float: right;
+    font-size: 2vw;
+    font-weight: bold;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+.close-controls-button:hover,
+.close-controls-button:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+#controlsButton {
+    /* align-self: flex-end; */
+    width: 10em;
+    background-color: rgba(245, 244, 244, 0.6);
+    border-radius: 8px;
+    border: 0.1em solid #000000;
+    font-size: 1.2em;
+    display: flex;
+    flex-direction: column;
+    text-shadow: 1px 1px 2px #000000;
+    text-align: center;
+    font-family: 'Press Start 2P';
+    padding: 0.6em;
+    white-space: nowrap;
+    margin-top: 10.4em;
+    margin-bottom: 10.4em;
+    color: white;
+}
+
+#controlsButton .button-text {
+    pointer-events: auto;
+}
+
+#controlsButton .button-text:hover {
+    color: #e6e4e7;
+    text-shadow: 2px 2px 2px #000000;
+}
+
+.tournament-standings-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tournament-standings-table th, .tournament-standings-table td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: center;
+    font-family: 'Press Start 2P';
+    font-size: 0.8em;
+}
+
+.tournament-standings-table th {
+    background: linear-gradient(to bottom, #8581c7,#4740a8 100%);
+    border: 1px solid #ccc;
+    color: white;
+    text-shadow: 1px 1px 2px #000000;
+}
+
+.tournament-table-body {
+    background-color: rgba(0, 0, 0, 0.25);
+    color: white;
+}
+
+.tournament-round-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tournament-round-table td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: center;
+    font-family: 'Press Start 2P';
+    font-size: 0.8em;
 }

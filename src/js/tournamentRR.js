@@ -62,24 +62,100 @@ export function renderTournamentRR(lobbyId) {
 
                 <div class="tournament-container-left">
 
-                    <div class="tournament-lobby">
+                    <div class="tournament-table1" style="padding-right: 0.6em;">
                         <div id="tournamentLobby">
-                            <div class="tournament-lobby-header">
-                                <p>LOBBY</p>
+                            <div class="tournament-table-header">
+                                <p>STANDINGS</p>
                             </div>
-                            <ul id="tournamentLobbyList" class="tournament-lobby-list"></ul>
+
+
+                            <table id="tournamentStandingsTable" class="tournament-standings-table">
+                                <colgroup>
+                                    <col style="width: 6%;">
+                                    <col style="width: 29%;">
+                                    <col style="width: 10%;">
+                                    <col style="width: 10%;">
+                                    <col style="width: 10%;">
+                                    <col style="width: 15%;">
+                                    <col style="width: 10%;">
+                                    <col style="width: 10%;">
+                                </colgroup>
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>PLAYER</th>
+                                        <th>PLAYED</th>
+                                        <th>WON</th>
+                                        <th>LOST</th>
+                                        <th>GOALS</th>
+                                        <th>DIFF</th>
+                                        <th>POINTS</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tournamentStandingsTableBody" class="tournament-table-body">
+                                    <tr>
+                                        <td>1</td>
+                                        <td>fheid</td>
+                                        <td>1</td>
+                                        <td>1</td>
+                                        <td>0</td>
+                                        <td>4:0</td>
+                                        <td>4</td>
+                                        <td>3</td>
+                                    </tr>
+                                    <tr>
+                                        <td>2</td>
+                                        <td>fwechsle</td>
+                                        <td>1</td>
+                                        <td>0</td>
+                                        <td>1</td>
+                                        <td>0:4</td>
+                                        <td>-4</td>
+                                        <td>0</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+
                         </div>
                     </div>
                     
                     <hr class="tournament-vertical-divider">
-                    
-                    <div class="tournament-controls">
-                        <div class="tournament-controls-header">
-                            <p>CONTROLS</p>
-                        </div>
-                        <div class="tournament-controls-header">
-                            <p style="color: white; font-size: 1em;">paddle up: up-arrow key</p>
-                            <p style="color: white; font-size: 1em;">paddle down: down-arrow key</p>
+
+                    <div class="tournament-table2" style="padding-left: 0;">
+                        <div id="tournamentLobby">
+                            <div class="tournament-table-header">
+                                <p>ROUND X</p>
+                            </div>  
+
+
+                            <table id="tournamentRoundTable" class="tournament-round-table">
+                                <colgroup>
+                                    <col style="width: 35%;">
+                                    <col style="width: 12.5%;">
+                                    <col style="width: 5%;">
+                                    <col style="width: 12.5%;">
+                                    <col style="width: 35%;">
+                                </colgroup>
+                                <tbody id="tournamentRoundTableBody" class="tournament-table-body">
+                                    <tr>
+                                        <td>Team A</td>
+                                        <td>2</td>
+                                        <td>:</td>
+                                        <td>1</td>
+                                        <td>Team B</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Team C</td>
+                                        <td>42</td>
+                                        <td>:</td>
+                                        <td>0</td>
+                                        <td>Team D</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+
                         </div>
                     </div>
 
@@ -95,11 +171,28 @@ export function renderTournamentRR(lobbyId) {
                             <button id="copyLobbyIdButton"><span class="button-text">&#x2398;</span></button>
                         </div>
                     </div>
+                    <button id="controlsButton"><span class="button-text">Controls</span></button>
                     <button id="tournamentStartButton"><span class="button-text">Start tournament</span></button>
                     <div id="copyMessage" class="copy-message">Copied to clipboard!</div>  
                 </div>  
             </div>
         </div>
+
+        <div class="modal" id="controlsModal">
+            <div class="modal-content-modify">
+                <span class="close-controls-button" id="closeControlsModalButton">&times;</span>
+                <div class="friends-add-header">
+                    <p>Game controls</p>
+                </div>
+                <hr class="controls-divider">
+                <div class="tournament-controls">
+                    <p>paddle up: up-arrow key</p>
+                    <p>paddle down: down-arrow key</p>
+                </div>
+            </div>
+        </div>
+
+
     </div>
     `;
 
@@ -111,7 +204,6 @@ export function renderTournamentRR(lobbyId) {
         var copyText = document.getElementById("lobbyId");
         navigator.clipboard.writeText(copyText.textContent);
         showCopyMessage();
-        // alert("Copied the text: " + copyText.textContent);
     }
 
     const copyLobbyIdButton = document.getElementById('copyLobbyIdButton');
@@ -126,4 +218,16 @@ export function renderTournamentRR(lobbyId) {
             copyMessage.style.display = "none";
         }, 2000);
     }
+
+    const controlsButton = document.getElementById('controlsButton');
+    const controlsModal = document.getElementById('controlsModal');
+    const closeControlsModalButton = document.getElementById('closeControlsModalButton');
+
+    controlsButton.addEventListener('click', () => {
+        controlsModal.style.display = 'block';
+    });
+
+    closeControlsModalButton.addEventListener('click', () => {
+        controlsModal.style.display = 'none';
+    });
 }
