@@ -4,7 +4,7 @@ from channels.layers import get_channel_layer
 from django.contrib.auth import get_user_model
 from asgiref.sync import sync_to_async
 import redis
-from .utils import change_admin, create_user_structure
+from .utils import create_user_structure
 
 redis = redis.Redis(host='redis', port=6379, db=0)
 
@@ -87,6 +87,6 @@ class Tournament(AsyncWebsocketConsumer):
 		}
 
 		for result in results: 
-			result['username'] = user_id_to_username.get(result['user_id'], 'Unkown')
+			result['player'] = user_id_to_username.get(result['user_id'], 'Unkown')
 		
 		await self.send(text_data=json.dumps(results))
