@@ -9,7 +9,7 @@ def round_completed(matches, round):
 			return False
 	return True
 
-def create_user_structure(user_id, role):
+def create_user_structure(user_id, role, username):
 	user_data = {
 		'ranking': 1,
 		'user_id': user_id,
@@ -21,5 +21,12 @@ def create_user_structure(user_id, role):
 		'difference': 0,
 		'points': 0,
 		'role': role,
+		'username': username,
 	}
 	return user_data
+
+def update_tournament_group(match_data):
+	home = match_data['home']
+	away = match_data['away']
+	score_home = match_data['score_home']
+	score_away  = match_data['score_away']
