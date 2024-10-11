@@ -11,14 +11,14 @@ def round_completed(matches, round):
 
 def create_user_structure(user_id, role):
 	user_data = {
-		'ranking': 1,
+		'rank': 1,
 		'user_id': user_id,
 		'games': 0,
-		'wins': 0,
-		'loses': 0,
+		'won': 0,
+		'lost': 0,
 		'goals': 0,
 		'goals_against': 0,
-		'difference': 0,
+		'diff': 0,
 		'points': 0,
 		'role': role,
 	}
