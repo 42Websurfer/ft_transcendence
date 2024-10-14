@@ -37,8 +37,6 @@ export function runWebsocket(socket) {
                     
                     addRowToStandingsTable(rank, player, games, wins, losses, goals, diff, points);
                 }
-
-                addRowToStandingsTable(42, "fwechslefwechsle", 1, 2, 3, "4:2", 1, 3);
             }
             else if (data.type === 'match_list')
             {
@@ -364,7 +362,7 @@ export function renderTournamentRR(lobbyId) {
     tournamentStartButton.addEventListener('click', async() => {
         tournamentStartButton.style.display = 'none';
         roundStartButton.style.display = 'block';
-        const response = await showTournamentMatches();
+        await showTournamentMatches();
     });
 
     roundStartButton.addEventListener('click', async() => {
