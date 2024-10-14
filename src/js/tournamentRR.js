@@ -84,7 +84,7 @@ function displayMatches(response)
             score = "-:-";
         else
             score = match.score_home + ":" + match.score_away;
-        let status = match.status;
+        let status = match.round; //need to fix variable name! 
         
         addMatchItem(tournamentMatchesList, player_home, player_away, score, status);
     }
