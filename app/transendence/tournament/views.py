@@ -50,19 +50,28 @@ async def start_group_tournament(request, lobby_id):
 			away = (len(results) - 1 - match + round) % (len(results) - 1)
 			if match == 0:
 				away = len(results) - 1
-			if (results[home]['user_id'] == -1 or results[away]['user_id'] == -1): 
-				continue
 			new_match = {
 				'match_id': match_id,
 				'round': round,
-				'home': results[home]['user_id'],
-				'away': results[away]['user_id'],
-				'player_home': results[home]['player'],
-				'player_away': results[away]['player'],
 				'score_home': 0,
 				'score_away': 0,
 				'status': 'pending',
 			}
+			if results[home]['user_id'] == -1: 
+				new_match['player_home'] = 'Free from play',
+				new_match['home'] = -1,
+				new_match['player_away'] = results[away]['player'],
+				new_match['away'] = results[away]['user_id'],
+			elif results[away]['user_id'] == -1:
+				new_match['player_home'] = results[home]['player'],
+				new_match['home'] = results[home]['user_id'],
+				new_match['player_away'] = 'Free from play',
+				new_match['away'] = -1,
+			else:
+				new_match['player_home'] = results[home]['player'],
+				new_match['home'] = results[home]['user_id'],
+				new_match['player_away'] = results[away]['player'],
+				new_match['away'] = results[away]['user_id'],		
 			match_id += 1
 			tournament_dict['matches'].append(new_match)
 	tournament_json = json.dumps(tournament_dict)
