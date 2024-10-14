@@ -52,7 +52,7 @@ async def start_group_tournament(request, lobby_id):
 				away = len(results) - 1
 			new_match = {
 				'match_id': match_id,
-				'round': round,
+				'round': round + 1,
 				'score_home': 0,
 				'score_away': 0,
 				'status': 'pending',
