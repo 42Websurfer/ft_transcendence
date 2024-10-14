@@ -31,8 +31,10 @@ def create_lobby(request):
 def join_lobby(request, lobby_id):
 	if redis.exists(lobby_id):
 		return(JsonResponse({'type': 'success'}))
+	elif redis.exists(tournament_string(lobby_id)):
+		return(JsonResponse({'type': 'error', 'message': 'Tournament already started.'}))
 	else: 
-		return(JsonResponse({'type': 'Error: Lobby does not exist.'}))
+		return(JsonResponse({'type': 'error', 'message': 'Lobby does not exist.'}))
 
 async def start_group_tournament(request, lobby_id):
 	results = json.loads(redis.get(lobby_id))

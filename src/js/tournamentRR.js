@@ -66,10 +66,10 @@ function displayMatches(response)
 {
     const matches = response.matches;
 
-    console.log(matches);
     const tournamentMatchesList = document.getElementById('tournamentMatches');
     if (tournamentMatchesList)
         tournamentMatchesList.innerHTML = '';
+
     for (let index = 0; index < matches.length; index++) {
         
         const match = matches[index];
@@ -77,17 +77,18 @@ function displayMatches(response)
         let player_home = match.player_home;
         let player_away = match.player_away;
         let score = '';
-        console.log('Match_home = ' + match.home);
-        console.log('Match_away = ' + match.away);
 
         if (match.home == -1 || match.away == -1)
             score = "-:-";
         else
             score = match.score_home + ":" + match.score_away;
-        let status = match.round; //need to fix variable name! 
-        
+        let status = match.status;
+
         addMatchItem(tournamentMatchesList, player_home, player_away, score, status);
     }
+
+    addMatchItem(tournamentMatchesList, "fwechslefwechsle", "fwechslefwechsle", "4:2", "finished");
+    addMatchItem(tournamentMatchesList, "nsassenb", "fwechsle", "6:0", "running");
 }
 
 function addRowToStandingsTable(rank, player, games, wins, losses, goals, diff, points) {
@@ -121,19 +122,43 @@ function addMatchItem(tournamentMatchesList, player_home, player_away, score, st
     const li = document.createElement('li');
 
     li.style = `
-        background: linear-gradient(to bottom, rgba(133, 129, 199, 0.8), rgba(71, 64, 168, 0.8) 100%);
         border: 1px solid #ccc;
         border-radius: 0.6em;
         margin-bottom: 0.6em;
     `;
 
+    let item;
+
+    if (status === 'finished')
+    {
+        item = '<svg class="check-symbol" xmlns="http://www.w3.org/2000/svg" viewBox="2 1.5 20 20" fill="#4740a8" width="4em" height="4em" style="margin: 0; padding: 0;"><path d="M0 0h24v24H0z" fill="none"/><path d="M9 16.2l-3.5-3.5 1.4-1.4L9 13.4l7.1-7.1 1.4 1.4z"/></svg>';
+        li.style.background = 'linear-gradient(to bottom, rgba(26, 158, 37, 0.8), rgba(15, 126, 24, 0.8) 100%)';
+    }
+    else if (status === 'pending')
+    {
+        item = '<svg class="clock-symbol" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#4740a8" width="4em" height="4em" style="margin: 0; padding: 0;"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-.5-13h-2v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>';
+        li.style.background = 'linear-gradient(to bottom, rgba(211, 211, 211, 0.8), rgba(169, 169, 169, 0.8) 100%)';
+    }
+    else //running
+    {
+        item = '<div class="pong-loader"><span class="ball"></span></div>'
+        li.classList.add('lava-lamp');
+    }
+
+    let free_color_home = '';
+    let free_color_away = '';
+    if (player_home[0] === "Free from play")
+        free_color_home = ' color: grey;';
+    if (player_away[0] === "Free from play")
+        free_color_away = ' color: grey;';
+
     li.innerHTML = `
     <div class="tournament-match">
-        <div class="tournament-match-item">${player_home}</div>
-        <div class="tournament-match-item" style="font-size: 1em;">${score}</div>
-        <div class="tournament-match-item">${player_away}</div>
-        <div class="tournament-match-item">${status}</div>
-    </div>    
+        <div class="tournament-match-item" style="width: 38%;${free_color_home}">${player_home}</div>
+        <div class="tournament-match-item" style="font-size: 1em; width: 12%;">${score}</div>
+        <div class="tournament-match-item" style="width: 38%;${free_color_away}">${player_away}</div>
+        <div class="tournament-match-item" style="width: 12%;">${item}</div>
+    </div>
     `;
 
     tournamentMatchesList.appendChild(li);
@@ -206,7 +231,7 @@ export function renderTournamentRR(lobbyId) {
                     <div class="tournament-table2" style="padding-left: 0;">
                         <div id="tournamentLobby">
                             <div class="tournament-table-header">
-                                <p>ROUND X</p>
+                                <p>MATCHES</p>
                             </div>  
 
                             <ul id="tournamentMatches" style="list-style-type: none; padding: 0; margin: 0;"></ul>
@@ -227,7 +252,8 @@ export function renderTournamentRR(lobbyId) {
                         </div>
                     </div>
                     <button id="controlsButton"><span class="button-text">Controls</span></button>
-                    <button id="tournamentStartButton"><span class="button-text">Start tournament</span></button>
+                    <button id="tournamentStartButton" class="start-button"><span id="tournamentStartButtonSpan">Start tournament</span></button>
+                    <button id="roundStartButton" class="start-button"><span id="roundStartButtonSpan">Start Round</span></button>
                     <div id="copyMessage" class="copy-message">Copied to clipboard!</div>  
                 </div>  
             </div>
@@ -247,20 +273,10 @@ export function renderTournamentRR(lobbyId) {
             </div>
         </div>
 
+        <div class="countdown-container" id="countdownDisplay"></div>
 
     </div>
     `;
-
-
-    // <table id="tournamentMatches" class="tournament-matches">
-    // <colgroup>
-    //     <col style="width: 35%;">
-    //     <col style="width: 20%;">
-    //     <col style="width: 35%;">
-    //     <col style="width: 10%;">
-    // </colgroup>
-    // <tbody id="tournamentRoundTableBody" class="tournament-table-body"></tbody>
-    // </table>
 
     const socket = new WebSocket(`ws://${window.location.host}/ws/tm/${lobbyId}/`);
     runWebsocket(socket);
@@ -341,9 +357,54 @@ export function renderTournamentRR(lobbyId) {
     };
 
     const tournamentStartButton = document.getElementById('tournamentStartButton');
+    const roundStartButton = document.getElementById('roundStartButton');
 
     tournamentStartButton.addEventListener('click', async() => {
-        const response = await showTournamentMatches();
-        displayMatches(response);
+        tournamentStartButton.style.display = 'none';
+        roundStartButton.style.display = 'block';
+        await showTournamentMatches();
     });
+
+    roundStartButton.addEventListener('click', async() => {
+        roundStartButton.disabled = true;
+        startGame();
+    });
+
+
+    // COUNTDOWN TEST
+
+    let countdown = 3;
+    let countdownInterval;
+
+    function startGame() {
+        if (roundStartButton && roundStartButton.disabled)
+                disableSpanInsideButton('roundStartButton');
+
+        document.getElementById('countdownDisplay').style.display = 'block';
+
+        countdownInterval = setInterval(updateCountdown, 1000);
+    }
+
+    async function updateCountdown() {
+        document.getElementById('countdownDisplay').textContent = countdown.toString();
+        
+        if (countdown > 0) {
+            countdown--;
+        } else {
+            clearInterval(countdownInterval);
+            document.getElementById('countdownDisplay').style.display = 'none';
+            
+            console.log('Game started!');
+        }
+    }
+
+    function disableSpanInsideButton(buttonId) {
+        const button = document.getElementById(buttonId);
+        if (button && button.disabled) {
+            const span = button.querySelector('span');
+            if (span) {
+                span.classList.add('disabled');
+            }
+        }
+    }
 }
