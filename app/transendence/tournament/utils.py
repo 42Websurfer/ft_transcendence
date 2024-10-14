@@ -1,7 +1,6 @@
 import redis
 import json
 from channels.layers import get_channel_layer
-
 from asgiref.sync import async_to_sync
 
 redis = redis.Redis(host='redis', port=6379, db=0)
@@ -33,7 +32,31 @@ def create_user_structure(user_id, role, username):
 	}
 	return user_data
 
-def update_tournament_group(lobby_id, match_data):
+def sort_group_tournament(results):
+	sorted_result = sorted(
+	results,
+	key=lambda x: (
+		x['points'],
+		x['diff'],
+		x['won'],
+		x['goals']
+	),
+	reverse=True
+	)
+	
+	idx = 0
+	while (idx < len(sorted_result)):
+		sorted_result[idx]['rank'] = idx + 1
+		if (idx > 0):
+			if sorted_result[idx]['points'] == sorted_result[idx - 1]['points'] and \
+				sorted_result[idx]['diff'] == sorted_result[idx - 1]['diff'] and \
+				sorted_result[idx]['won'] == sorted_result[idx - 1]['won'] and \
+				sorted_result[idx]['goals'] == sorted_result[idx - 1]['goals']:
+					sorted_result[idx]['rank'] = sorted_result[idx - 1]['rank']	
+		idx += 1
+	return sorted_result
+
+async def update_tournament_group(lobby_id, match_data):
 	home = match_data['home']
 	away = match_data['away']
 	score_home = match_data['score_home']
@@ -62,33 +85,88 @@ def update_tournament_group(lobby_id, match_data):
 				user['points'] += 3
 			user['diff'] += (score_away - score_home)
 	
-	sorted_result = sorted(
-	results,
-	key=lambda x: (
-		x['points'],
-		x['diff'],
-		x['won'],
-		x['goals']
-	),
-	reverse=True
-	)
-	
-	idx = 0
-	while (idx < len(sorted_result)):
-		sorted_result[idx]['rank'] = idx + 1
-		if (idx > 0):
-			if sorted_result[idx]['points'] == sorted_result[idx - 1]['points'] and \
-				sorted_result[idx]['diff'] == sorted_result[idx - 1]['diff'] and \
-				sorted_result[idx]['won'] == sorted_result[idx - 1]['won'] and \
-				sorted_result[idx]['goals'] == sorted_result[idx - 1]['goals']:
-					sorted_result[idx]['rank'] = sorted_result[idx - 1]['rank']	
-		idx += 1
-
+	sorted_result = sort_group_tournament(results)
 	redis.set(lobby_id, json.dumps(sorted_result))
 	channel_layer = get_channel_layer()
-	async_to_sync(channel_layer.group_send)(
+	await channel_layer.group_send(
 		lobby_id,
 		{
 			'type': 'send_tournament_users',
 		}
 	)
+
+async def set_match_data(lobby_id, match_id, score_home, score_away, status):
+	tournament = redis.get(tournament_string(lobby_id))
+	if tournament is None:
+		return
+	tournament_dic = json.loads(tournament)
+	match = tournament_dic['matches'][match_id - 1]
+
+	match['score_home'] = score_home
+	match['score_away'] = score_away
+	match['status'] = status
+	redis.set(tournament_string(lobby_id), json.dumps(tournament_dic))
+	if (status == 'finished' and not (score_home == 0 and score_away == 0)):
+		await update_tournament_group(lobby_id, match)
+	channel_layer = get_channel_layer()
+	await channel_layer.group_send(
+		lobby_id,
+		{
+			'type': 'match_list',
+		}
+	)
+	# return True
+
+def reset_match(lobby_id, match):
+	home = match['home']
+	away = match['away']
+	score_home = match['score_home']
+	score_away  = match['score_away']
+	results = json.loads(redis.get(lobby_id))
+	home_winner = False
+	if (score_home > score_away):
+		home_winner = True
+	for user in results:
+		if user['user_id'] == home:
+			user['goals'] -= score_home
+			user['goals_against'] -= score_away
+			if (home_winner):
+				user['won'] -= 1
+				user['points'] -= 3
+			else:
+				user['lost'] -= 1
+			user['diff'] -= (score_home - score_away)
+		elif user['user_id'] == away:
+			user['goals'] -= score_away
+			user['goals_against'] -= score_home
+			if (home_winner):
+				user['lost'] -= 1
+			else:
+				user['won'] -= 1
+				user['points'] -= 3
+			user['diff'] -= (score_away - score_home)
+	results = sort_group_tournament(results)
+	redis.set(lobby_id, json.dumps(results))
+
+async def update_match(lobby_id, match):
+	if (match['status'] == 'freegame'):
+		return
+	if match['status'] == 'finished':
+		reset_match(lobby_id, match)
+	await set_match_data(lobby_id, match['match_id'], 0, 0, 'finished')
+
+
+async def update_matches_disconnect(user_id, lobby_id):
+	matches = json.loads(redis.get(tournament_string(lobby_id)))
+	if not matches:
+		return
+	for match in matches['matches']:
+		if (match['home'] == user_id):
+			await update_match(lobby_id, match)
+		elif (match['away'] == user_id):
+			await update_match(lobby_id, match)
+
+	#for loop durch alle Spieler die disconnected werden
+	#checken die vorherigen Spiele, falls schon welche gespielt worden sind dann natürlich die als erster rauslöschen aus Standing und überschreiben mit der 0:7
+	# dann standing aktualisieren
+	# dann standing und matches erneut senden.
