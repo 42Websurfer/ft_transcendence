@@ -276,4 +276,9 @@ export function renderWelcome() {
         showSection('tournament');
     });
 
+    const lobbyButton = document.getElementById('menu-item-local');
+    lobbyButton.addEventListener('click', () => {
+        console.log("clicked");
+        showSection('lobby', 'PVEJ');
+    });
 }
