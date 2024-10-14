@@ -76,7 +76,14 @@ function displayMatches(response)
         
         let player_home = match.player_home;
         let player_away = match.player_away;
-        let score = match.score_home + ":" + match.score_away;
+        let score = '';
+        console.log('Match_home = ' + match.home);
+        console.log('Match_away = ' + match.away);
+
+        if (match.home == -1 || match.away == -1)
+            score = "-:-";
+        else
+            score = match.score_home + ":" + match.score_away;
         let status = match.status;
         
         addMatchItem(tournamentMatchesList, player_home, player_away, score, status);
