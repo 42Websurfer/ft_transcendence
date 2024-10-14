@@ -23,6 +23,7 @@ export function renderTournament() {
             <div class="tournament-enter-lobby">
                 <input type="text" id="tournamentLobbyId" placeholder="Enter a lobby-id and hit enter...">
             </div>
+            <div id="joinMessage" class="join-message"></div>
         </div>
         
     </div>
@@ -43,6 +44,7 @@ export function renderTournament() {
     };
 
     const tournamentLobbyInput = document.getElementById('tournamentLobbyId');
+    const joinMessage = document.getElementById('joinMessage');
     tournamentLobbyInput.addEventListener('keydown', async (event) => {
         if (event.key === 'Enter') {
             const lobbyId = tournamentLobbyInput.value.trim();
@@ -51,8 +53,14 @@ export function renderTournament() {
                 const response = await joinTournamentLobby(lobbyId);
                 if (response.type === 'success')
                     showSection('tournamentRR', lobbyId);
-                else 
-                    console.log(response.type); //Need to be shown at frontend
+                else
+                {
+                    joinMessage.textContent = response.message;
+                    joinMessage.style.color = 'red';
+                    joinMessage.style.animation = 'none';
+                    joinMessage.offsetHeight;
+                    joinMessage.style.animation = 'wiggle 0.5s ease-in-out';
+                }
             }
         }
     });
