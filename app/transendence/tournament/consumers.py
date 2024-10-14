@@ -62,6 +62,7 @@ class Tournament(AsyncWebsocketConsumer):
 				redis.set(self.group_name, json.dumps(new_results))
 			else:
 				redis.delete(self.group_name)
+				redis.delete(tournament_string(self.group_name))
 				return
 			
 			await self.channel_layer.group_send(
