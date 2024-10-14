@@ -650,17 +650,10 @@ body {
     display: none;
 }
 
-/* .invitation-message {
-    margin-top: 10px;
-    font-size: 0.6vw;
-    color: #ff0000;
-    text-align: center;
-} */
-
 .invitation-message {
-    position: absolute; /* Position it absolutely within the modal content */
-    top: 14vh; /* Adjust as needed */
-    left: 2vw;
+    position: absolute;
+    top: 11.3em;
+    left: 3em;
     font-size: 0.6vw;
     color: #ff0000;
     text-align: left;
@@ -943,7 +936,6 @@ body {
 }
 
 #tournamentStartButton {
-    /* align-self: flex-end; */
     width: 17.4em;
     background-color: rgba(245, 244, 244, 0.6);
     border-radius: 8px;
@@ -959,11 +951,39 @@ body {
     color: white;
 }
 
-#tournamentStartButton .button-text {
-    pointer-events: auto;
+#roundStartButton {
+    display: none;
+    width: 17.4em;
+    background-color: rgba(245, 244, 244, 0.6);
+    border-radius: 8px;
+    border: 0.1em solid #000000;
+    font-size: 1.2em;
+    flex-direction: column;
+    text-shadow: 1px 1px 2px #000000;
+    text-align: center;
+    font-family: 'Press Start 2P';
+    padding: 0.6em;
+    white-space: nowrap;
+    color: white;
 }
 
-#tournamentStartButton .button-text:hover {
+#tournamentStartButtonSpan:hover {
+    color: #e6e4e7;
+    text-shadow: 2px 2px 2px #000000;
+}
+
+#roundStartButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+#roundStartButtonSpan.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+#roundStartButtonSpan:not(.disabled):hover {
     color: #e6e4e7;
     text-shadow: 2px 2px 2px #000000;
 }
@@ -1104,4 +1124,27 @@ body {
     font-family: 'Press Start 2P';
     color: white;
     font-size: 0.8em;
+}
+
+.countdown-container {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Press Start 2P';
+    font-size: 16em;
+    color: red;
+}
+
+.join-message {
+    position: absolute;
+    top: 25.8em;
+    left: 26.4em;
+    font-size: 1.4em;
+    color: #ff0000;
+    text-align: left;
+    width: auto;
+    transform-origin: center;
+    text-shadow: 1px 1px 1px #000000;
 }

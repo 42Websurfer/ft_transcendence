@@ -77,15 +77,15 @@ function displayMatches(response)
         let player_home = match.player_home;
         let player_away = match.player_away;
         let score = '';
-        console.log('Match_home = ' + match.home);
-        console.log('Match_away = ' + match.away);
 
         if (match.home == -1 || match.away == -1)
             score = "-:-";
         else
             score = match.score_home + ":" + match.score_away;
-        let status = match.round; //need to fix variable name! 
+        let status = match.status; //need to fix variable name! 
         
+        // status: pending, running, finished
+
         addMatchItem(tournamentMatchesList, player_home, player_away, score, status);
     }
 }
@@ -121,11 +121,19 @@ function addMatchItem(tournamentMatchesList, player_home, player_away, score, st
     const li = document.createElement('li');
 
     li.style = `
-        background: linear-gradient(to bottom, rgba(133, 129, 199, 0.8), rgba(71, 64, 168, 0.8) 100%);
         border: 1px solid #ccc;
         border-radius: 0.6em;
         margin-bottom: 0.6em;
     `;
+
+    console.log("status:" )
+
+    if (status === 'finished')
+        li.style.setProperty('background-color', 'grey');
+    else if (status === 'pending')
+        li.style.setProperty('background', 'linear-gradient(to bottom, rgba(211, 211, 211, 0.8), rgba(169, 169, 169, 0.8) 100%)');
+    else
+        li.style.setProperty('background', 'linear-gradient(to bottom, rgba(133, 129, 199, 0.8), rgba(71, 64, 168, 0.8) 100%)');
 
     li.innerHTML = `
     <div class="tournament-match">
@@ -206,7 +214,7 @@ export function renderTournamentRR(lobbyId) {
                     <div class="tournament-table2" style="padding-left: 0;">
                         <div id="tournamentLobby">
                             <div class="tournament-table-header">
-                                <p>ROUND X</p>
+                                <p>MATCHES</p>
                             </div>  
 
                             <ul id="tournamentMatches" style="list-style-type: none; padding: 0; margin: 0;"></ul>
@@ -227,7 +235,8 @@ export function renderTournamentRR(lobbyId) {
                         </div>
                     </div>
                     <button id="controlsButton"><span class="button-text">Controls</span></button>
-                    <button id="tournamentStartButton"><span class="button-text">Start tournament</span></button>
+                    <button id="tournamentStartButton" class="start-button"><span id="tournamentStartButtonSpan">Start tournament</span></button>
+                    <button id="roundStartButton" class="start-button"><span id="roundStartButtonSpan">Start Round</span></button>
                     <div id="copyMessage" class="copy-message">Copied to clipboard!</div>  
                 </div>  
             </div>
@@ -247,6 +256,7 @@ export function renderTournamentRR(lobbyId) {
             </div>
         </div>
 
+        <div class="countdown-container" id="countdownDisplay"></div>
 
     </div>
     `;
@@ -341,9 +351,57 @@ export function renderTournamentRR(lobbyId) {
     };
 
     const tournamentStartButton = document.getElementById('tournamentStartButton');
+    const roundStartButton = document.getElementById('roundStartButton');
 
     tournamentStartButton.addEventListener('click', async() => {
+        tournamentStartButton.style.display = 'none';
+        roundStartButton.style.display = 'block';
         const response = await showTournamentMatches();
         displayMatches(response);
     });
+
+    roundStartButton.addEventListener('click', async() => {
+        roundStartButton.disabled = true;
+        startGame();
+    });
+
+
+    // COUNTDOWN TEST
+
+    let countdown = 3;
+    let countdownInterval;
+
+    function startGame() {
+        if (roundStartButton && roundStartButton.disabled)
+                disableSpanInsideButton('roundStartButton');
+
+        document.getElementById('countdownDisplay').style.display = 'block';
+
+        countdownInterval = setInterval(updateCountdown, 1000);
+    }
+
+    async function updateCountdown() {
+        document.getElementById('countdownDisplay').textContent = countdown.toString();
+        
+        if (countdown > 0) {
+            countdown--;
+        } else {
+            clearInterval(countdownInterval);
+            document.getElementById('countdownDisplay').style.display = 'none';
+            
+            console.log('Game started!');
+        }
+    }
+
+    function disableSpanInsideButton(buttonId) {
+        const button = document.getElementById(buttonId);
+        if (button && button.disabled) {
+            const span = button.querySelector('span');
+            if (span) {
+                span.classList.add('disabled');
+            }
+        }
+    }
+
+    const joinMessage = document.getElementById('joinMessage');
 }
