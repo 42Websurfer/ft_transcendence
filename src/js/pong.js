@@ -88,8 +88,6 @@ class Player extends Entity{
 		this.addComponent(Mesh, this.mesh);
 		this.addComponent(Physics, this.physics);
 		this.keyBinds = {up: 'remote', down: 'remote'};
-		window.addEventListener('keydown', (event) => this.keyDown(event));
-		window.addEventListener('keyup', (event) => this.keyUp(event));
 		this.score = 0;
 		this.startPos = undefined;
 		this.goalHeight = 0;
@@ -151,25 +149,6 @@ class Player extends Entity{
 			ophys.velocity.normalize();
 			ophys.velocity.scale(prevScale);
 		}
-	}
-
-	keyDown(event){
-		console.log('HA');
-		if (event.key === this.keyBinds.up){
-			let dir = new Vector(this.up.x, this.up.y);
-			dir.scale(PLAYER_MOVE_SPEED);
-			this.physics.velocity = dir;
-		} else if (event.key === this.keyBinds.down) {
-			let dir = new Vector(this.up.x, this.up.y);
-			dir.scale(-PLAYER_MOVE_SPEED);
-			this.physics.velocity = dir;
-		} else if (event.key === 'g') {
-			this.rotate(this.rotation + 5);
-		}
-		else {
-			return;
-		}
-		event.preventDefault();
 	}
 
 	keyUp(event){
@@ -398,6 +377,19 @@ let intervalId = 0;
 let manager = undefined;
 let socket = undefined;
 
+
+function sendMovementInput(event) {
+	if (event.type == 'keypress') {
+		if (event.key == 'w') {
+			socket.send(0b01);
+		} else if (event.key == 's') {
+			socket.send(0b10);
+		}
+	} else if (event.type == 'keyup' && (event.key == 's' || event.key == 'w')) {
+		socket.send(0b00);
+	} 
+}
+
 function selectGamemode(container, local){
 	container.innerHTML = '';
 	if (local){
@@ -407,6 +399,8 @@ function selectGamemode(container, local){
 	}
 	else if (local == false){
 		socket = new WebSocket(`ws://${window.location.host}/ws/pong/test/`);
+		window.addEventListener('keypress', sendMovementInput);
+		window.addEventListener('keyup', sendMovementInput);
 		manager = new RemoteHandler();
 		setupSocketHandlers(socket);
 	}
@@ -417,16 +411,21 @@ function selectGamemode(container, local){
 	intervalId = setInterval(function() {
 		world.update();
 	}, 10);
-	window.removeEventListener('keydown', selectGamemode);
 }
 
 function setupSocketHandlers(socket){
+
+
 	socket.onopen = () => {
 		console.log("Connection to remote Pong serverer");
 	}
 	
 	socket.onmessage = (event) => {
 		const data = JSON.parse(event.data);
+		if (data instanceof Number) {
+			console.log(data);
+			return;
+		}
 		if (data.type !== 'updatePos')
 			console.log(data);
 		if (data.type === 'currentState'){
@@ -447,6 +446,8 @@ function setupSocketHandlers(socket){
 	
 	socket.onclose = () => {
 		clearInterval(intervalId);
+		world.entities = [];
+		world.systems = [];
 		showSection('welcome');
 	}
 }

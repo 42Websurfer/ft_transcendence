@@ -92,6 +92,21 @@ class Player(Entity):
 				event_loop)
 		self.position = new_pos
 
+	def handle_remote_movement(self, input):
+		if input == 1:
+			dir = Vector(self.up.x, self.up.y)
+			dir.scale(PLAYER_MOVE_SPEED)
+			self.physics.velocity = dir
+			print('will go up')
+		elif input == 2:
+			dir = Vector(self.up.x, self.up.y)
+			dir.scale(-PLAYER_MOVE_SPEED)
+			print('will go down')
+			self.physics.velocity = dir
+		elif input == 0:
+			self.physics.set_velocity(0, 0)
+			print('will stop moving')
+
 	def on_collision(self, other, collision_point=None):
 		ophys = other.get_component(Physics)
 		if ophys and collision_point and isinstance(other, Ball):
@@ -115,27 +130,24 @@ playerCount = 0
 
 class RemoteHandler:
 	def __init__(self) -> None:
-		self.players = {}
+		self.players = []
 		self.host = None
 		self.maxId = 0
 
 	async def addPlayer(self, consumer, player=None):
-		if self.players.__len__() == 0:
-			self.host = consumer
-		global playerCount
-		self.players[consumer] = gameLogic.sections[playerCount].player
-		playerCount += 1
 		print('add player called')
-		await self.getCurrentState(consumer)
+		if self.host == None:
+			self.host = consumer
+		self.players.append(consumer)
+		if len(self.players) == 2:
+			asyncio_thread = threading.Thread(target=thread_main)
+			asyncio_thread.start()
+
+			game_thread = threading.Thread(target=game_loop)
+			game_thread.start()
+		# await self.getCurrentState(consumer)
 		print('assign on remote Player the entity as local player')
-		consumer.player = self.players[consumer]
-		if self.players[consumer] is not None:
-			await consumer.initLocal(
-				{
-					'type': 'initLocal',
-					'id': self.players[consumer].id
-				}
-			)
+		
 	
 	async def getCurrentState(self, consumer):
 		print(world.entities)
@@ -154,10 +166,11 @@ class RemoteHandler:
 			)
 
 	async def removePlayer(self, consumer):
-		if consumer == self.host:
-			self.host = next(iter(self.players.keys()))
-		if consumer in self.players:
-			del self.players[consumer]
+		pass
+		# if consumer == self.host:
+		# 	self.host = next(iter(self.players.keys()))
+		# if consumer in self.players:
+		# 	del self.players[consumer]
 
 
 class PlayerSection:
@@ -192,7 +205,7 @@ class GameLogicManager(Entity):
 			self.sections.append(PlayerSection(CANVAS_WIDTH, CANVAS_HEIGHT * .5, 0, CANVAS_HEIGHT))
 			world.addEntity(Wall(CANVAS_WIDTH * .5, 0, 90, CANVAS_WIDTH))
 			world.addEntity(Wall(CANVAS_WIDTH * .5, CANVAS_HEIGHT, 90, CANVAS_WIDTH))
-			return
+			# return
 		# center = Vector(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2)
 		# point1 = Vector(0, -CANVAS_HEIGHT / 2)
 		# rotationStep = 360 / playerCount
@@ -207,20 +220,23 @@ class GameLogicManager(Entity):
 		# 	point1.rotate(rotationStep)
 		# 	point2.rotate(rotationStep)
 		# 	rot += rotationStep
+		for section in self.sections:
+			world.addEntity(section.player)
+			world.addEntity(section.goal)
 
 	def update(self):
-		pass
-		# if self.initalized == False and len(remoteHandler.players) >= 2:
-		# 	self.buildDynamicField(2)
-		# 	print('built field with players')
-		# 	i = 0
-		# 	for consumer in remoteHandler.players.keys():
-		# 		print('iter', i)
-		# 		asyncio.run_coroutine_threadsafe(remoteHandler.getCurrentState(consumer), event_loop)
-		# 		asyncio.run_coroutine_threadsafe(remoteHandler.addPlayer(consumer, self.sections[i].player), event_loop)
-		# 		i += 1
-		# 	self.initalized = True
-		# 	print('assigned players to remote connection')
+		if self.initalized == False and len(remoteHandler.players) >= 2:
+			self.buildDynamicField(len(remoteHandler.players))
+			print('built field with players')
+			i = 0
+			for consumer in remoteHandler.players:
+				print('iter', i)
+				asyncio.run_coroutine_threadsafe(remoteHandler.getCurrentState(consumer), event_loop)
+				consumer.player_c = self.sections[i].player
+				# asyncio.run_coroutine_threadsafe(remoteHandler.addPlayer(consumer, self.sections[i].player), event_loop)
+				i += 1
+			self.initalized = True
+			print('assigned players to remote connection')
 
 world = World()
 world.addSystem(CollisionSystem())
@@ -228,20 +244,14 @@ world.addSystem(MovementSystem())
 
 remoteHandler = RemoteHandler()
 gameLogic = GameLogicManager()
-gameLogic.buildDynamicField(2)
 
-for sec in gameLogic.sections:
-	world.addEntity(sec.goal)
-	world.addEntity(sec.player)
 
 world.addEntity(gameLogic)
 
 def game_loop():
-	while remoteHandler.host is None:
-		print('Host not set')
 	while True:
 		world.update()
-		time.sleep(0.01)
+		time.sleep(0.016)
 
 event_loop = None
 
@@ -251,8 +261,30 @@ def thread_main():
 	asyncio.set_event_loop(event_loop)
 	event_loop.run_forever()
 
-thread = threading.Thread(target=thread_main)
-thread.start()
+asyncio_thread = None
+game_thread = None
+# asyncio_thread = threading.Thread(target=thread_main)
+# asyncio_thread.start()
 
-game_thread = threading.Thread(target=game_loop)
-game_thread.start()
+# game_thread = threading.Thread(target=game_loop)
+# game_thread.start()
+
+
+class GameHandler:
+	
+	# Statics?
+	game_sessions = {}
+
+	def __init__(self, group_name):
+		print('GameHandler() called')
+		self.group_name = group_name
+		self.players = []
+
+	@staticmethod
+	def add_consumer_to_game(consumer, group_name):
+		if group_name in GameHandler.game_sessions:
+			print('Group exists in handler, we push the player')
+			GameHandler.game_sessions[group_name].players.append(consumer)
+			return
+		print('First player of group we create a new GameHandler')
+		GameHandler.game_sessions[group_name] = GameHandler(group_name=group_name)
