@@ -37,6 +37,8 @@ export function runWebsocket(socket) {
                     
                     addRowToStandingsTable(rank, player, games, wins, losses, goals, diff, points);
                 }
+
+                addRowToStandingsTable(42, "fwechslefwechsle", 1, 2, 3, "4:2", 1, 3);
             }
             else if (data.type === 'match_list')
             {
@@ -66,10 +68,10 @@ function displayMatches(response)
 {
     const matches = response.matches;
 
-    console.log(matches);
     const tournamentMatchesList = document.getElementById('tournamentMatches');
     if (tournamentMatchesList)
         tournamentMatchesList.innerHTML = '';
+
     for (let index = 0; index < matches.length; index++) {
         
         const match = matches[index];
@@ -82,12 +84,13 @@ function displayMatches(response)
             score = "-:-";
         else
             score = match.score_home + ":" + match.score_away;
-        let status = match.status; //need to fix variable name! 
-        
-        // status: pending, running, finished
+        let status = match.status;
 
         addMatchItem(tournamentMatchesList, player_home, player_away, score, status);
     }
+
+    addMatchItem(tournamentMatchesList, "fwechslefwechsle", "fwechslefwechsle", "4:2", "finished");
+    addMatchItem(tournamentMatchesList, "nsassenb", "fwechsle", "6:0", "running");
 }
 
 function addRowToStandingsTable(rank, player, games, wins, losses, goals, diff, points) {
@@ -126,22 +129,33 @@ function addMatchItem(tournamentMatchesList, player_home, player_away, score, st
         margin-bottom: 0.6em;
     `;
 
-    console.log("status:" )
+    let item;
 
     if (status === 'finished')
-        li.style.setProperty('background-color', 'grey');
+    {
+        item = '<svg class="check-symbol" xmlns="http://www.w3.org/2000/svg" viewBox="2 1.5 20 20" fill="#4740a8" width="4em" height="4em" style="margin: 0; padding: 0;"><path d="M0 0h24v24H0z" fill="none"/><path d="M9 16.2l-3.5-3.5 1.4-1.4L9 13.4l7.1-7.1 1.4 1.4z"/></svg>';
+        li.style.background = 'linear-gradient(to bottom, rgba(26, 158, 37, 0.8), rgba(15, 126, 24, 0.8) 100%)';
+    }
     else if (status === 'pending')
-        li.style.setProperty('background', 'linear-gradient(to bottom, rgba(211, 211, 211, 0.8), rgba(169, 169, 169, 0.8) 100%)');
-    else
-        li.style.setProperty('background', 'linear-gradient(to bottom, rgba(133, 129, 199, 0.8), rgba(71, 64, 168, 0.8) 100%)');
+    {
+        item = '<svg class="clock-symbol" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#4740a8" width="4em" height="4em" style="margin: 0; padding: 0;"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-.5-13h-2v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>';
+        li.style.background = 'linear-gradient(to bottom, rgba(211, 211, 211, 0.8), rgba(169, 169, 169, 0.8) 100%)';
+    }
+    else //running
+    {
+        item = '<div class="pong-loader"><span class="ball"></span></div>'
+        li.classList.add('lava-lamp');
+    }
+
+    // const truncatedPlayerHome = player_home.length > 14 ? player_home.substring(0, 12) + '..' : player_home;
 
     li.innerHTML = `
     <div class="tournament-match">
-        <div class="tournament-match-item">${player_home}</div>
-        <div class="tournament-match-item" style="font-size: 1em;">${score}</div>
-        <div class="tournament-match-item">${player_away}</div>
-        <div class="tournament-match-item">${status}</div>
-    </div>    
+        <div class="tournament-match-item" style="width: 38%;">${player_home}</div>
+        <div class="tournament-match-item" style="font-size: 1em; width: 12%;">${score}</div>
+        <div class="tournament-match-item" style="width: 38%;">${player_away}</div>
+        <div class="tournament-match-item" style="width: 12%;">${item}</div>
+    </div>
     `;
 
     tournamentMatchesList.appendChild(li);
@@ -261,17 +275,6 @@ export function renderTournamentRR(lobbyId) {
     </div>
     `;
 
-
-    // <table id="tournamentMatches" class="tournament-matches">
-    // <colgroup>
-    //     <col style="width: 35%;">
-    //     <col style="width: 20%;">
-    //     <col style="width: 35%;">
-    //     <col style="width: 10%;">
-    // </colgroup>
-    // <tbody id="tournamentRoundTableBody" class="tournament-table-body"></tbody>
-    // </table>
-
     const socket = new WebSocket(`ws://${window.location.host}/ws/tm/${lobbyId}/`);
     runWebsocket(socket);
     closeWebsocket(socket);
@@ -357,7 +360,6 @@ export function renderTournamentRR(lobbyId) {
         tournamentStartButton.style.display = 'none';
         roundStartButton.style.display = 'block';
         const response = await showTournamentMatches();
-        displayMatches(response);
     });
 
     roundStartButton.addEventListener('click', async() => {
@@ -402,6 +404,4 @@ export function renderTournamentRR(lobbyId) {
             }
         }
     }
-
-    const joinMessage = document.getElementById('joinMessage');
 }

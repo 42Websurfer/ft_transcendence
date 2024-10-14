@@ -443,19 +443,19 @@ body {
 
 @keyframes changeColor {
     0% {
-        background-color: #5c57ad;
+        background-color: #8581c7;
     }
     25% {
         background-color: #6a67ce;
     }
     50% {
-        background-color: #5756a8;
+        background-color: #5c56af;
     }
     75% {
-        background-color: #5c59b8;
+        background-color: #6a67ce;
     }
     100% {
-        background-color: #5c57ad;
+        background-color: #8581c7;
     }
 }
 
@@ -863,7 +863,7 @@ body {
 }
 
 .tournament-container-left {
-    width: 80%;
+    width: 90%;
     display: flex;
     flex-direction: row;
     background-color: rgba(245, 244, 244, 0.4);
@@ -881,18 +881,18 @@ body {
 }
 
 .tournament-table1 {
-    width: 58%;
+    width: 52%;
     padding: 2em;
 }
 
 .tournament-table2 {
-    width: 38%;
+    width: 44%;
     padding: 2em;
 }
 
 .tournament-buttons {
-    width: 20%;
-    margin-left: 5%;
+    width: 10%;
+    margin-left: 2.5%;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -936,7 +936,7 @@ body {
 }
 
 #tournamentStartButton {
-    width: 17.4em;
+    width: 11em;
     background-color: rgba(245, 244, 244, 0.6);
     border-radius: 8px;
     border: 0.1em solid #000000;
@@ -947,13 +947,13 @@ body {
     text-align: center;
     font-family: 'Press Start 2P';
     padding: 0.6em;
-    white-space: nowrap;
+    /* white-space: nowrap; */
     color: white;
 }
 
 #roundStartButton {
     display: none;
-    width: 17.4em;
+    width: 11em;
     background-color: rgba(245, 244, 244, 0.6);
     border-radius: 8px;
     border: 0.1em solid #000000;
@@ -963,7 +963,6 @@ body {
     text-align: center;
     font-family: 'Press Start 2P';
     padding: 0.6em;
-    white-space: nowrap;
     color: white;
 }
 
@@ -1066,8 +1065,8 @@ body {
     font-family: 'Press Start 2P';
     padding: 0.6em;
     white-space: nowrap;
-    margin-top: 10.4em;
-    margin-bottom: 10.4em;
+    margin-top: 9.6em;
+    margin-bottom: 9.6em;
     color: white;
 }
 
@@ -1116,14 +1115,15 @@ body {
 }
 
 .tournament-match-item {
-    width: 25%;
-    padding: 0.5em 0em;
+    padding: 0.2em 0em;
     display: flex;
     align-items: center;
     justify-content: center;
     font-family: 'Press Start 2P';
     color: white;
     font-size: 0.8em;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .countdown-container {
@@ -1147,4 +1147,98 @@ body {
     width: auto;
     transform-origin: center;
     text-shadow: 1px 1px 1px #000000;
+}
+
+.pong-loader {
+    /* width: 15%; */
+    padding: 0.5em 0em;
+
+    --color: #4740a8;
+    --paddle-width: 0.4em;
+    --paddle-height: 1.8em;
+    --ball-size: 0.56em;
+  
+    display: inline-block;
+    position: relative;
+    width: 2.6em;
+    height: 3.2em;
+    overflow: hidden;
+}
+  
+.pong-loader::before,
+.pong-loader::after {
+    content: '';
+    position: absolute;
+    background-color: var(--color);
+}
+  
+.pong-loader::before { /* Left paddle */
+    width: var(--paddle-width);
+    height: var(--paddle-height);
+    top: calc(50% - var(--paddle-height) / 2);
+    left: 0;
+    animation: left-paddle-bounce 2s infinite ease-in-out alternate;
+}
+  
+.pong-loader::after { /* Right paddle */
+    width: var(--paddle-width);
+    height: var(--paddle-height);
+    top: calc(50% - var(--paddle-height) / 2);
+    right: 0;
+    animation: right-paddle-bounce 2s infinite ease-in-out alternate;
+}
+  
+@keyframes left-paddle-bounce {
+    0%, 100% { transform: translateY(-15%); }
+    50% { transform: translateY(15%); }
+}
+  
+@keyframes right-paddle-bounce {
+    0%, 100% { transform: translateY(15%); }
+    50% { transform: translateY(-15%); }
+}
+  
+.ball {
+    position: absolute;
+    width: var(--ball-size);
+    height: var(--ball-size);
+    border-radius: 50%;
+    background-color: var(--color);
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    animation: ball-bounce 2s infinite linear;
+}
+  
+@keyframes ball-bounce {
+    0%, 100% { transform: translateX(-175%) translateY(-50%); }
+    50% { transform: translateX(75%) translateY(-50%); }
+}
+  
+.pong-loader:hover::before,
+.pong-loader:hover::after {
+    animation-duration: 1.5s;
+}
+
+.lava-lamp {
+    animation: gradientAnimation 5s ease infinite, changeColor 5s linear infinite;
+}
+
+.check-symbol {
+    width: 3.4em;
+    height: 3.4em;
+    color: #4740a8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+}
+
+.clock-symbol {
+    width: 3em;
+    height: 3em;
+    fill: #4740a8;
+    margin: 0;
+    padding: 0;
 }
