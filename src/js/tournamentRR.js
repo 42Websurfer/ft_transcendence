@@ -147,13 +147,18 @@ function addMatchItem(tournamentMatchesList, player_home, player_away, score, st
         li.classList.add('lava-lamp');
     }
 
-    // const truncatedPlayerHome = player_home.length > 14 ? player_home.substring(0, 12) + '..' : player_home;
+    let free_color_home = '';
+    let free_color_away = '';
+    if (player_home[0] === "Free from play")
+        free_color_home = ' color: grey;';
+    if (player_away[0] === "Free from play")
+        free_color_away = ' color: grey;';
 
     li.innerHTML = `
     <div class="tournament-match">
-        <div class="tournament-match-item" style="width: 38%;">${player_home}</div>
+        <div class="tournament-match-item" style="width: 38%;${free_color_home}">${player_home}</div>
         <div class="tournament-match-item" style="font-size: 1em; width: 12%;">${score}</div>
-        <div class="tournament-match-item" style="width: 38%;">${player_away}</div>
+        <div class="tournament-match-item" style="width: 38%;${free_color_away}">${player_away}</div>
         <div class="tournament-match-item" style="width: 12%;">${item}</div>
     </div>
     `;
