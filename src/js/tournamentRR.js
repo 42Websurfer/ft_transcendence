@@ -67,6 +67,9 @@ function displayMatches(response)
     const matches = response.matches;
 
     console.log(matches);
+    const tournamentMatchesList = document.getElementById('tournamentMatches');
+    if (tournamentMatchesList)
+        tournamentMatchesList.innerHTML = '';
     for (let index = 0; index < matches.length; index++) {
         
         const match = matches[index];
@@ -76,7 +79,7 @@ function displayMatches(response)
         let score = match.score_home + ":" + match.score_away;
         let status = match.status;
         
-        addMatchItem(player_home, player_away, score, status);
+        addMatchItem(tournamentMatchesList, player_home, player_away, score, status);
     }
 }
 
@@ -103,9 +106,7 @@ function addRowToStandingsTable(rank, player, games, wins, losses, goals, diff, 
     tableBody.appendChild(row);
 }
 
-function addMatchItem(player_home, player_away, score, status) {
-
-    const tournamentMatchesList = document.getElementById('tournamentMatches');
+function addMatchItem(tournamentMatchesList, player_home, player_away, score, status) {
 
     if (!tournamentMatchesList)
         return;
