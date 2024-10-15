@@ -279,6 +279,6 @@ export function renderWelcome() {
     const lobbyButton = document.getElementById('menu-item-local');
     lobbyButton.addEventListener('click', () => {
         console.log("clicked");
-        showSection('lobby', 'PVEJ');
+        showSection('lobby', 'W5FN');
     });
 }
