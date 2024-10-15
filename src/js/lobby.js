@@ -68,9 +68,10 @@ export function renderLobby(groupName) {
         `).join('');
 
         response.matches.forEach(match => {
-            document.getElementById(`submit_score_${match.match_id}`).addEventListener('click', () => {
+            document.getElementById(`submit_score_${match.match_id}`).addEventListener('click', async () => {
                 
-                submitScore(match.match_id, tournament_id, match.round);
+                const response = await submitScore(match.match_id, tournament_id, match.round);
+                console.log(response.type);
             });
         });
     }
@@ -83,39 +84,47 @@ export function renderLobby(groupName) {
         return response;
     }
 
+    async function showTournamentMatches() {
+        try {
+            const response = await fetch(`/tm/start_tournament/${lobbyId}/`, {
+                method: 'GET',
+                credentials: 'include'
+            });
+            return await response.json();
+        } catch (error) {
+            return { error: 'Failed to tournament create request.' };
+        }
+
+    };
 
 
-    function submitScore(match_id, tournament_id, round) {
+
+    async function submitScore(match_id, tournament_id, round) {
         const score_home = parseInt(document.getElementById(`score_home_${match_id}`).value);
         const score_away = parseInt(document.getElementById(`score_away_${match_id}`).value);
     
         const csrftoken = getCookie('csrftoken');
-
-
-        fetch('/tm/set_match/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrftoken
-            },
-            body: JSON.stringify({
-                match_id: match_id,
-                score_home: score_home,
-                score_away: score_away,
-                tournament_id: tournament_id
-            }),
-        })
-        .then(response => response.json())
-        .then(data => {
-            check_completion(tournament_id, round).then(response => response.json())
-            .then (data => {
-                console.log(data.type);
-            })
-        })
-        .catch(error => {
-            console.error('Error updating score:', error);
-        });
-    }
+        console.log('SUBMITTEN WIR?')
+            try {
+                const response = await fetch('/tm/set_match/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify({
+                        match_id: match_id,
+                        score_home: score_home,
+                        score_away: score_away,
+                        tournament_id: tournament_id
+                    }),
+                })
+                return (response);
+            }
+            catch (error) {
+                return {'type': 'Error'};
+            }
+    };
 
     async function showTournamentMatches() {
         try {
