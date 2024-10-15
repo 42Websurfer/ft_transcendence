@@ -75,6 +75,7 @@ async def update_tournament_group(lobby_id, match_data):
 			else:
 				user['lost'] += 1
 			user['diff'] += (score_home - score_away)
+			user['games'] += 1
 		elif user['user_id'] == away:
 			user['goals'] += score_away
 			user['goals_against'] += score_home
@@ -84,6 +85,7 @@ async def update_tournament_group(lobby_id, match_data):
 				user['won'] += 1
 				user['points'] += 3
 			user['diff'] += (score_away - score_home)
+			user['games'] += 1
 	
 	sorted_result = sort_group_tournament(results)
 	redis.set(lobby_id, json.dumps(sorted_result))
@@ -98,7 +100,7 @@ async def update_tournament_group(lobby_id, match_data):
 async def set_match_data(lobby_id, match_id, score_home, score_away, status):
 	tournament = redis.get(tournament_string(lobby_id))
 	if tournament is None:
-		return
+		return False
 	tournament_dic = json.loads(tournament)
 	match = tournament_dic['matches'][match_id - 1]
 
@@ -115,7 +117,7 @@ async def set_match_data(lobby_id, match_id, score_home, score_away, status):
 			'type': 'match_list',
 		}
 	)
-	# return True
+	return True
 
 def reset_match(lobby_id, match):
 	home = match['home']
@@ -135,6 +137,7 @@ def reset_match(lobby_id, match):
 				user['points'] -= 3
 			else:
 				user['lost'] -= 1
+			user['games'] -= 1
 			user['diff'] -= (score_home - score_away)
 		elif user['user_id'] == away:
 			user['goals'] -= score_away
@@ -144,16 +147,18 @@ def reset_match(lobby_id, match):
 			else:
 				user['won'] -= 1
 				user['points'] -= 3
+			user['games'] -= 1
 			user['diff'] -= (score_away - score_home)
 	results = sort_group_tournament(results)
 	redis.set(lobby_id, json.dumps(results))
 
 async def update_match(lobby_id, match):
-	if (match['status'] == 'freegame'):
+	if (match['status'] == 'freegame' or match['status'] == 'disconnected'):
 		return
 	if match['status'] == 'finished':
+		print("ICH MUSS DOCH ZWEIMAL HIER REIN?!")
 		reset_match(lobby_id, match)
-	await set_match_data(lobby_id, match['match_id'], 0, 0, 'finished')
+	await set_match_data(lobby_id, match['match_id'], 0, 0, 'disconnected')
 
 
 async def update_matches_disconnect(user_id, lobby_id):
