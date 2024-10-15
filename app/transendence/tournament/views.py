@@ -88,9 +88,8 @@ async def start_group_tournament(request, lobby_id):
 	)
 	return (JsonResponse(tournament_dict))
 
-#@csrf_exempt
 async def set_match(request):
-	data = json.loads(request.body)		
+	data = json.loads(request.body)
 	tournament_id = data.get('tournament_id')
 	match_id = data.get('match_id')
 	score_home = data.get('score_home')
@@ -110,3 +109,5 @@ def check_round_completion(request, lobby_id, round):
 		return JsonResponse({'type': 'Round is completed'})
 	else:
 		return JsonResponse({'type': 'Round is NOT completed'})
+
+
