@@ -12,6 +12,7 @@ pip install whitenoise
 pip install channels
 pip install daphne
 pip install channels_redis
+pip install requests
 export PYTHONPATH=/workspaces/app/transendence
 daphne -p 8001 -b 0.0.0.0 transendence.asgi:application &
 python3 /workspaces/app/transendence/manage.py runserver 0.0.0.0:8000

@@ -16,6 +16,6 @@ urlpatterns = [
     path('block_friend_request/<str:username>/', views.block_friend_request, name='block_friend_request'),
     path('remove_friendship/<str:username>/', views.remove_friendship, name='remove_friendship'),
     path('get_user_information/', views.get_user_information, name='remove_friendship'),
-
+    path('callback/', views.api_callback, name='callback'),
 ]
 
