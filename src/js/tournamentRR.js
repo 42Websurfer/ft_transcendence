@@ -23,8 +23,18 @@ export function runWebsocket(socket) {
                     tableBody.innerHTML = '';
                 const results = data.results;
                 for (let index = 0; index < results.length; index++) {
-                    
                     const user = results[index];
+                    console.log(data);
+                    console.log('User_id from from socket: ' + data.user_id);
+                    console.log('User_id from from reults: ' + user.user_id);
+                    console.log('Status: ' + user.role);
+
+                    if (data.user_id == user.user_id && user.role != 'admin')
+                    {
+                        const startButton = document.getElementById('tournamentStartButton');
+                        if (startButton)
+                            startButton.remove();
+                    }
                     
                     let rank = user.rank;
                     let player = user.player;
@@ -40,7 +50,6 @@ export function runWebsocket(socket) {
             }
             else if (data.type === 'match_list')
             {
-                console.log('SOCKET MESSAGE: ' + data.matches);  
                 if (!data.matches)
                     return;
                 console.log(data.matches);
@@ -86,8 +95,6 @@ function displayMatches(response)
 
         addMatchItem(tournamentMatchesList, player_home, player_away, score, status);
     }
-
-    addMatchItem(tournamentMatchesList, "fwechslefwechsle", "fwechslefwechsle", "4:2", "finished");
     addMatchItem(tournamentMatchesList, "nsassenb", "fwechsle", "6:0", "running");
 }
 
@@ -129,7 +136,7 @@ function addMatchItem(tournamentMatchesList, player_home, player_away, score, st
 
     let item;
 
-    if (status === 'finished')
+    if (status === 'finished' || status === 'freegame')
     {
         item = '<svg class="check-symbol" xmlns="http://www.w3.org/2000/svg" viewBox="2 1.5 20 20" fill="#4740a8" width="4em" height="4em" style="margin: 0; padding: 0;"><path d="M0 0h24v24H0z" fill="none"/><path d="M9 16.2l-3.5-3.5 1.4-1.4L9 13.4l7.1-7.1 1.4 1.4z"/></svg>';
         li.style.background = 'linear-gradient(to bottom, rgba(26, 158, 37, 0.8), rgba(15, 126, 24, 0.8) 100%)';
