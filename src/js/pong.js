@@ -320,6 +320,11 @@ class PongLocalManager extends Entity{
 	}
 }
 
+//!!!STRAY FUNCTION!!!
+function lerp(start, end, t) {
+	return start * (1 - t) + end * t;
+}
+
 class RemoteHandler extends Entity{
 	constructor(){
 		super(0, 0);
@@ -357,6 +362,7 @@ class RemoteHandler extends Entity{
 
 	moveEntity(id, transform){
 		const ent = this.entities[id];
+
 		ent.position.x = transform.position.x;
 		ent.position.y = transform.position.y;
 		ent.rotate(transform.rotation);
@@ -398,7 +404,8 @@ function selectGamemode(container, local){
 		manager = new PongLocalManager();
 	}
 	else if (local == false){
-		socket = new WebSocket(`ws://${window.location.host}/ws/pong/test/`);
+		const groupName = prompt("Please enter the group name:");
+		socket = new WebSocket(`ws://${window.location.host}/ws/pong/${groupName}/`);
 		window.addEventListener('keypress', sendMovementInput);
 		window.addEventListener('keyup', sendMovementInput);
 		manager = new RemoteHandler();

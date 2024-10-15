@@ -5,6 +5,9 @@ import redis
 from asgiref.sync import sync_to_async
 from django.contrib.auth import get_user_model
 
+redis = redis.Redis(host='redis', port=6379, db=0)
+
+
 """ 
 self.scope:
 -	scope ist ein Dictionary, das alle relevanten Informationen über die WebSocket-Verbindung enthält. 

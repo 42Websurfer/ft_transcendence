@@ -18,7 +18,7 @@ class MyConsumer(AsyncWebsocketConsumer):
 		try: 
 			user = await sync_to_async(User.objects.get)(id=self.user.id)
 		except User.DoesNotExist:
-			print('User does not exist')	
+			print('User does not exist')
 		print(f"ANZAHL GROUP: {redis.scard(self.group_name)}")
 
 		await self.channel_layer.group_add(
@@ -27,13 +27,11 @@ class MyConsumer(AsyncWebsocketConsumer):
 		)
 		await self.accept()
 		redis.sadd(self.group_name, self.user.id)
-		GameHandler.add_consumer_to_game(self, self.group_name)
-		await remoteHandler.addPlayer(self)
-
-
+		GamesHandler.add_consumer_to_game(self, self.group_name)
 
 
 	async def disconnect(self, close_code):
+		GamesHandler.disconnect_consumer_from_game(self, self.group_name)
 		await self.channel_layer.group_discard(
 			self.group_name,
 			self.channel_name
@@ -49,7 +47,7 @@ class MyConsumer(AsyncWebsocketConsumer):
 
 	async def receive(self, text_data):
 		text_data_json = json.loads(text_data)
-		print('we got=', text_data_json)
+		# print('we got=', text_data_json)
 		if isinstance(text_data_json, int):
 			if self.player_c is not None:
 				self.player_c.handle_remote_movement(text_data_json)
@@ -69,7 +67,7 @@ class MyConsumer(AsyncWebsocketConsumer):
 		print('client_create_entity event processed')
 
 	async def move_entity(self, event):
-		# print('move_entity event sent:', event)
+		# print('move_entity event sent:', event, self.player_c.id)
 		await self.send(text_data=json.dumps({
 			'type': 'updatePos',
 			'id': event.get('id'),

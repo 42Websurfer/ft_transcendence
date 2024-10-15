@@ -81,16 +81,16 @@ class Player(Entity):
 			if point.x < 0 or point.y > CANVAS_HEIGHT:
 				return
 		if self.position.x != new_pos.x or self.position.y != new_pos.y:
-			asyncio.run_coroutine_threadsafe(remoteHandler.host.channel_layer.group_send(
-				remoteHandler.host.group_name,
+			self.position = new_pos
+			asyncio.run_coroutine_threadsafe(thread_local.host.channel_layer.group_send(
+				thread_local.host.group_name,
 				{
 					'type': 'move_entity',
 					'id': self.id,
 					'transform': self.serialize()
 				}
 				),
-				event_loop)
-		self.position = new_pos
+				thread_local.event_loop)
 
 	def handle_remote_movement(self, input):
 		if input == 1:
@@ -126,53 +126,6 @@ class Wall(Entity):
 		self.rotate(rot)
 		self.add_component(Mesh, self.mesh)
 
-playerCount = 0
-
-class RemoteHandler:
-	def __init__(self) -> None:
-		self.players = []
-		self.host = None
-		self.maxId = 0
-
-	async def addPlayer(self, consumer, player=None):
-		print('add player called')
-		if self.host == None:
-			self.host = consumer
-		self.players.append(consumer)
-		if len(self.players) == 2:
-			asyncio_thread = threading.Thread(target=thread_main)
-			asyncio_thread.start()
-
-			game_thread = threading.Thread(target=game_loop)
-			game_thread.start()
-		# await self.getCurrentState(consumer)
-		print('assign on remote Player the entity as local player')
-		
-	
-	async def getCurrentState(self, consumer):
-		print(world.entities)
-		for ent in world.entities:
-			print('Sending ent id:', ent.id)
-			await consumer.client_create_entity(
-				{
-					'type': 'client_create_entity',
-					'id': ent.id,
-					'entType': type(ent).__name__,
-					'transform': ent.serialize(),
-					'constr':{
-						'height': 0 if not hasattr(ent, 'height') else ent.height
-					}
-				}
-			)
-
-	async def removePlayer(self, consumer):
-		pass
-		# if consumer == self.host:
-		# 	self.host = next(iter(self.players.keys()))
-		# if consumer in self.players:
-		# 	del self.players[consumer]
-
-
 class PlayerSection:
 	def __init__(self, x, y, rotation, height):
 		self.goal = Wall(x, y, rotation, height)
@@ -193,13 +146,29 @@ class PlayerSection:
 		self.player.start_pos = forward
 		self.player.goal_height = self.goal.height
 
+async def getCurrentState(world, consumer):
+	print(world.entities)
+	for ent in world.entities:
+		print('Sending ent id:', ent.id)
+		await consumer.client_create_entity(
+			{
+				'type': 'client_create_entity',
+				'id': ent.id,
+				'entType': type(ent).__name__,
+				'transform': ent.serialize(),
+				'constr':{
+					'height': 0 if not hasattr(ent, 'height') else ent.height
+				}
+			}
+		)
+
 class GameLogicManager(Entity):
 	def __init__(self):
 		super().__init__(0, 0)
 		self.sections = []
 		self.initalized = False
 	
-	def buildDynamicField(self, playerCount):
+	def buildDynamicField(self, world, playerCount):
 		if playerCount == 2:
 			self.sections.append(PlayerSection(0, CANVAS_HEIGHT * .5, 0, CANVAS_HEIGHT))
 			self.sections.append(PlayerSection(CANVAS_WIDTH, CANVAS_HEIGHT * .5, 0, CANVAS_HEIGHT))
@@ -224,67 +193,149 @@ class GameLogicManager(Entity):
 			world.addEntity(section.player)
 			world.addEntity(section.goal)
 
-	def update(self):
-		if self.initalized == False and len(remoteHandler.players) >= 2:
-			self.buildDynamicField(len(remoteHandler.players))
-			print('built field with players')
-			i = 0
-			for consumer in remoteHandler.players:
-				print('iter', i)
-				asyncio.run_coroutine_threadsafe(remoteHandler.getCurrentState(consumer), event_loop)
-				consumer.player_c = self.sections[i].player
-				# asyncio.run_coroutine_threadsafe(remoteHandler.addPlayer(consumer, self.sections[i].player), event_loop)
-				i += 1
-			self.initalized = True
-			print('assigned players to remote connection')
 
-world = World()
-world.addSystem(CollisionSystem())
-world.addSystem(MovementSystem())
+# world = World()
+# world.addSystem(CollisionSystem())
+# world.addSystem(MovementSystem())
 
-remoteHandler = RemoteHandler()
-gameLogic = GameLogicManager()
+# remoteHandler = RemoteHandler()
+# gameLogic = GameLogicManager()
 
 
-world.addEntity(gameLogic)
+# world.addEntity(gameLogic)
 
-def game_loop():
-	while True:
-		world.update()
-		time.sleep(0.016)
+# def game_loop():
+# 	while True:
+# 		world.update()
+# 		time.sleep(0.016)
 
-event_loop = None
+# event_loop = None
 
-def thread_main():
-	global event_loop
-	event_loop = asyncio.new_event_loop()
-	asyncio.set_event_loop(event_loop)
-	event_loop.run_forever()
+# def thread_main():
+# 	global event_loop
+# 	event_loop = asyncio.new_event_loop()
+# 	asyncio.set_event_loop(event_loop)
+# 	event_loop.run_forever()
 
-asyncio_thread = None
-game_thread = None
+# asyncio_thread = None
+# game_thread = None
 # asyncio_thread = threading.Thread(target=thread_main)
 # asyncio_thread.start()
 
 # game_thread = threading.Thread(target=game_loop)
 # game_thread.start()
 
+thread_local = threading.local()
 
-class GameHandler:
+class Game:
+	def __init__(self, player1, player2):
+		self.game_complete = False #not needed
+		self.stop_thread = False
+		self.player1 = player1
+		self.player2 = player2
+		self.world = World()
+		self.world.addSystem(CollisionSystem())
+		self.world.addSystem(MovementSystem())
+		self.gameLogic = GameLogicManager()
+
+		self.world.addEntity(self.gameLogic)
+		self.event_loop = None
+		self.asyncio_thread = None
+		self.game_thread = None
+
+
+	def start_game(self):
+
+		print('Starting threads and game!')
+
+		self.gameLogic.buildDynamicField(self.world, 2)
+		self.player1.player_c = self.gameLogic.sections[0].player
+		self.player2.player_c = self.gameLogic.sections[1].player
+
+		self.event_loop = asyncio.new_event_loop()
+		self.asyncio_thread = threading.Thread(target=self.thread_main)
+		self.asyncio_thread.start()
+
+		self.game_thread = threading.Thread(target=self.game_loop)
+		self.game_thread.start()
+
+		asyncio.run_coroutine_threadsafe(getCurrentState(self.world, self.player1), self.event_loop)
+		asyncio.run_coroutine_threadsafe(getCurrentState(self.world, self.player2), self.event_loop)
+
+	def stop(self):
+		print('stopping all threads of this game?')
+		self.stop_thread = True
+		self.event_loop.stop()
+
+	def game_loop(self):
+		thread_local.asyncio_thread = self.asyncio_thread
+		thread_local.game_thread = self.game_thread
+		thread_local.event_loop = self.event_loop
+		thread_local.host = self.player1
+		iter = 0
+		while not self.stop_thread:
+			self.world.update()
+			time.sleep(0.016)
+			if iter == 1000:
+				print('game running on', self.player1.group_name)
+				iter = 0
+			iter += 1
+		print('game loop stopped of group', self.player1.group_name)
+
+	def thread_main(self):
+		asyncio.set_event_loop(self.event_loop)
+		self.event_loop.run_forever()
+
+
+
+
+class GamesHandler:
 	
 	# Statics?
 	game_sessions = {}
 
 	def __init__(self, group_name):
-		print('GameHandler() called')
+		print('GamesHandler() called')
 		self.group_name = group_name
 		self.players = []
+		self.game = None
 
 	@staticmethod
 	def add_consumer_to_game(consumer, group_name):
-		if group_name in GameHandler.game_sessions:
+		if group_name in GamesHandler.game_sessions:
 			print('Group exists in handler, we push the player')
-			GameHandler.game_sessions[group_name].players.append(consumer)
+			GamesHandler.game_sessions[group_name].add_consumer(consumer)
 			return
-		print('First player of group we create a new GameHandler')
-		GameHandler.game_sessions[group_name] = GameHandler(group_name=group_name)
+		print('First player of group we create a new GamesHandler')
+		new_handler = GamesHandler(group_name=group_name)
+		new_handler.add_consumer(consumer)
+		GamesHandler.game_sessions[group_name] = new_handler
+
+	@staticmethod
+	def disconnect_consumer_from_game(consumer, group_name):
+		if group_name in GamesHandler.game_sessions:
+			print('Group exists in handler, we remove the player')
+			GamesHandler.game_sessions[group_name].remove_consumer(consumer)
+			if GamesHandler.game_sessions[group_name].players.__len__() == 0:
+				GamesHandler.game_sessions.pop(group_name)
+		print('Number of handlers:', len(GamesHandler.game_sessions))
+
+	def add_consumer(self, consumer):
+		print('GamesHandler.add_consumer() called')
+		if self.players.__len__() < 2:
+			self.players.append(consumer)
+		else:
+			print('too many players!!! disconnect consumer')
+		if self.players.__len__() == 2:
+			print('init Game class!')
+			self.game = Game(self.players[0], self.players[1])
+			self.game.start_game()
+	
+	def remove_consumer(self, consumer):
+		print('GamesHandler.remove_consumer() called')
+		if self.players.__len__() >= 1:
+			self.players.remove(consumer)
+		else:
+			print('no consumers in this lobby?')
+		if self.game is not None and self.players.__len__() == 0:
+			self.game.stop()
