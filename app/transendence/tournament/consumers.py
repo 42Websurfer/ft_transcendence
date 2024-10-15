@@ -43,6 +43,7 @@ class Tournament(AsyncWebsocketConsumer):
 				self.group_name,
 				{
 					'type': 'send_tournament_users',
+					'user_id': self.user.id,
 				}
 			)
 
@@ -80,6 +81,7 @@ class Tournament(AsyncWebsocketConsumer):
 				self.group_name,
 				{
 					'type': 'send_tournament_users',
+					'user_id': self.user.id
 				}
 			)
 	
@@ -87,7 +89,8 @@ class Tournament(AsyncWebsocketConsumer):
 		results = json.loads(redis.get(self.group_name))
 		data = {
 			'type': 'send_tournament_users',
-			'results': results
+			'results': results,
+			'user_id': self.user.id
 		}		
 		await self.send(text_data=json.dumps(data))
 
