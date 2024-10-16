@@ -39,7 +39,7 @@ export function renderLogin() {
 	const form = document.getElementById('loginForm');
 	form.addEventListener('submit', handleLoginFormSubmit);
 
-	signIn42Button = document.getElementById('signIn42Button');
+	const signIn42Button = document.getElementById('signIn42Button');
 	signIn42Button.addEventListener('click', signIn42API);
 
 }
