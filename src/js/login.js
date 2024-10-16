@@ -1,7 +1,30 @@
 import { getCookie, displayMessages } from './utils.js';
 import { showSection } from './index.js';
 
-export function renderLogin() {
+export async function renderLogin() {
+	const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+	if (code) {
+        await fetch(`/callback/?code=${code}`)
+            .then(response => response.json())
+            .then(data => {
+                showSection('register');
+                if (data.type === 'success') {
+                    console.log('Login successful:', data.message);
+                    console.log('User Info:', data.user_info);
+                } else {
+                    showSection('register');
+                    console.error('Error:', data.message);
+                }
+                window.history.replaceState({}, document.title, window.location.pathname);
+            })
+            .catch(error => {
+                showSection('register');
+                console.error('Error:', error);
+            });
+    } else {
+        console.log("Kein code!")
+    }
 	const app = document.getElementById('app');
 
 	app.innerHTML = `
@@ -39,16 +62,19 @@ export function renderLogin() {
 	const form = document.getElementById('loginForm');
 	form.addEventListener('submit', handleLoginFormSubmit);
 
-	signIn42Button = document.getElementById('signIn42Button');
+	const signIn42Button = document.getElementById('signIn42Button');
 	signIn42Button.addEventListener('click', signIn42API);
 
 }
 
-async function signIn42API(event)
+async function signIn42API(callback)
 {
 	try {
-		const oauthUrl = 'https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-330f52eb5555dbbd02b4e50dcee66a4aa0cc7a20b5ae12c9a296a28fb3325425&redirect_uri=http%3A%2F%2Flocalhost%3A8090%2Fcallback%2F&response_type=code';
+
+
+		const oauthUrl = 'https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-330f52eb5555dbbd02b4e50dcee66a4aa0cc7a20b5ae12c9a296a28fb3325425&redirect_uri=http%3A%2F%2Flocalhost%3A8090%2Ffrontend%2F&response_type=code';
 		window.location.href = oauthUrl;
+
 	} catch (error) {
 		console.log("error: ", error);
 	}
