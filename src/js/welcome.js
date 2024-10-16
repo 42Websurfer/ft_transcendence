@@ -281,4 +281,55 @@ export function renderWelcome() {
         console.log("clicked");
         showSection('lobby', 'W5FN');
     });
+
+    const dashboardButton = document.getElementById('menu-item-dashboard');
+    dashboardButton.addEventListener('click', async () => {
+        console.log("START BLOCKCHAIN ACTION - GET");
+
+        try {
+            const response = await fetch(`/tm/bc_get_score/`, {
+                method: 'GET',
+                credentials: 'include'
+            });
+
+            const result = await response.json()
+            
+            console.log("score: ", result.score);
+
+        } catch (error) {
+            console.log("error: ", error);
+            return { 'type': 'error', 'message': 'Score does not exist.' };
+        }
+
+    });
+
+    const multiplayerButton = document.getElementById('menu-item-multiplayer');
+    multiplayerButton.addEventListener('click', async () => {
+        console.log("START BLOCKCHAIN ACTION - UPDATE");
+
+        try {
+
+            const new_score = 999
+
+            const csrftoken = getCookie('csrftoken');
+    
+            const response = await fetch('/tm/bc_update_score/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({'newScore': new_score})
+            });
+
+            const result = await response.json()
+
+            console.log("response: ", response);
+
+        } catch (error) {
+            console.log("error: ", error);
+            return { 'type': 'error', 'message': 'Score does not exist.' };
+        }
+
+    });
 }
