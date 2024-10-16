@@ -1,4 +1,4 @@
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.http import JsonResponse
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout, get_user_model
@@ -311,9 +311,9 @@ def get_all_online_users(request):
     return JsonResponse({'online_users': user_data})
 
 def api_callback(request):
-    error = request.GET.get('error')
-    if error:
-        return JsonResponse({'error': error}, status=400)
+    # error = request.GET.get('error')
+    # if error:
+    #     return JsonResponse({'error': error}, status=400)
     
     code = request.GET.get('code')
     
@@ -322,15 +322,17 @@ def api_callback(request):
     try:
         access_token_response = exchange_code_for_token(code)
 
-        logger.debug(f"\n\n\naccess_token: {access_token_response['access_token']}\n\n\n")
+
+
+        #logger.debug(f"\n\n\naccess_token: {access_token_response['access_token']}\n\n\n")
 
         user_info = get_user_info(access_token_response['access_token'])
         
-        create_user_session(user_info)
-        
-        return JsonResponse({'success': True, 'message': 'Login successful'}, status=200)
+        session_data = create_user_session(user_info)
+
+        return JsonResponse({'type': 'success', 'message': 'Login successful', 'data': session_data}, status=200)
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+        return JsonResponse({'type': 'error', 'message': str(e)}, status=500)
 
 def exchange_code_for_token(code):
     token_url = 'https://api.intra.42.fr/oauth/token'
@@ -350,10 +352,11 @@ def exchange_code_for_token(code):
         return JsonResponse({'error': 'Failed to exchange code for token'}, status=response.status_code)
 
 def get_user_info(access_token):
+
     headers = {'Authorization': f'Bearer {access_token}'}
     response = requests.get('https://api.intra.42.fr/v2/me', headers=headers)
 
-    logger.debug(f"\n\n\nUSERINFO_response_json: {response.json()}\n\n\n")
+    # logger.debug(f"\n\n\nUSERINFO_response_json: {response.json()}\n\n\n")
 
     if response.status_code == 200:
         return response.json()
@@ -369,8 +372,8 @@ def create_user_session(user_info):
         'username': user_info.get('login')
     }
 
-    logger.debug(f"\n\n\n\n\nsession_data: {session_data}\n\n\n")
+    # logger.debug(f"\n\n\n\n\nsession_data: {session_data}\n\n\n")
 
     # USER ADDEN ??? auf jeden fall isAuthenticated auf true setzen und welcome page displayen
 
-    return JsonResponse({'session_created': True, 'data': session_data}, status=200)
+    return   session_data
