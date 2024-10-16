@@ -1242,3 +1242,46 @@ body {
     margin: 0;
     padding: 0;
 }
+
+.register-message {
+    position: absolute;
+    top: 32.8em;
+    left: 34em;
+    font-size: 1.4em;
+    color: #ff0000;
+    text-align: left;
+    width: auto;
+    transform-origin: center;
+    text-shadow: 1px 1px 1px #000000;
+}
+
+.loader {
+    display: none;
+    margin-top: 2em;
+    width: 6em;
+    height: 2.5em;
+    --g: radial-gradient(farthest-side,#0000 calc(70% - 3px),#4740a8 calc(100% - 3px) 98%,#0000 101%) no-repeat;
+    background: var(--g), var(--g), var(--g);
+    background-size: 1.6em 1.6em;
+    animation: l9 1s infinite alternate;
+  }
+  @keyframes l9 {
+    0% {
+      background-position: 0 50%, 50% 50%, 100% 50%;
+    }
+    20% {
+      background-position: 0 0, 50% 50%, 100% 50%;
+    }
+    40% {
+      background-position: 0 100%, 50% 0, 100% 50%;
+    }
+    60% {
+      background-position: 0 50%, 50% 100%, 100% 0;
+    }
+    80% {
+      background-position: 0 50%, 50% 50%, 100% 100%;
+    }
+    100% {
+      background-position: 0 50%, 50% 50%, 100% 50%;
+    }
+  }

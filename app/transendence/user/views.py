@@ -81,14 +81,15 @@ def register(request):
             username = data.get('username')
 
             if User.objects.filter(email=email).exists():
-                return JsonResponse({'error': 'Email address already exists.'}, status=400)
+                return JsonResponse({'type': 'error', 'message': 'Email address already exists.'}, status=400)
             elif User.objects.filter(username=username).exists():
-                return JsonResponse({'error': 'Username already exists.'}, status=400)
+                return JsonResponse({'type': 'error', 'message': 'This username already exists.'}, status=400)
             user = User.objects.create_user(username=username, email=email, first_name=firstname, last_name=lastname)
             user.set_password(password)
             user.save()
             return JsonResponse({
-                'success': 'User registered successfully.',
+                'type': 'success',
+                'message': 'User registered successfully.',
                 'user': {
                     'id': user.id,
                     'username': user.username,
