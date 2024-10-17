@@ -1306,3 +1306,39 @@ body {
         transform: scale(1.2);
     }
 }
+
+.dashboard-container {
+    width: 100%;
+    height: 46.3em;
+    background-color: rgba(0, 0, 0, 0.4);
+    padding: 2em;
+    padding-bottom: 1em;
+    border-radius: 8px;
+    border: 0.1em solid #000000;
+    overflow: scroll;
+    flex-direction: column;
+    display: flex;
+}
+
+.dashboard-container-header {
+    font-size: 1.6em;
+    color: #d8d3d3;
+    text-shadow: 1px 1px 2px #000000;
+    text-align: center;
+    font-family: 'Press Start 2P';
+}
+
+.dashboard-container-divider {
+    height: 4px;
+    background-color: #d8d3d3;
+    margin-bottom: 1.6em;
+}
+
+.dashboard-container-inside {
+    display: flex;
+    flex-direction: row;
+}
+
+.dashboard-graph {
+    width: 47.5%;
+}

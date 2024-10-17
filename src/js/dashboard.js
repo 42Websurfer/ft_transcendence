@@ -7,117 +7,167 @@ export function renderDashboard() {
 
     app.innerHTML = `
     <div class="menu">
-        <button id="userIdInput" class="signin-button btn btn-primary py-2">Get score</button>
-        <div id="userScore" style="background-color: grey; margin-left: 1em;"></div>
-    </div>
-    <div class="menu">
-        <input type="text" style=" width: 25em;" id="userScoreInput" placeholder="Enter userScore to update score...">
-        <div id="updateScore" style="background-color: grey; margin-left: 1em;"></div>
-    </div>
-    <div class="menu">
-        <button id="deleteScoreInput" class="signin-button btn btn-primary py-2">Delete score</button>
-        <div id="deleteScore" style="background-color: grey; margin-left: 1em;"></div>
+        <div class="dashboard-container">
+
+            <div class="dashboard-container-header">
+                <p>Dashboard</p>
+            </div>
+            
+            <hr class="dashboard-container-divider">
+
+            <div class="dashboard-container-inside">
+
+                <div id="dashboardGraph1" class="dashboard-graph"></div>
+                <div id="dashboardGraph2" class="dashboard-graph" style="margin-left: 5%;"></div>
+
+            </div>
+        </div>
     </div>
     `;
 
-
-    const userIdInput = document.getElementById('userIdInput');
-    const userScore = document.getElementById('userScore');
-
-    userIdInput.addEventListener('click', async () => {
-        try {
-            const response = await fetch(`/tm/bc_get_score/`, {
-                method: 'GET',
-                credentials: 'include'
-            });
-
-            const result = await response.json()
-
-            if (result.type === "error")
-            {
-                console.log("error: ", result.message);
-                userScore.textContent = "error: " + result.message;
-            }
-            else
-            {
-                console.log("score: ", result.score);
-                userScore.textContent = "Score: " + result.score;
-            }
-
-        } catch (error) {
-            console.log("error: ", error);
-        }
-    });
-
-
-    const userScoreInput = document.getElementById('userScoreInput');
-    const updateScore = document.getElementById('updateScore');
-
-    userScoreInput.addEventListener('keydown', async (event) => {
-        if (event.key === 'Enter') {
-            const userScore = userScoreInput.value.trim();
-            if (userScore) {
-                console.log(`Trying to set score: ${userScore}`);
-
-            try {
+    const ctx1 = document.createElement('canvas'); // Create a canvas element
+    ctx1.id = 'myChart';  // Set an id
+    document.getElementById('dashboardGraph1').appendChild(ctx1);  // Append to the app div
     
-                const csrftoken = getCookie('csrftoken');
-        
-                const response = await fetch('/tm/bc_update_score/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': csrftoken
-                    },
-                    body: JSON.stringify({'newScore': userScore})
-                });
-    
-                const result = await response.json()
-    
-                if (result.type === "error")
-                    {
-                        console.log("error: ", result.message);
-                        updateScore.textContent = "error: " + result.message;
+    const myChart1 = new Chart(ctx1, {
+        type: 'bar',  // Example chart type: bar, line, etc.
+        data: {
+            labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+            datasets: [{
+                label: 'Games',
+                data: [12, 19, 3, 5, 2, 3],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.5)',
+                    'rgba(54, 162, 235, 0.5)',
+                    'rgba(255, 206, 86, 0.5)',
+                    'rgba(75, 192, 192, 0.5)',
+                    'rgba(153, 102, 255, 0.5)',
+                    'rgba(255, 159, 64, 0.5)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+    options: {
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: {
+                    color: 'rgba(0, 0, 0, 0.2)', // Strong black grid lines
+                    borderColor: 'rgba(0, 0, 0, 1)' // Strong black border
+                },
+                ticks: {
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    font: {
+                        weight: 'bold'
                     }
-                    else
-                    {
-                        console.log("transaction_hash: ", result.transaction_hash);
-                        updateScore.textContent = "transaction_hash: " + result.transaction_hash;
+                }
+            },
+            x: {
+                grid: {
+                    color: 'rgba(0, 0, 0, 0)', // Strong black grid lines
+                    borderColor: 'rgba(0, 0, 0, 1)' // Strong black border
+                },
+                ticks: {
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    font: {
+                        weight: 'bold'
                     }
-    
-                } catch (error) {
-                    console.log("error: ", error);
                 }
             }
+        },
+        plugins: {
+            legend: {
+                labels: {
+                    color: 'rgba(255, 255, 255, 0.8)', // Strong black legend labels
+                    font: {
+                        size: 14,
+                        weight: 'bold'
+                    }
+                },
+                onClick: null
+            },
+            tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 1)', // Strong black tooltip background
+                titleColor: 'rgba(255, 255, 255, 1)', // White tooltip title
+                bodyColor: 'rgba(255, 255, 255, 1)' // White tooltip body
+            }
         }
+    }
     });
 
-    const deleteScoreInput = document.getElementById('deleteScoreInput');
-    const deleteScore = document.getElementById('deleteScore');
-
-    deleteScoreInput.addEventListener('click', async () => {
-        try {
-            const response = await fetch(`/tm/bc_delete_score/`, {
-                method: 'GET',
-                credentials: 'include'
-            });
-
-            const result = await response.json()
-
-            if (result.type === "error")
-            {
-                console.log("error: ", result.message);
-                deleteScore.textContent = "error: " + result.message;
+    const ctx2 = document.createElement('canvas'); // Create a canvas element
+    ctx2.id = 'myChart';  // Set an id
+    document.getElementById('dashboardGraph2').appendChild(ctx2);  // Append to the app div
+    
+    const myChart2 = new Chart(ctx2, {
+        type: 'line',  // Example chart type: bar, line, etc.
+        data: {
+            labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+            datasets: [{
+                label: '# of Votes',
+                data: [12, 19, 3, 5, 2, 3],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.5)',
+                    'rgba(54, 162, 235, 0.5)',
+                    'rgba(255, 206, 86, 0.5)',
+                    'rgba(75, 192, 192, 0.5)',
+                    'rgba(153, 102, 255, 0.5)',
+                    'rgba(255, 159, 64, 0.5)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+    options: {
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: {
+                    color: 'rgba(0, 0, 0, 0.4)', // Strong black grid lines
+                    borderColor: 'rgba(0, 0, 0, 1)' // Strong black border
+                },
+                ticks: {
+                    color: 'rgba(255, 255, 255, 0.8)' // Strong black tick labels
+                }
+            },
+            x: {
+                grid: {
+                    color: 'rgba(0, 0, 0, 0)', // Strong black grid lines
+                    borderColor: 'rgba(0, 0, 0, 1)' // Strong black border
+                },
+                ticks: {
+                    color: 'rgba(255, 255, 255, 0.8)' // Strong black tick labels
+                }
             }
-            else
-            {
-                console.log("transaction_hash: ", result.transaction_hash);
-                deleteScore.textContent = "transaction_hash: " + result.transaction_hash;
+        },
+        plugins: {
+            legend: {
+                labels: {
+                    color: 'rgba(0, 0, 0, 1)' // Strong black legend labels
+                }
+            },
+            tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 1)', // Strong black tooltip background
+                titleColor: 'rgba(255, 255, 255, 1)', // White tooltip title
+                bodyColor: 'rgba(255, 255, 255, 1)' // White tooltip body
             }
-
-        } catch (error) {
-            console.log("error: ", error);
         }
+    }
     });
 
 }

@@ -284,8 +284,9 @@ export function renderWelcome() {
 
     const multiplayerButton = document.getElementById('menu-item-multiplayer');
     multiplayerButton.addEventListener('click', () => {
-        console.log("clicked");
-        showSection('waiting');
+        console.log("clicked blockchain");
+
+        showSection('blockchain');
     });
 
     const dashboardButton = document.getElementById('menu-item-dashboard');
