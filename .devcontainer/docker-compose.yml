@@ -55,6 +55,8 @@ services:
   blockchain:
     build: ./requirements/blockchain
     container_name: blockchain
+    env_file: 
+      - ./.env
     networks:
       - trans_net
     ports:
