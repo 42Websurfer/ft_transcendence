@@ -372,6 +372,11 @@ export async function showSection(section, lobbyId)
                 module.renderLobby(lobbyId);
             });
         }
+        else if (section === 'dashboard') {
+            import('./dashboard.js').then(module => {
+                module.renderDashboard();
+            });
+        }
     }
     else if (section != 'login' && section != 'register') {
         import('./login.js').then(module => {
