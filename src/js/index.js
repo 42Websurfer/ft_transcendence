@@ -377,6 +377,11 @@ export async function showSection(section, lobbyId)
                 module.renderDashboard();
             });
         }
+        else if (section === 'waiting') {
+            import('./waiting.js').then(module => {
+                module.renderWaiting();
+            });
+        }
     }
     else if (section != 'login' && section != 'register') {
         import('./login.js').then(module => {

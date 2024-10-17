@@ -282,6 +282,12 @@ export function renderWelcome() {
         showSection('lobby', 'W5FN');
     });
 
+    const multiplayerButton = document.getElementById('menu-item-multiplayer');
+    multiplayerButton.addEventListener('click', () => {
+        console.log("clicked");
+        showSection('waiting');
+    });
+
     const dashboardButton = document.getElementById('menu-item-dashboard');
     dashboardButton.addEventListener('click', () => {
         console.log("clicked");
