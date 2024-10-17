@@ -5,7 +5,7 @@ from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
-from .models import User, Friendship, PongMatches
+from .models import User, Friendship, PongMatches, UserProfile
 from django.db.models import Q
 from user.utils import updateOnlineStatusChannel
 import json
@@ -87,6 +87,7 @@ def register(request):
             user = User.objects.create_user(username=username, email=email, first_name=firstname, last_name=lastname)
             user.set_password(password)
             user.save()
+            login(request, user)
             return JsonResponse({
                 'type': 'success',
                 'message': 'User registered successfully.',
@@ -311,13 +312,59 @@ def get_all_online_users(request):
     ]
     return JsonResponse({'online_users': user_data})
 
+def check_registration(request, session_data):
+    logger.debug(f"In check registration: {session_data.get('email')}")
+    try:
+        user = User.objects.get(email=session_data.get('email'))
+        userprofile = UserProfile.objects.get(user=user)
+        if (not userprofile.is_third_party_user):
+            logger.debug("Email already registered")
+            return False
+        if (user.username):
+            login(request, user)
+            return (True)
+    except User.DoesNotExist:
+        return False
+
+@csrf_exempt
+def register_api(request):
+    logger.debug(f"KOMMST DU AN GRATTLER?")
+    try:
+        data = json.loads(request.body)
+        session_data = data.get('session_data', {}).get('data', {})
+        username= data.get('username')
+        email=session_data.get('email')
+        firstname=session_data.get('first_name')
+        lastname=session_data.get('last_name')
+
+        if User.objects.filter(username=username).exists():
+            return JsonResponse({'type': 'error', 'message': 'This username already exists.'}, status=400)
+
+        user= User.objects.create_user(username=username, email=email, first_name=firstname, last_name=lastname)
+        logger.debug(f"User sollte vorkreeirt sein!")
+        user.save()
+        if user:
+            logger.debug(f"USER IST DA!")
+            userprofile = UserProfile.objects.get(user=user)
+            userprofile.is_third_party_user = True
+            userprofile.save()
+        logger.debug(f"aber jetzt sollte alles gespeichert sein!")
+        login(request, user)
+        return JsonResponse({'type': 'success'})
+    except json.JSONDecodeError as e:
+        logger.error(f"JSON decode error: {e}")
+        return JsonResponse({'type': 'error', 'message': 'Invalid JSON data'}, status=400)
+    except Exception as e:
+        return JsonResponse({'type': 'error', 'message': 'Am oasch'}, status=400)
+    
+
+@csrf_exempt
 def api_callback(request):
     # error = request.GET.get('error')
     # if error:
     #     return JsonResponse({'error': error}, status=400)
-    
-    code = request.GET.get('code')
-    
+    data = json.loads(request.body) #request.GET.get('code')
+    code = data.get('code')
     logger.debug(f"\n\n\ncode: {code}\n\n\n")
 
     try:
@@ -325,13 +372,16 @@ def api_callback(request):
 
 
 
-        #logger.debug(f"\n\n\naccess_token: {access_token_response['access_token']}\n\n\n")
+        logger.debug(f"\n\n\nIch habe eine access token vielleicht bekommen?:   {access_token_response}\n\n\n")
 
         user_info = get_user_info(access_token_response['access_token'])
         
         session_data = create_user_session(user_info)
 
-        return JsonResponse({'type': 'success', 'message': 'Login successful', 'data': session_data}, status=200)
+        if (check_registration(request, session_data)):
+            return JsonResponse({'type': 'success', 'data': session_data}, status=200)
+        else: 
+            return JsonResponse({'type': 'registration', 'data': session_data})
     except Exception as e:
         return JsonResponse({'type': 'error', 'message': str(e)}, status=500)
 
