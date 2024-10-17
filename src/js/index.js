@@ -1,4 +1,5 @@
-import { handleLogoutSubmit } from './utils.js';
+import { handleLogoutSubmit, getCookie } from './utils.js';
+import { renderUsername42 } from './username42.js';
 
 let wsBool;
 wsBool = false;
@@ -341,6 +342,10 @@ export async function showSection(section, lobbyId)
         import('./login.js').then(module => {
             module.renderLogin();    
         });
+    else if (section === 'username42')
+        import('./username42.js').then(module => {
+            module.renderUsername42();    
+        });
     if (isAuthenticated) {
         if (!wsBool)
         {
@@ -373,7 +378,7 @@ export async function showSection(section, lobbyId)
             });
         }
     }
-    else if (section != 'login' && section != 'register') {
+    else if (section != 'login' && section != 'register' && section != 'username42') {
         import('./login.js').then(module => {
             module.renderLogin();    
         });
@@ -396,4 +401,63 @@ window.addEventListener('popstate', (event) => {
 	}
 });
 
-window.onload = initApp;
+async function sendCodeToBackend(code) {
+    console.log("NOW WE ARE SENDING THE CODE TO THE BACKEND: CODE = ", code);
+    try {
+        const csrftoken = getCookie('csrftoken');
+        
+        const response = await fetch(`/callback/`, {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+        },
+        body: JSON.stringify({ 'code': code })
+        });
+        return (await response.json())
+    }
+    catch(error) {
+        console.error("Error: ", error)
+        return (false)
+    }
+  }
+
+function getAuthorizationCode() {
+	const urlParams = new URLSearchParams(window.location.search);
+	const authCode = urlParams.get('code');
+
+	if (authCode) {
+	  console.log('Authorization Code:', authCode);
+	  return (authCode);
+	} else {
+		console.error('Authorization code not found');
+		return (null);
+	}
+}
+
+
+window.onload = async function() {
+    let code = "";
+    if (code = getAuthorizationCode())
+    {
+        
+        const response = await sendCodeToBackend(code);
+        if (response.type === 'registration')
+        {
+            renderUsername42(response);
+            return;
+        }
+        else if (response.type === 'success')
+            showSection('welcome');
+        else if (response.type === 'error')
+            showSection(login);
+        console.log('Response = ', response);
+        window.history.replaceState({}, document.title, window.location.pathname);
+
+    }
+    else
+    {
+        console.log("NOPE NO CODE");
+        initApp();
+    }
+}
