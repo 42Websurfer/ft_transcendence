@@ -1,8 +1,16 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AbstractUser
 
 User = get_user_model()
 
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    is_third_party_user = models.BooleanField(default=False)  # Feld hinzufügen
+
+    def __str__(self):
+        return self.user.username
 
 class Friendship(models.Model):
     STATUS_CHOICES = [
