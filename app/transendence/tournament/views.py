@@ -116,29 +116,21 @@ def check_round_completion(request, lobby_id, round):
 
 # BLOCKCHAIN-SERVICE
 
-def bc_create_score(request):
-    user_id = request.user.id
-
-    data = json.loads(request.body)
-    score = data.get('newScore')
-    
-    response = requests.post('http://blockchain:5000/create_user_score', json={'userId': user_id, 'score': score})
-    return JsonResponse(response.json(), status=response.status_code)
-
 def bc_update_score(request):
     user_id = request.user.id
-
     data = json.loads(request.body)
     new_score = data.get('newScore')
     
-    logger.debug(f"\n\n\n\n\nuser_id: {user_id}\nnew_score: {new_score}\n\n\n")
-
     response = requests.post('http://blockchain:5000/update_user_score', json={'userId': user_id, 'newScore': new_score})
-    logger.debug(f"\n\n\n\n\nresponse: {response}\n\n\n")
     return JsonResponse(response.json(), status=response.status_code)
 
 def bc_get_score(request):
     user_id = request.user.id
     response = requests.get(f'http://blockchain:5000/get_user_score?userId={user_id}')
-    logger.debug(f"\n\n\n\n\nresponse: {response}\n\n\n")
+    return JsonResponse(response.json(), status=response.status_code)
+
+def bc_delete_score(request):
+    user_id = request.user.id
+    
+    response = requests.get(f'http://blockchain:5000/delete_user_score?userId={user_id}')
     return JsonResponse(response.json(), status=response.status_code)
