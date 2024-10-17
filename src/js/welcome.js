@@ -281,4 +281,11 @@ export function renderWelcome() {
         console.log("clicked");
         showSection('lobby', 'W5FN');
     });
+
+    const dashboardButton = document.getElementById('menu-item-dashboard');
+    dashboardButton.addEventListener('click', () => {
+        console.log("clicked");
+        showSection('dashboard');
+    });
+
 }
