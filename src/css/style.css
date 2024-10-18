@@ -287,7 +287,7 @@ body {
     padding-bottom: 1em;
     border-radius: 8px;
     border: 0.1em solid #000000;
-    overflow: scroll;
+    overflow: hidden;
     flex-direction: column;
     display: flex;
 }
@@ -323,7 +323,7 @@ body {
     text-shadow: 1px 1px 2px #000000;
     font-size:1em;
     margin-left: 1em;
-    height: 13.6em;
+    height: 12.6em;
     overflow: scroll;
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -829,13 +829,13 @@ body {
 
 .tournament-container {
     width: 100%;
-    height: 46.3em;
+    height: 46em;
     background-color: rgba(0, 0, 0, 0.4);
     padding: 2em;
     padding-bottom: 1em;
     border-radius: 8px;
     border: 0.1em solid #000000;
-    overflow: scroll;
+    overflow: hidden;
     flex-direction: column;
     display: flex;
 }
@@ -1309,15 +1309,15 @@ body {
 
 .dashboard-container {
     width: 100%;
-    height: 46.3em;
+    height: 46em;
     background-color: rgba(0, 0, 0, 0.4);
     padding: 2em;
     padding-bottom: 1em;
     border-radius: 8px;
     border: 0.1em solid #000000;
-    overflow: scroll;
     flex-direction: column;
     display: flex;
+    overflow: hidden;
 }
 
 .dashboard-container-header {
@@ -1345,13 +1345,12 @@ body {
 
 .grid-item {
     background-color: rgba(255, 255, 255, 0.4);
-    border: 1px solid #000;
+    
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     font-size: 18px;
-    border: #000;
     border-radius: 8px;
     padding: 1em;
 }
@@ -1393,10 +1392,40 @@ body {
     text-shadow: 1px 1px 2px #000000;
 }
 
-/* .dashboard-graph {
-    background-color: rgba(255, 255, 255, 0.1);
-    border: 1px solid #ccc;
-    padding: 20px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+.dashboard-matches-list {
+    width: 100%;
+    height: 100%;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    background-color: rgba(75, 192, 192, 0.2);
+    padding: 0.6em;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.4);
+    overflow-y: scroll;
+    overflow-x: hidden;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
-*/
+
+.dashboard-matches-list::-webkit-scrollbar {
+    display: none;
+}
+
+.dashboard-match {
+    display: flex;
+    flex-direction: row;
+    text-align: center;
+}
+
+.dashboard-match-item {
+    padding: 0.6em 0em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Press Start 2P';
+    color: white;
+    font-size: 0.7em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
