@@ -38,7 +38,7 @@ function addMatchItem(tournamentMatchesList, player_home, player_away, score, da
     const li = document.createElement('li');
 
     li.style = `
-        border: 1px solid #ccc;
+        border: 1px solid rgba(0, 0, 0, 0.4);;
         border-radius: 0.4em;
         margin-bottom: 0.6em;
     `;  
@@ -77,6 +77,7 @@ function displayForm(response)
     addFormItem(formDiv, 'win');
     addFormItem(formDiv, 'loss');
     addFormItem(formDiv, 'win');
+    addFormItem(formDiv, 'loss');
     addFormItem(formDiv, 'win');
     addFormItem(formDiv, 'win');
     
@@ -173,7 +174,7 @@ export function renderDashboard() {
                         <div class="dashboard-highlight-item">
                             <div>
                                 <span style="color: #b7b6bb;">Biggest loss:</span>
-                                <span id="infoGames">0:7 vs nsassenb</span>
+                                <span id="infoGames">6:7 vs nsassenb</span>
                             </div>
                         </div>
                     </div>
