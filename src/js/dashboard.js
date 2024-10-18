@@ -401,7 +401,7 @@ export function renderDashboard() {
                     'rgba(153, 102, 255, 0.5)',
                     'rgba(255, 159, 64, 0.5)'
                 ],
-                borderColor: 'rgba(75, 192, 192, 0.5)',
+                borderColor: 'rgba(75, 192, 192, 0.7)',
                 tension: 0.3,
                 borderWidth: 2.5,
                 pointRadius: 2, // Remove points
