@@ -1393,6 +1393,9 @@ body {
 .item6 {
     grid-column: span 7;
     grid-row: span 8;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .item7 {

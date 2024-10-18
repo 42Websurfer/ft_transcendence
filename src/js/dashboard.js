@@ -179,7 +179,9 @@ export function renderDashboard() {
                         </div>
                     </div>
                 </div>
-                <div id="" class="grid-item item6"></div>
+                <div id="" class="grid-item item6">
+                    <span style="color: white; font-size: 1em; font-family: 'Press Start 2P'; text-shadow: 1px 1px 2px #000000;">Hier könnte ihre Werbung stehen!</span>
+                </div>
                 <div id="" class="grid-item item7">
                     <p class="graph-title" style="margin-bottom: 0.8em;">General information</p>
                     <div class="dashboard-information-container">
