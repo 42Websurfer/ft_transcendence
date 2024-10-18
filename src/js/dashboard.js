@@ -23,7 +23,7 @@ function addFormItem(formDiv, result) {
     }
     else //next
     {
-        item.style.background = 'linear-gradient(to bottom, rgba(211, 211, 211, 0.5), rgba(211, 211, 211, 0.5) 100%)';
+        item.style.background = 'linear-gradient(to bottom, rgba(112, 111, 122, 0.5), rgba(112, 111, 122, 0.5) 100%)';
         item.innerHTML = "<span>?</span>";
     }
 
@@ -47,8 +47,8 @@ function addMatchItem(tournamentMatchesList, player_home, player_away, score, da
         li.style.background = 'linear-gradient(to bottom, rgba(7, 136, 7, 0.5), rgba(7, 136, 7, 0.5) 100%)';
     else if (result === 'loss')
         li.style.background = 'linear-gradient(to bottom, rgba(242, 7, 7, 0.5), rgba(242, 7, 7, 0.5) 100%)';
-    else
-        li.style.background = 'linear-gradient(to bottom, rgba(211, 211, 211, 0.5), rgba(211, 211, 211, 0.5) 100%)';
+    else // undefined
+        li.style.background = 'linear-gradient(to bottom, rgba(112, 111, 122, 0.5), rgba(112, 111, 122, 0.5) 100%)';
 
     li.innerHTML = `
     <div class="dashboard-match">
