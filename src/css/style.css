@@ -1334,11 +1334,69 @@ body {
     margin-bottom: 1.6em;
 }
 
-.dashboard-container-inside {
-    display: flex;
-    flex-direction: row;
+.dashboard-grid-container {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr); /* 6 equal columns */
+    grid-template-rows: repeat(6, 1fr); /* 4 equal rows */
+    gap: 1em; /* Adjust spacing between items */
+    width: 100%; /* Adjust width based on your need */
+    height: 37em; /* Adjust height based on your need */
 }
 
-.dashboard-graph {
-    width: 47.5%;
+.grid-item {
+    background-color: rgba(255, 255, 255, 0.4);
+    border: 1px solid #000;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px;
+    border: #000;
+    border-radius: 8px;
+    padding: 1em;
 }
+
+.grid-item canvas {
+    width: 100% !important;
+    height: 100% !important;
+} 
+
+.item1 {
+    grid-column: span 1; /* 2 columns wide */
+    grid-row: span 3; /* 2 rows tall */
+}
+  
+.item2 {
+    grid-column: span 1; /* 3 columns wide */
+    grid-row: span 3; /* 1 row tall */
+}
+
+.item3 {
+    grid-column: span 2; /* 3 columns wide */
+    grid-row: span 3; /* 1 row tall */
+}
+
+.item4 {
+    grid-column: span 4; /* 3 columns wide */
+    grid-row: span 3; /* 1 row tall */
+}
+
+.item5 {
+    grid-column: span 8; /* 3 columns wide */
+    grid-row: span 3; /* 1 row tall */
+}
+
+.graph-title {
+    color: white;
+    font-size: 0.7em;
+    font-family: 'Press Start 2P';
+    text-shadow: 1px 1px 2px #000000;
+}
+
+/* .dashboard-graph {
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid #ccc;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+*/
