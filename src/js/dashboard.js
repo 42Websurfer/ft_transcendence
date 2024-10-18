@@ -2,6 +2,34 @@ import { getCookie, displayMessages } from './utils.js';
 import { selectedListItem, setSelectedListItem, handleFriendRequest, showSection } from './index.js';
 import { ctx } from './GameSystem.js';
 
+function addFormItem(formDiv, result) {
+
+    if (!formDiv)
+        return;
+
+    const item = document.createElement('div');
+
+    item.classList.add('dashboard-form-item');
+
+    if (result === 'win')
+    {
+        item.style.background = 'linear-gradient(to bottom, rgba(7, 136, 7, 0.5), rgba(7, 136, 7, 0.5) 100%)';
+        item.innerHTML = "<span>W</span>";
+    }
+    else if (result === 'loss')
+    {
+        item.style.background = 'linear-gradient(to bottom, rgba(242, 7, 7, 0.5), rgba(242, 7, 7, 0.5) 100%)';
+        item.innerHTML = "<span>L</span>";
+    }
+    else //next
+    {
+        item.style.background = 'linear-gradient(to bottom, rgba(211, 211, 211, 0.5), rgba(211, 211, 211, 0.5) 100%)';
+        item.innerHTML = "<span>?</span>";
+    }
+
+    formDiv.appendChild(item);
+}
+
 function addMatchItem(tournamentMatchesList, player_home, player_away, score, date, result) {
 
     if (!tournamentMatchesList)
@@ -32,6 +60,49 @@ function addMatchItem(tournamentMatchesList, player_home, player_away, score, da
     `;
 
     tournamentMatchesList.appendChild(li);
+}
+
+function displayForm(response)
+{
+    // const matches = response.matches;
+
+    // MAXIMAL 7 FORM-ELEMENTE (wobei das letzte immer ? ist)!
+
+    const formDiv = document.getElementById('formContainer');
+    if (formDiv)
+        formDiv.innerHTML = '';
+
+    // Das hier als for-loop von 1-6 //
+
+    addFormItem(formDiv, 'win');
+    addFormItem(formDiv, 'loss');
+    addFormItem(formDiv, 'win');
+    addFormItem(formDiv, 'win');
+    addFormItem(formDiv, 'win');
+    
+    // Und dann standardmäßig das hier als 7. (oder erstes wenn es noch kein spiel gibt)
+    
+    addFormItem(formDiv, 'next');
+
+
+
+
+    // for (let index = 0; index < matches.length; index++) {
+        
+    //     const match = matches[index];
+        
+    //     let player_home = match.player_home;
+    //     let player_away = match.player_away;
+    //     let score = '';
+
+    //     if (match.home == -1 || match.away == -1)
+    //         score = "-:-";
+    //     else
+    //         score = match.score_home + ":" + match.score_away;
+    //     let status = match.status;
+
+    //     addMatchItem(playedMatches, player_home, player_away, score, status);
+    // }
 }
 
 function displayMatches(response)
@@ -83,26 +154,89 @@ export function renderDashboard() {
 
             <div class="dashboard-grid-container">
 
-                <div id="dashboardGraph1" class="grid-item item1"><p class="graph-title">Games</p></div>
-                <div id="dashboardGraph2" class="grid-item item2"><p class="graph-title">Goals</p></div>
-                <div id="dashboardGraph3" class="grid-item item3"><p class="graph-title">Playtime [minutes]</p></div>
-                <div id="" class="grid-item item4">
+                <div id="chartGames" class="grid-item item1"><p class="graph-title">Games</p></div>
+                <div id="chartGoals" class="grid-item item2"><p class="graph-title">Goals</p></div>
+                <div id="chartPlaytime" class="grid-item item3"><p class="graph-title">Playtime [minutes]</p></div>
+                <div class="grid-item item4">
                     <p class="graph-title" style="margin-bottom: 0.8em;">Matches</p>
                     <ul id="playedMatches" class="dashboard-matches-list"></ul>
                 </div>
-                <div id="" class="grid-item item5"></div>
-
+                <div id="" class="grid-item item5">
+                    <p class="graph-title" style="margin-bottom: 0.8em;">Highlights</p>
+                    <div class="dashboard-highlight-container">
+                        <div class="dashboard-highlight-item">
+                            <div>
+                                <span style="color: #b7b6bb;">Highest win:</span>
+                                <span id="infoUsername">7:0 vs fwechslefwechsle</span>
+                            </div>
+                        </div>
+                        <div class="dashboard-highlight-item">
+                            <div>
+                                <span style="color: #b7b6bb;">Biggest loss:</span>
+                                <span id="infoGames">0:7 vs nsassenb</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="" class="grid-item item6"></div>
+                <div id="" class="grid-item item7">
+                    <p class="graph-title" style="margin-bottom: 0.8em;">General information</p>
+                    <div class="dashboard-information-container">
+                        <div class="dashboard-information-item">
+                            <div>
+                                <span style="color: #b7b6bb;">Username:</span>
+                                <span id="infoUsername">fheid</span>
+                            </div>
+                        </div>
+                        <div class="dashboard-information-item">
+                            <div>
+                                <span style="color: #b7b6bb;">Games played:</span>
+                                <span id="infoGames">42</span>
+                            </div>
+                        </div>
+                        <div class="dashboard-information-item">
+                            <div>
+                                <span style="color: #b7b6bb;">Tournaments won:</span>
+                                <span id="infoTournaments">4</span>
+                            </div>
+                        </div>
+                        <div class="dashboard-information-item">
+                            <div>
+                                <span style="color: #b7b6bb;">Friends:</span>
+                                <span id="infoFriends">4</span>
+                            </div>
+                        </div>
+                        <div class="dashboard-information-item">
+                            <div>
+                                <span style="color: #b7b6bb;">Arch enemy:</span>
+                                <span id="infoArchEnemy">fwechsle</span>
+                            </div>
+                        </div>
+                        <div class="dashboard-information-item">
+                            <div>
+                                <span style="color: #b7b6bb;">Registered:</span>
+                                <span id="infoDate">2024-10-18 12:15</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="" class="grid-item item8">
+                    <p class="graph-title" style="margin-bottom: 0.8em;">Current form</p>
+                    <div id ="formContainer" class="dashboard-form-container"></div>
+                </div>
+                </div>
             </div>
         </div>
     </div>
     `;
 
     displayMatches();
+    displayForm();
 
     const canvas1 = document.createElement('canvas'); // Create a canvas element
     canvas1.id = 'myChart';  // Set an id
     // canvas1.height = 400;
-    document.getElementById('dashboardGraph1').appendChild(canvas1);  // Append to the app div
+    document.getElementById('chartGames').appendChild(canvas1);  // Append to the app div
     
     const myChart1 = new Chart(canvas1, {
         type: 'bar',  // Example chart type: bar, line, etc.
@@ -176,7 +310,7 @@ export function renderDashboard() {
     const canvas2 = document.createElement('canvas'); // Create a canvas element
     canvas2.id = 'myChart';  // Set an id
     // canvas2.height = 400;
-    document.getElementById('dashboardGraph2').appendChild(canvas2);  // Append to the app div
+    document.getElementById('chartGoals').appendChild(canvas2);  // Append to the app div
     
     const myChart2 = new Chart(canvas2, {
         type: 'bar',  // Example chart type: bar, line, etc.
@@ -250,7 +384,7 @@ export function renderDashboard() {
     const ctx2 = document.createElement('canvas'); // Create a canvas element
     ctx2.id = 'myChart';  // Set an id
     // ctx2.height = 100;
-    document.getElementById('dashboardGraph3').appendChild(ctx2);  // Append to the app div
+    document.getElementById('chartPlaytime').appendChild(ctx2);  // Append to the app div
     
     const myChart3 = new Chart(ctx2, {
         type: 'line',  // Example chart type: bar, line, etc.

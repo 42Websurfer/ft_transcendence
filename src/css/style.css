@@ -1336,8 +1336,8 @@ body {
 
 .dashboard-grid-container {
     display: grid;
-    grid-template-columns: repeat(8, 1fr); /* 6 equal columns */
-    grid-template-rows: repeat(6, 1fr); /* 4 equal rows */
+    grid-template-columns: repeat(16, 1fr); /* 6 equal columns */
+    grid-template-rows: repeat(16, 1fr); /* 4 equal rows */
     gap: 1em; /* Adjust spacing between items */
     width: 100%; /* Adjust width based on your need */
     height: 37em; /* Adjust height based on your need */
@@ -1361,28 +1361,43 @@ body {
 } 
 
 .item1 {
-    grid-column: span 1; /* 2 columns wide */
-    grid-row: span 3; /* 2 rows tall */
+    grid-column: span 2;
+    grid-row: span 8;
 }
   
 .item2 {
-    grid-column: span 1; /* 3 columns wide */
-    grid-row: span 3; /* 1 row tall */
+    grid-column: span 2;
+    grid-row: span 8;
 }
 
 .item3 {
-    grid-column: span 2; /* 3 columns wide */
-    grid-row: span 3; /* 1 row tall */
+    grid-column: span 4;
+    grid-row: span 8;
 }
 
 .item4 {
-    grid-column: span 4; /* 3 columns wide */
-    grid-row: span 3; /* 1 row tall */
+    grid-column: span 8;
+    grid-row: span 8;
 }
 
 .item5 {
-    grid-column: span 8; /* 3 columns wide */
-    grid-row: span 3; /* 1 row tall */
+    grid-column: span 5;
+    grid-row: span 4;
+}
+
+.item8 {
+    grid-column: span 5;
+    grid-row: span 4;
+}
+
+.item6 {
+    grid-column: span 7;
+    grid-row: span 8;
+}
+
+.item7 {
+    grid-column: span 4;
+    grid-row: span 8;
 }
 
 .graph-title {
@@ -1396,7 +1411,6 @@ body {
     width: 100%;
     height: 100%;
     list-style-type: none;
-    padding: 0;
     margin: 0;
     background-color: rgba(75, 192, 192, 0.2);
     padding: 0.6em;
@@ -1428,4 +1442,78 @@ body {
     font-size: 0.7em;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.dashboard-information-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(75, 192, 192, 0.2);
+    padding: 0.6em;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.4);
+    overflow: hidden;
+}
+
+.dashboard-information-item {
+    width: 100%;
+    /* height: 22.5%; */
+    margin: 0.6em;
+    /* border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.4); */
+    display: flex;
+    flex-direction: row;
+    color: white;
+    font-size: 0.68em;
+    font-family: 'Press Start 2P';
+    text-shadow: 1px 1px 2px #000000;
+}
+
+.dashboard-highlight-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(75, 192, 192, 0.2);
+    /* padding: 0.6em; */
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.4);
+    overflow: hidden;
+}
+
+.dashboard-highlight-item {
+    width: 100%;
+    margin: 0.6em;
+    display: flex;
+    flex-direction: row;
+    color: white;
+    font-size: 0.68em;
+    font-family: 'Press Start 2P';
+    text-shadow: 1px 1px 2px #000000;
+}
+
+.dashboard-form-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 1em;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.dashboard-form-item {
+    height: 4em;
+    width: 4em;
+    color: white;
+    font-size: 0.68em;
+    font-family: 'Press Start 2P';
+    text-shadow: 1px 1px 2px #000000;
+    border-radius: 2em;
+    border: 1px solid rgba(0, 0, 0, 0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
