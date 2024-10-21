@@ -132,6 +132,7 @@ function addMatchItem(tournamentMatchesList, player_home, player_away, score, st
         border: 1px solid #ccc;
         border-radius: 0.6em;
         margin-bottom: 0.6em;
+        width: 100%;
     `;
 
     let item;

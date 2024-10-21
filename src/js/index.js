@@ -1,5 +1,6 @@
 import { handleLogoutSubmit, getCookie } from './utils.js';
 import { renderUsername42 } from './username42.js';
+import { renderWaiting } from './waiting.js';
 
 let wsBool;
 wsBool = false;
@@ -387,6 +388,11 @@ export async function showSection(section, lobbyId)
                 module.renderWaiting();
             });
         }
+        else if (section === 'blockchain') {
+            import('./blockchain.js').then(module => {
+                module.renderBlockchain();
+            });
+        }
     }
     else if (section != 'login' && section != 'register' && section != 'username42') {
         import('./login.js').then(module => {
@@ -447,10 +453,10 @@ function getAuthorizationCode() {
 
 
 window.onload = async function() {
+    renderWaiting();
     let code = "";
     if (code = getAuthorizationCode())
     {
-        
         const response = await sendCodeToBackend(code);
         if (response.type === 'registration')
         {
