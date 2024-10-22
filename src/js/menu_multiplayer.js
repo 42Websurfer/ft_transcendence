@@ -6,19 +6,57 @@ export function renderMenuMultiplayer() {
     const app = document.getElementById('app');
 
     app.innerHTML = `
-    <div class="menu">
+    <div class="menu" style="padding: 0em;">
         <button id="userIdInput" class="signin-button btn btn-primary py-2">Get score</button>
         <div id="userScore" style="background-color: grey; margin-left: 1em;"></div>
     </div>
-    <div class="menu">
+    <div class="menu" style="padding: 0em;">
         <input type="text" style=" width: 25em;" id="userScoreInput" placeholder="Enter userScore to update score...">
         <div id="updateScore" style="background-color: grey; margin-left: 1em;"></div>
     </div>
-    <div class="menu">
+    <div class="menu" style="padding: 0em; margin-botom: 6em;">
         <button id="deleteScoreInput" class="signin-button btn btn-primary py-2">Delete score</button>
         <div id="deleteScore" style="background-color: grey; margin-left: 1em;"></div>
     </div>
+
+    <form id="registerForm"">
+        <div id="messages"></div>
+        <input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
+
+        <div class="login-instructions">
+            <p>Welcome, please enter match data!</p>
+        </div>
+        
+
+        <div class="login-form-field form-floating">
+            <input type="text" name="match-lobbyid" class="form-control" placeholder="LobbyId..." required>
+            <label for="floatingInput">LobbyID</label>
+        </div>
+        <div class="login-form-field form-floating">
+            <input type="text" name="match-player1" class="form-control" placeholder="Player1..." required>
+            <label for="floatingInput">Player1</label>
+        </div>
+        <div class="login-form-field form-floating">
+            <input type="text" name="match-player2" class="form-control" placeholder="Player2..." required>
+            <label for="floatingInput">Player2</label>
+        </div>
+        <div class="login-form-field form-floating">
+            <input type="text" name="match-score-player1" class="form-control" placeholder="Score player1..." required>
+            <label for="floatingInput">Score player1</label>
+        </div>
+        <div class="login-form-field form-floating">
+            <input type="text" name="match-score-player2" class="form-control" placeholder="Score player2..." required>
+            <label for="floatingInput">Score player2</label>
+        </div>
+
+        <button class="signin-button btn btn-primary w-100 py-2" type="submit">Sign up</button>
+        
+    </form>
+    <div id="registerMessage" class="register-message"></div>
     `;
+
+	const form = document.getElementById('registerForm');
+    form.addEventListener('submit', handleFormSubmit);
 
 
     const userIdInput = document.getElementById('userIdInput');
@@ -120,4 +158,68 @@ export function renderMenuMultiplayer() {
         }
     });
 
+}
+
+async function handleFormSubmit(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+
+    const lobby_id =  formData.get('match-lobbyid');
+
+    const data = {
+        lobby_id: formData.get('match-lobbyid'),
+        player1: formData.get('match-player1'),
+        player2: formData.get('match-player2'),
+        score_player1: Number(formData.get('match-score-player1')),
+		score_player2: Number(formData.get('match-score-player2'))
+    };
+
+    const registerMessage = document.getElementById('registerMessage');
+
+    if (isNaN(data.score_player1) || isNaN(data.score_player2))
+    {
+		registerMessage.textContent = 'enter valid numbers as scores!!!';
+		registerMessage.style.color = 'red';
+		registerMessage.style.animation = 'none';
+		registerMessage.offsetHeight;
+		registerMessage.style.animation = 'wiggle 0.5s ease-in-out';
+        return;
+    }
+	
+    console.log("data sent: ", data);
+
+    const csrftoken = getCookie('csrftoken');
+	
+    const response = await fetch('/tm/test_set_online_match/', {
+		method: 'POST',
+        headers: {
+			'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+        },
+        body: JSON.stringify(data)
+    });
+	
+    const result = await response.json();
+	console.log("result: ", result);
+	
+	if (result.type === 'success')
+	{
+		registerMessage.textContent = '';
+		const buttons = document.querySelectorAll('button');
+		buttons.forEach(button => button.disabled = true);
+
+		const registerLoader = document.getElementById('registerLoader');
+		registerLoader.style.display = 'block';
+
+		setTimeout(() => showSection('menu'), 2000);
+	}
+	else
+	{
+		registerMessage.textContent = result.message;
+		registerMessage.style.color = 'red';
+		registerMessage.style.animation = 'none';
+		registerMessage.offsetHeight;
+		registerMessage.style.animation = 'wiggle 0.5s ease-in-out';
+	}
 }
