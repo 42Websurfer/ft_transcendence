@@ -52,7 +52,7 @@ export function renderMenuTournament() {
                 console.log(`Trying to enter lobby with id: ${lobbyId}`);
                 const response = await joinTournamentLobby(lobbyId);
                 if (response.type === 'success')
-                    showSection('tournamentRR', lobbyId);
+                    showSection('menu_tournament_roundrobin', lobbyId);
                 else
                 {
                     joinMessage.textContent = response.message;
@@ -81,7 +81,7 @@ export function renderMenuTournament() {
     const tournamentRRButton = document.getElementById('tournamentItemRR');
     tournamentRRButton.addEventListener('click', async () => {
         const response = await createTournamentLobby();
-        showSection('tournamentRR', response.lobby.id);
+        showSection('menu_tournament_roundrobin', response.lobby.id);
     });
 
 }

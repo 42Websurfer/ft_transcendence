@@ -179,7 +179,7 @@ function closeWebsocket(socket) {
     logoutButton.addEventListener('click', () => {socket.close(1000)});
 }
 
-export function renderTournamentRR(lobbyId) {
+export function renderMenuTournamentRoundRobin(lobbyId) {
 
     const app = document.getElementById('app');
 

@@ -381,9 +381,9 @@ export async function showSection(section, lobbyId)
             import('./settings.js').then(module => {
                 module.renderSettings();
             });
-        else if (section === 'tournamentRR')
-            import('./tournamentRR.js').then(module => {
-                module.renderTournamentRR(lobbyId);
+        else if (section === 'menu_tournament_roundrobin')
+            import('./menu_tournament_roundrobin.js').then(module => {
+                module.renderMenuTournamentRoundRobin(lobbyId);
             });
         else if (section === 'pong')
             import('./pong.js').then(module => {
