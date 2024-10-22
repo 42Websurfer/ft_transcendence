@@ -462,6 +462,7 @@ window.onload = async function() {
     if (code = getAuthorizationCode())
     {
         const response = await sendCodeToBackend(code);
+        window.history.replaceState({}, document.title, window.location.pathname);
         if (response.type === 'registration')
         {
             renderAuth42(response);
@@ -472,8 +473,6 @@ window.onload = async function() {
         else if (response.type === 'error')
             showSection(login);
         console.log('Response = ', response);
-        window.history.replaceState({}, document.title, window.location.pathname);
-
     }
     else
     {

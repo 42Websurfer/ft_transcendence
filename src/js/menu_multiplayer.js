@@ -53,6 +53,7 @@ export function renderMenuMultiplayer() {
         
     </form>
     <div id="registerMessage" class="register-message"></div>
+    <div id="registerLoader" class="loader"></div>
     `;
 
 	const form = document.getElementById('registerForm');
