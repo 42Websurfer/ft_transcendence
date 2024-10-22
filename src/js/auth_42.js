@@ -29,8 +29,12 @@ export async function renderAuth42(session_data) {
 	const usernameButton = document.getElementById('usernameButton');
 	usernameButton.addEventListener('click', () => handleUsernameFormSubmit(session_data));
 
-
-
+    const usernameInput = document.getElementById('usernameInput');
+    usernameInput.addEventListener('keydown', async (event) => {
+        if (event.key === 'Enter') {
+            handleUsernameFormSubmit(session_data);
+        }
+    });
 }
 
 async function handleUsernameFormSubmit(session_data)

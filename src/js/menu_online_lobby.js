@@ -12,8 +12,6 @@ export function runWebsocket(socket) {
         try {
             const data = JSON.parse(event.data);
 
-            console.log("data: ", data);
-
             if (data.type === 'send_online_users')
             {
                 const matchPlayers = document.getElementById("matchPlayers");
@@ -58,6 +56,12 @@ export function runWebsocket(socket) {
     
     socket.onclose = function(event) {
         console.log('WebSocket connection closed');
+
+        const lobbyClosedModal = document.getElementById('lobbyClosedModal');
+        if (!lobbyClosedModal)
+            return;
+
+        lobbyClosedModal.style.display = 'block';
     };
 
 }
@@ -66,9 +70,9 @@ function displayMatches(response)
 {
     const matches = response.matches;
 
-    const tournamentMatchesList = document.getElementById('tournamentMatches');
-    if (tournamentMatchesList)
-        tournamentMatchesList.innerHTML = '';
+    const historicMatchesList = document.getElementById('historicMatches');
+    if (historicMatchesList)
+        historicMatchesList.innerHTML = '';
 
     for (let index = 0; index < matches.length; index++) {
         
@@ -84,14 +88,14 @@ function displayMatches(response)
             score = match.score_home + ":" + match.score_away;
         let status = match.status;
 
-        addMatchItem(tournamentMatchesList, player_home, player_away, score, status);
+        addMatchItem(historicMatchesList, player_home, player_away, score, status);
     }
-    addMatchItem(tournamentMatchesList, "nsassenb", "fwechsle", "6:0", "running");
+    addMatchItem(historicMatchesList, "nsassenb", "fwechsle", "6:0", "running");
 }
 
-function addMatchItem(tournamentMatchesList, player_home, player_away, score, status) {
+function addMatchItem(historicMatchesList, player_home, player_away, score, status) {
 
-    if (!tournamentMatchesList)
+    if (!historicMatchesList)
         return;
 
     const li = document.createElement('li');
@@ -137,7 +141,7 @@ function addMatchItem(tournamentMatchesList, player_home, player_away, score, st
     </div>
     `;
 
-    tournamentMatchesList.appendChild(li);
+    historicMatchesList.appendChild(li);
 }
 
 function closeWebsocket(socket) {
@@ -165,8 +169,8 @@ export function renderMenuOnlineLobby(lobbyId) {
 
                 <div class="lobby-container-data">
 
-                    <div class="tournament-table1" style="padding-right: 0.6em;">
-                        <div id="tournamentLobby">
+                    <div class="lobby-table1" style="padding-right: 0.6em;">
+                        <div>
                             <div class="tournament-table-header">
                                 <p>PLAYERS</p>
                             </div> 
@@ -178,13 +182,13 @@ export function renderMenuOnlineLobby(lobbyId) {
                     
                     <hr class="tournament-vertical-divider">
 
-                    <div class="tournament-table2" style="padding-left: 0;">
-                        <div id="tournamentLobby">
+                    <div class="lobby-table2" style="padding-left: 0;">
+                        <div>
                             <div class="tournament-table-header">
                                 <p>MATCHES</p>
                             </div>  
 
-                            <ul id="tournamentMatches" style="list-style-type: none; padding: 0; margin: 0;"></ul>
+                            <ul id="historicMatches" style="list-style-type: none; padding: 0; margin: 0;"></ul>
 
                         </div>
                     </div>
@@ -219,6 +223,15 @@ export function renderMenuOnlineLobby(lobbyId) {
                 <div class="tournament-controls">
                     <p>paddle up: up-arrow key</p>
                     <p>paddle down: down-arrow key</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal" id="lobbyClosedModal">
+            <div class="modal-content-modify">
+                <span class="close-controls-button" id="closeLobbyClosedModalButton">&times;</span>
+                <div class="tournament-controls">
+                    <p>This lobby was closed by its owner!</p>
                 </div>
             </div>
         </div>
@@ -283,7 +296,9 @@ export function renderMenuOnlineLobby(lobbyId) {
 
     const controlsButton = document.getElementById('controlsButton');
     const controlsModal = document.getElementById('controlsModal');
+    const lobbyClosedModal = document.getElementById('lobbyClosedModal');
     const closeControlsModalButton = document.getElementById('closeControlsModalButton');
+    const closeLobbyClosedModalButton = document.getElementById('closeLobbyClosedModalButton');
 
     controlsButton.addEventListener('click', () => {
         controlsModal.style.display = 'block';
@@ -293,7 +308,11 @@ export function renderMenuOnlineLobby(lobbyId) {
         controlsModal.style.display = 'none';
     });
 
-    async function showTournamentMatches() {
+    closeLobbyClosedModalButton.addEventListener('click', () => {
+        lobbyClosedModal.style.display = 'none';
+    });
+
+    async function showHistoricMatches() {
         try {
             const response = await fetch(`/tm/start_tournament/${lobbyId}/`, {
                 method: 'GET',
@@ -312,7 +331,7 @@ export function renderMenuOnlineLobby(lobbyId) {
     tournamentStartButton.addEventListener('click', async() => {
         tournamentStartButton.style.display = 'none';
         roundStartButton.style.display = 'block';
-        await showTournamentMatches();
+        await showHistoricMatches();
     });
 
     roundStartButton.addEventListener('click', async() => {
