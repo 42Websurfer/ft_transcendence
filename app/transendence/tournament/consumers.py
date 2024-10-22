@@ -38,7 +38,6 @@ class Tournament(AsyncWebsocketConsumer):
 					results.append(create_user_structure(self.user.id, 'admin', user.username))
 					redis.set(self.group_name, json.dumps(results))
 				
-			#redis.sadd(self.group_name, self.user.id)
 			await self.channel_layer.group_send(
 				self.group_name,
 				{
@@ -101,3 +100,63 @@ class Tournament(AsyncWebsocketConsumer):
 				'matches': matchList
 			}
 			await self.send(text_data=json.dumps(data))
+
+class OnlineMatch(AsyncWebsocketConsumer): 
+	async def connect(self):
+		self.user = self.scope["user"]
+		self.match_name = match_lobby_string(self.scope['url_route']['kwargs']['match_name'])
+		if (self.user.is_authenticated):
+			await self.channel_layer.group_add(
+				self.match_name, 
+				self.channel_name
+			)
+			await self.accept()
+			User = get_user_model()
+			user = await sync_to_async(User.objects.get)(id=self.user.id)
+			if (redis.exists(self.match_name)):
+				lobby_data = json.loads(redis.get(match_name))
+				if (lobby_data.get('member_id') == -1):
+					member_id = user.id
+					member_username = user.username
+				#nochmal checken was mir hier machen? denke return response das er schon connected ist oder ? 
+			else:
+				lobby_data = {'admin_id': user.id, 'admin_username': user.username, 'member_id': -1,  'member_username': '', 'matches': []}
+			await self.channel_layer.group_send(
+				self.match_name,
+				{
+					'type': 'send_online_lobby_user',
+				}
+			)
+
+	async def disconnect(self, close_code):
+		if (self.user.is_authenticated):
+			await self.channel_layer.group_discard(
+				self.match_name,
+				self.channel_name
+			)
+			lobby_data = redis.get(self.match_name)
+			if (lobby_data.get('admin_id') is self.user.id):
+				await self.close()
+				redis.delete(self.match_name)
+			else: 
+				member_id = lobby_data.get('member_id')
+				member_id = -1
+			await self.channel_layer.group_send(
+				self.group_name,
+				{
+					'type': 'send_online_lobby_user'
+				}
+			) 
+				#now we have to set the everything in the database! oder vielleicht auch nicht
+
+			
+	async def send_online_lobby_user(self, event):
+		lobby_data = json.loads(redis.get(self.match_name))
+		data = {
+			'type': 'send_online_users',
+			'admin_id': lobby_data.get('admin_id'),
+			'admin_username': lobby_data.get('admin_username'),
+			'member_id': lobby_data.get('member_id'),
+			'member_username': lobby_data.get('member_username'),
+		}
+		await self.send(json.dumps(lobby_data))
