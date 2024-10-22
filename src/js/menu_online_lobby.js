@@ -188,7 +188,7 @@ export function renderMenuOnlineLobby(lobbyId) {
         <div class="tournament-container">
 
             <div class="tournament-container-header">
-                <p>1 vs 1 Match</p>
+                <p>1v1-Online-Lobby</p>
             </div>
             
             <hr class="tournament-container-divider">
