@@ -74,7 +74,7 @@ async function handleUsernameFormSubmit(session_data)
             const registerLoader = document.getElementById('registerLoader');
             registerLoader.style.display = 'block';
     
-            setTimeout(() => showSection('welcome'), 2000);
+            setTimeout(() => showSection('menu'), 2000);
         }
         else
         {
@@ -86,7 +86,7 @@ async function handleUsernameFormSubmit(session_data)
         }
 
         // if (result.success)
-        //     showSection('welcome');
+        //     showSection('menu');
     }
     catch(error) {
         console.log("Error during fetch to register_api");

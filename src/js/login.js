@@ -81,5 +81,5 @@ async function handleLoginFormSubmit(event)
 	console.log(result.sucess);
 
 	if (result.success)
-		showSection('welcome');
+		showSection('menu');
 }

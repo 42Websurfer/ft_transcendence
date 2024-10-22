@@ -87,7 +87,7 @@ async function handleFormSubmit(event) {
 		const registerLoader = document.getElementById('registerLoader');
 		registerLoader.style.display = 'block';
 
-		setTimeout(() => showSection('welcome'), 2000);
+		setTimeout(() => showSection('menu'), 2000);
 	}
 	else
 	{

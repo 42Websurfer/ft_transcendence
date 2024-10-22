@@ -78,7 +78,7 @@ settingsButton.addEventListener('click', () => {
 
 const homeButton = document.getElementById('webpong-button');
 homeButton.addEventListener('click', () => {
-    showSection('welcome');
+    showSection('menu');
 });
 
 export async function handleFriendRequest(url) {
@@ -353,9 +353,9 @@ export async function showSection(section, lobbyId)
             initOnlineStatus();
             wsBool = true;
         }
-        if (section === 'welcome')
-                import('./welcome.js').then(module => {
-                    module.renderWelcome();
+        if (section === 'menu')
+                import('./menu.js').then(module => {
+                    module.renderMenu();
                 });
         else if (section === 'settings')
             import('./settings.js').then(module => {
@@ -410,7 +410,7 @@ export async function showSection(section, lobbyId)
 async function initApp() {
     const isAuthenticated = await checkAuthentication();
     if (isAuthenticated) {
-        showSection('welcome');
+        showSection('menu');
     } else {
         showSection('login');
     }
@@ -469,7 +469,7 @@ window.onload = async function() {
             return;
         }
         else if (response.type === 'success')
-            showSection('welcome');
+            showSection('menu');
         else if (response.type === 'error')
             showSection(login);
         console.log('Response = ', response);
