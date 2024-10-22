@@ -728,7 +728,7 @@ body {
     list-style-type: none;
     padding: 0;
     margin: 0;
-    color: white;
+    color: #d8d3d3;
     text-shadow: 1px 1px 2px #000000;
     font-family: 'Press Start 2P';
     font-size:1em;
@@ -1568,4 +1568,14 @@ body {
 
 .match-players-list::-webkit-scrollbar {
     display: none;
+}
+
+.lobby-table1 {
+    width: 24%;
+    padding: 2em;
+}
+
+.lobby-table2 {
+    width: 72%;
+    padding: 2em;
 }
