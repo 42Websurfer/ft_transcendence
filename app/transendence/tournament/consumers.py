@@ -139,8 +139,8 @@ class OnlineMatch(AsyncWebsocketConsumer):
 				await self.close()
 				redis.delete(self.match_name)
 			else: 
-				member_id = lobby_data.get('member_id')
-				member_id = -1
+				lobby_data['member_id'] = -1
+				redis.set(self.match_name, json.dumps(lobby_data) )
 			await self.channel_layer.group_send(
 				self.match_name,
 				{
