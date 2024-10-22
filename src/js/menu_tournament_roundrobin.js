@@ -185,17 +185,17 @@ export function renderMenuTournamentRoundRobin(lobbyId) {
 
     app.innerHTML = `
     <div class="menu">
-        <div class="tournament-container">
+        <div class="lobby-container">
 
-            <div class="tournament-container-header">
+            <div class="lobby-container-header">
                 <p>Round-Robin-Tournament</p>
             </div>
             
-            <hr class="tournament-container-divider">
+            <hr class="lobby-container-divider">
 
-            <div class="tournament-container-inside">
+            <div class="lobby-container-inside">
 
-                <div class="tournament-container-left">
+                <div class="lobby-container-data">
 
                     <div class="tournament-table1" style="padding-right: 0.6em;">
                         <div id="tournamentLobby">
@@ -249,8 +249,8 @@ export function renderMenuTournamentRoundRobin(lobbyId) {
 
                 </div>
 
-                <div class="tournament-buttons">
-                    <div class="tournament-lobby-id">
+                <div class="lobby-container-buttons">
+                    <div class="lobby-id">
                         <div>
                             <p style="color: white; margin-bottom: 0.2em">Lobby-ID</p>
                         </div>

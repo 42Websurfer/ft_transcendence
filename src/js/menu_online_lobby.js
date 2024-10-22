@@ -11,41 +11,31 @@ export function runWebsocket(socket) {
     socket.onmessage = function(event) {
         try {
             const data = JSON.parse(event.data);
-            if (data.type === 'send_tournament_users')
-            {
-                
-                const tournamentStandingsTable = document.getElementById("tournamentStandingsTable");
-                if (!tournamentStandingsTable) 
-                    return;
-                
-                const tableBody = document.getElementById('tournamentStandingsTableBody');
-                if (tableBody)
-                    tableBody.innerHTML = '';
-                const results = data.results;
-                for (let index = 0; index < results.length; index++) {
-                    const user = results[index];
-                    console.log(data);
-                    console.log('User_id from from socket: ' + data.user_id);
-                    console.log('User_id from from reults: ' + user.user_id);
-                    console.log('Status: ' + user.role);
 
-                    if (data.user_id == user.user_id && user.role != 'admin')
-                    {
-                        const startButton = document.getElementById('tournamentStartButton');
-                        if (startButton)
-                            startButton.remove();
-                    }
-                    
-                    let rank = user.rank;
-                    let player = user.player;
-                    let games = user.games;
-                    let wins = user.won;
-                    let losses = user.lost;
-                    let goals = user.goals + ":" + user.goals_against;
-                    let diff = user.diff;
-                    let points = user.points;
-                    
-                    addRowToStandingsTable(rank, player, games, wins, losses, goals, diff, points);
+            console.log("data: ", data);
+
+            if (data.type === 'send_online_users')
+            {
+                const matchPlayers = document.getElementById("matchPlayers");
+                if (!matchPlayers) 
+                    return;
+
+                const li = document.createElement('li');
+
+                li.className = 'friends-add-list-user';
+                li.innerHTML = `<span class="list-item-content">${data.admin_username}</span>`;
+
+                matchPlayers.appendChild(li);
+
+
+                if (data.member_id != -1)
+                {
+                    const li = document.createElement('li');
+
+                    li.className = 'friends-add-list-user';
+                    li.innerHTML = `<span class="list-item-content">${data.member_username}</span>`;
+    
+                    matchPlayers.appendChild(li);
                 }
             }
             else if (data.type === 'match_list')
@@ -96,29 +86,6 @@ function displayMatches(response)
         addMatchItem(tournamentMatchesList, player_home, player_away, score, status);
     }
     addMatchItem(tournamentMatchesList, "nsassenb", "fwechsle", "6:0", "running");
-}
-
-function addRowToStandingsTable(rank, player, games, wins, losses, goals, diff, points) {
-
-    const tableBody = document.getElementById('tournamentStandingsTableBody');
-
-    if (!tableBody)
-        return;
-
-    const row = document.createElement('tr');
-
-    row.innerHTML = `
-        <td>${rank}</td>
-        <td>${player}</td>
-        <td>${games}</td>
-        <td>${wins}</td>
-        <td>${losses}</td>
-        <td>${goals}</td>
-        <td>${diff}</td>
-        <td>${points}</td>
-    `;
-
-    tableBody.appendChild(row);
 }
 
 function addMatchItem(tournamentMatchesList, player_home, player_away, score, status) {
@@ -185,51 +152,25 @@ export function renderMenuOnlineLobby(lobbyId) {
 
     app.innerHTML = `
     <div class="menu">
-        <div class="tournament-container">
+        <div class="lobby-container">
 
-            <div class="tournament-container-header">
+            <div class="lobby-container-header">
                 <p>1v1-Online-Lobby</p>
             </div>
             
-            <hr class="tournament-container-divider">
+            <hr class="lobby-container-divider">
 
-            <div class="tournament-container-inside">
+            <div class="lobby-container-inside">
 
-                <div class="tournament-container-left">
+                <div class="lobby-container-data">
 
                     <div class="tournament-table1" style="padding-right: 0.6em;">
                         <div id="tournamentLobby">
                             <div class="tournament-table-header">
-                                <p>STANDINGS</p>
-                            </div>
+                                <p>PLAYERS</p>
+                            </div>  
 
-
-                            <table id="tournamentStandingsTable" class="tournament-standings-table">
-                                <colgroup>
-                                    <col style="width: 6%;">
-                                    <col style="width: 29%;">
-                                    <col style="width: 10%;">
-                                    <col style="width: 10%;">
-                                    <col style="width: 10%;">
-                                    <col style="width: 15%;">
-                                    <col style="width: 10%;">
-                                    <col style="width: 10%;">
-                                </colgroup>
-                                <thead>
-                                    <tr>
-                                        <th>#</th>
-                                        <th>PLAYER</th>
-                                        <th>PLAYED</th>
-                                        <th>WON</th>
-                                        <th>LOST</th>
-                                        <th>GOALS</th>
-                                        <th>DIFF</th>
-                                        <th>POINTS</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tournamentStandingsTableBody" class="tournament-table-body"></tbody>
-                            </table>
-
+                            <ul id="matchPlayers" style="list-style-type: none; padding: 0; margin: 0;"></ul>
 
                         </div>
                     </div>
@@ -249,8 +190,8 @@ export function renderMenuOnlineLobby(lobbyId) {
 
                 </div>
 
-                <div class="tournament-buttons">
-                    <div class="tournament-lobby-id">
+                <div class="lobby-container-buttons">
+                    <div class="lobby-id">
                         <div>
                             <p style="color: white; margin-bottom: 0.2em">Lobby-ID</p>
                         </div>

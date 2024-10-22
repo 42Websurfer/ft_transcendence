@@ -46,7 +46,7 @@ export function renderMenuOnline() {
                 console.log(`Trying to enter lobby with id: ${lobbyId}`);
                 const response = await joinOnlineLobby(lobbyId);
                 if (response.type === 'success')
-                    showSection('onlineLobby', lobbyId);
+                    showSection('menu_online_lobby', lobbyId);
                 else
                 {
                     joinMessage.textContent = response.message;
