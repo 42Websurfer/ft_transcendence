@@ -354,16 +354,32 @@ export async function showSection(section, lobbyId)
             wsBool = true;
         }
         if (section === 'menu')
-                import('./menu.js').then(module => {
-                    module.renderMenu();
-                });
+            import('./menu.js').then(module => {
+                module.renderMenu();
+            });
+        else if (section === 'menu_local')
+            import('./menu_local.js').then(module => {
+                module.renderMenuLocal(lobbyId);
+            });
+        else if (section === 'menu_online')
+            import('./menu_online.js').then(module => {
+                module.renderMenuOnline();
+            });
+        else if (section === 'menu_tournament')
+            import('./menu_tournament.js').then(module => {
+                module.renderMenuTournament();
+            });
+        else if (section === 'menu_multiplayer')
+            import('./menu_multiplayer.js').then(module => {
+                module.renderMenuMultiplayer();
+            });
+        else if (section === 'menu_dashboard')
+            import('./menu_dashboard.js').then(module => {
+                module.renderMenuDashboard();
+            });
         else if (section === 'settings')
             import('./settings.js').then(module => {
                 module.renderSettings();
-            });
-        else if (section === 'tournament')
-            import('./tournament.js').then(module => {
-                module.renderTournament();
             });
         else if (section === 'tournamentRR')
             import('./tournamentRR.js').then(module => {
@@ -373,31 +389,10 @@ export async function showSection(section, lobbyId)
             import('./pong.js').then(module => {
                 module.renderPong();
             });
-        else if (section === 'lobby') {
-            import('./lobby.js').then(module => {
-                module.renderLobby(lobbyId);
-            });
-        }
-        else if (section === 'dashboard') {
-            import('./dashboard.js').then(module => {
-                module.renderDashboard();
-            });
-        }
-        else if (section === 'waiting') {
+        else if (section === 'waiting')
             import('./waiting.js').then(module => {
                 module.renderWaiting();
             });
-        }
-        else if (section === 'blockchain') {
-            import('./blockchain.js').then(module => {
-                module.renderBlockchain();
-            });
-        }
-        else if (section === 'online') {
-            import('./online.js').then(module => {
-                module.renderOnline();
-            });
-        }
     }
     else if (section != 'login' && section != 'register' && section != 'username42') {
         import('./login.js').then(module => {
