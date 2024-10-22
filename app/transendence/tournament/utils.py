@@ -105,8 +105,27 @@ async def update_tournament_group(lobby_id, match_data):
 		}
 	)
 
+async def update_online_match_socket(data, lobby_id):
+	lobby_data_json = redis.get(match_lobby_string(lobby_id))
+	if (lobby_data_json):
+		lobby = json.loads(lobby_data_json)
+		match = {
+			'player_home': data.get('home').username,
+			'player_away': data.get('away').username,
+			'score_home': data.get('home_score'),
+			'score_away': data.get('away_score')
+		}
+		lobby['matches'].append(match)
+		redis.set(match_lobby_string(lobby_id), json.dumps(lobby))
+		channel_layer = get_channel_layer()	
+		await channel_layer.group_send(
+			match_lobby_string(lobby_id),
+			{
+				'type': 'send_online_match_list',
+			}
+		)
+
 def set_online_match(data, lobby_id):
-	logger.debug(f"KOMMST DU RAN?! lobby_id = {data}")
 	if (data.get('home_score') > data.get('away_score')):
 		data['winner'] = data.get('home')
 	else:
@@ -120,7 +139,6 @@ def set_online_match(data, lobby_id):
 		modus = 'test'
 	)
 	match.save()
-	logger.debug(f"Könnte erfolgreich gewesen sein?")
 
 async def set_match_data(lobby_id, match_id, score_home, score_away, status):
 	tournament = redis.get(tournament_string(lobby_id))
