@@ -1,7 +1,7 @@
 import { getCookie, displayMessages } from './utils.js';
 import { showSection } from './index.js';
 
-export async function renderLogin() {
+export async function renderAuthLogin() {
 	
 	const app = document.getElementById('app');
 	app.innerHTML = `

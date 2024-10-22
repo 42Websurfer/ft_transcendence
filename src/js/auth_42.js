@@ -1,7 +1,7 @@
 import { getCookie, displayMessages } from './utils.js';
 import { showSection } from './index.js';
 
-export async function renderUsername42(session_data) {
+export async function renderAuth42(session_data) {
     console.log('SESSION_DATA: ', session_data);
 	console.log('Username42 will be registered');
     const app = document.getElementById('app');
@@ -90,6 +90,6 @@ async function handleUsernameFormSubmit(session_data)
     }
     catch(error) {
         console.log("Error during fetch to register_api");
-        //showSection('login')
+        //showSection('auth_login')
     }
 }

@@ -1,5 +1,5 @@
 import { handleLogoutSubmit, getCookie } from './utils.js';
-import { renderUsername42 } from './username42.js';
+import { renderAuth42 } from './auth_42.js';
 import { renderWaiting } from './waiting.js';
 
 let wsBool;
@@ -43,7 +43,7 @@ async function renderLoginLogoutButton(isAuthenticated, section) {
     }
     else
     {
-        if (section === 'register')
+        if (section === 'auth_register')
         {
             app.innerHTML = `
             <div class="col-5">
@@ -52,10 +52,10 @@ async function renderLoginLogoutButton(isAuthenticated, section) {
             `;
             const loginButton = document.getElementById('loginButton')
             loginButton.addEventListener('click', () => {
-                showSection('login');
+                showSection('auth_login');
             });
         }
-        else //(section === 'login')
+        else //(section === 'auth_login')
         {
             app.innerHTML = `
             <div class="col-5">
@@ -64,7 +64,7 @@ async function renderLoginLogoutButton(isAuthenticated, section) {
             `;
             const registerButton = document.getElementById('registerButton')
             registerButton.addEventListener('click', () => {
-                showSection('register');
+                showSection('auth_register');
             });
         }
 
@@ -335,17 +335,17 @@ export async function showSection(section, lobbyId)
 {
     const isAuthenticated = await checkAuthentication();
     renderLoginLogoutButton(isAuthenticated, section);
-    if (section === 'register')
-        import('./register.js').then(module => {
-            module.renderRegister();
+    if (section === 'auth_register')
+        import('./auth_register.js').then(module => {
+            module.renderAuthRegister();
         });
-    else if (section === 'login')
-        import('./login.js').then(module => {
-            module.renderLogin();    
+    else if (section === 'auth_login')
+        import('./auth_login.js').then(module => {
+            module.renderAuthLogin();    
         });
-    else if (section === 'username42')
-        import('./username42.js').then(module => {
-            module.renderUsername42();    
+    else if (section === 'auth_42')
+        import('./auth_42.js').then(module => {
+            module.renderAuth42();    
         });
     if (isAuthenticated) {
         if (!wsBool)
@@ -394,11 +394,11 @@ export async function showSection(section, lobbyId)
                 module.renderWaiting();
             });
     }
-    else if (section != 'login' && section != 'register' && section != 'username42') {
-        import('./login.js').then(module => {
-            module.renderLogin();    
+    else if (section != 'auth_login' && section != 'auth_register' && section != 'auth_42') {
+        import('./auth_login.js').then(module => {
+            module.renderAuthLogin();    
         });
-        section = 'login';
+        section = 'auth_login';
     }
 }
 
@@ -407,7 +407,7 @@ async function initApp() {
     if (isAuthenticated) {
         showSection('menu');
     } else {
-        showSection('login');
+        showSection('auth_login');
     }
 }
 
@@ -460,7 +460,7 @@ window.onload = async function() {
         const response = await sendCodeToBackend(code);
         if (response.type === 'registration')
         {
-            renderUsername42(response);
+            renderAuth42(response);
             return;
         }
         else if (response.type === 'success')

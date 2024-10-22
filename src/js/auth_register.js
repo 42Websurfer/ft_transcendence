@@ -1,7 +1,7 @@
 import { getCookie, displayMessages } from './utils.js';
 import { showSection } from './index.js';
 
-export function renderRegister() {
+export function renderAuthRegister() {
 
 	const app = document.getElementById('app');
 	app.innerHTML = `

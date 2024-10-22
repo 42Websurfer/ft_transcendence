@@ -48,7 +48,7 @@ export async function handleLogoutSubmit(ws, wsBool)
     if (ws)
         ws.close(1000, "Client closed connection");
     wsBool = false;
-    showSection('login');
+    showSection('auth_login');
 }
 
 export async function checkAuthentication() {
