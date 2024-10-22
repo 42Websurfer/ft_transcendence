@@ -1,5 +1,4 @@
 from django.http import JsonResponse
-
 import random
 import string
 import redis
@@ -7,10 +6,11 @@ import json
 import requests
 import sys
 import logging
-from .utils import tournament_string, round_completed, update_tournament_group, set_match_data, match_lobby_string
+from .utils import set_online_match, tournament_string, round_completed, update_tournament_group, set_match_data, match_lobby_string
 from django.views.decorators.csrf import csrf_exempt
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+from .models import GameStatsUser
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -103,7 +103,7 @@ async def start_group_tournament(request, lobby_id):
     )
     return (JsonResponse(tournament_dict))
 
-async def set_match(request):
+async def set_tournament_match(request):
     data = json.loads(request.body)
     tournament_id = data.get('tournament_id')
     match_id = data.get('match_id')
@@ -124,6 +124,27 @@ def check_round_completion(request, lobby_id, round):
         return JsonResponse({'type': 'Round is completed'})
     else:
         return JsonResponse({'type': 'Round is NOT completed'})
+
+
+def test_set_online_match(request):
+    data = json.loads(request.body)
+
+    home_username = data.get('player1')
+    away_username = data.get('player2')
+    home = GameStatsUser.get(username=home_username)
+    away = GameStatsUser.get(username=away_username)
+    match = {}
+    match['home'] = home
+    match['away'] = away
+    match['home_score'] = data.get('score_player1')
+    match['away_score'] = data.get('score_player2')
+    set_online_match(match, data.get('lobby_id'))
+    
+
+
+
+#def set_online_match(request, lobby_id):
+    
 
 # BLOCKCHAIN-SERVICE
 
