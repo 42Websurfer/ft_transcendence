@@ -160,4 +160,4 @@ class OnlineMatch(AsyncWebsocketConsumer):
 			'member_id': lobby_data.get('member_id'),
 			'member_username': lobby_data.get('member_username'),
 		}
-		await self.send(json.dumps(lobby_data))
+		await self.send(json.dumps(data))
