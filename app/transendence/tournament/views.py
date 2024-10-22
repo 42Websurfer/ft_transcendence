@@ -7,7 +7,7 @@ import json
 import requests
 import sys
 import logging
-from .utils import tournament_string, round_completed, update_tournament_group, set_match_data
+from .utils import tournament_string, round_completed, update_tournament_group, set_match_data, match_lobby_string
 from django.views.decorators.csrf import csrf_exempt
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
@@ -24,13 +24,24 @@ def lobby_name_generator():
 def create_lobby(request):
     user = request.user
     lobby_id = lobby_name_generator()
-    print (lobby_id)
     return JsonResponse({
         'lobby': {
             'id': lobby_id,
             'role': 'admin',
         }
     })
+
+def join_match_lobby(request, lobby_id):
+    user = request.user
+    if (redis.exists(match_lobby_string(lobby_id))):
+        lobby_data = json.loads(redis.get(match_lobby_string(lobby_id)))
+        member_id = lobby_data.get(member_id)
+        if (member_username != '' or member_username != user.username):
+            return (JsonResponse({'type': 'error', 'message': 'Lobby already full.'}))
+        else: 
+            return(JsonResponse({'type': 'success'}))
+    else: 
+        return(JsonResponse({'type': 'error', 'message': 'Lobby does not exist.'}))
 
 def join_lobby(request, lobby_id):
     if redis.exists(lobby_id):
