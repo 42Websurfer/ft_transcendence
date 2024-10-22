@@ -20,6 +20,8 @@ export function runWebsocket(socket) {
                 if (!matchPlayers) 
                     return;
 
+                matchPlayers.innerHTML = '';
+
                 const li = document.createElement('li');
 
                 li.className = 'friends-add-list-user';
