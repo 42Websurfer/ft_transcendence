@@ -210,10 +210,12 @@ async function handleFormSubmit(event) {
 		const buttons = document.querySelectorAll('button');
 		buttons.forEach(button => button.disabled = true);
 
-		const registerLoader = document.getElementById('registerLoader');
-		registerLoader.style.display = 'block';
+        console.log("SUPIDUPI!!!");
 
-		setTimeout(() => showSection('menu'), 2000);
+		// const registerLoader = document.getElementById('registerLoader');
+		// registerLoader.style.display = 'block';
+
+		// setTimeout(() => showSection('menu'), 2000);
 	}
 	else
 	{

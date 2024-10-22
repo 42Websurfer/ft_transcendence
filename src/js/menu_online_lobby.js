@@ -41,13 +41,12 @@ export function runWebsocket(socket) {
             {
                 if (!data.matches)
                     return;
-                console.log(data.matches);
-                if (!data.matches)
-                    return;
+
+                console.log("data: ", data);
+                console.log("matches: ", data.matches);
                 
-                const matches = data.matches
-                displayMatches(matches);
-            } 
+                displayMatches(data.matches);
+            }
         }
         catch (error) {
             console.error("Error with Parsing Tournament user:", error);
@@ -66,10 +65,8 @@ export function runWebsocket(socket) {
 
 }
 
-function displayMatches(response)
+function displayMatches(matches)
 {
-    const matches = response.matches;
-
     const historicMatchesList = document.getElementById('historicMatches');
     if (historicMatchesList)
         historicMatchesList.innerHTML = '';
@@ -109,21 +106,8 @@ function addMatchItem(historicMatchesList, player_home, player_away, score, stat
 
     let item;
 
-    if (status === 'finished' || status === 'freegame')
-    {
-        item = '<svg class="check-symbol" xmlns="http://www.w3.org/2000/svg" viewBox="2 1.5 20 20" fill="#4740a8" width="4em" height="4em" style="margin: 0; padding: 0;"><path d="M0 0h24v24H0z" fill="none"/><path d="M9 16.2l-3.5-3.5 1.4-1.4L9 13.4l7.1-7.1 1.4 1.4z"/></svg>';
-        li.style.background = 'linear-gradient(to bottom, rgba(26, 158, 37, 0.8), rgba(15, 126, 24, 0.8) 100%)';
-    }
-    else if (status === 'pending')
-    {
-        item = '<svg class="clock-symbol" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#4740a8" width="4em" height="4em" style="margin: 0; padding: 0;"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-.5-13h-2v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>';
-        li.style.background = 'linear-gradient(to bottom, rgba(211, 211, 211, 0.8), rgba(169, 169, 169, 0.8) 100%)';
-    }
-    else //running
-    {
-        item = '<div class="pong-loader"><span class="ball"></span></div>'
-        li.classList.add('lava-lamp');
-    }
+    item = '<svg class="check-symbol" xmlns="http://www.w3.org/2000/svg" viewBox="2 1.5 20 20" fill="#4740a8" width="4em" height="4em" style="margin: 0; padding: 0;"><path d="M0 0h24v24H0z" fill="none"/><path d="M9 16.2l-3.5-3.5 1.4-1.4L9 13.4l7.1-7.1 1.4 1.4z"/></svg>';
+    li.style.background = 'linear-gradient(to bottom, rgba(26, 158, 37, 0.8), rgba(15, 126, 24, 0.8) 100%)';
 
     let free_color_home = '';
     let free_color_away = '';
