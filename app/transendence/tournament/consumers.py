@@ -3,7 +3,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from django.contrib.auth import get_user_model
 from asgiref.sync import sync_to_async
 import redis
-from .utils import create_user_structure, tournament_string, update_matches_disconnect
+from .utils import create_user_structure, tournament_string, update_matches_disconnect, match_lobby_string
 
 redis = redis.Redis(host='redis', port=6379, db=0)
 
@@ -121,6 +121,7 @@ class OnlineMatch(AsyncWebsocketConsumer):
 				#nochmal checken was mir hier machen? denke return response das er schon connected ist oder ? 
 			else:
 				lobby_data = {'admin_id': user.id, 'admin_username': user.username, 'member_id': -1,  'member_username': '', 'matches': []}
+			redis.set(self.match_name, json.dumps(lobby_data))
 			await self.channel_layer.group_send(
 				self.match_name,
 				{
