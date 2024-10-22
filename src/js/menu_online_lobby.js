@@ -286,7 +286,7 @@ export function renderMenuOnlineLobby(lobbyId) {
     </div>
     `;
 
-    const socket = new WebSocket(`ws://${window.location.host}/ws/tm/${lobbyId}/`);
+    const socket = new WebSocket(`ws://${window.location.host}/ws/match/${lobbyId}/`);
     runWebsocket(socket);
     closeWebsocket(socket);
 
