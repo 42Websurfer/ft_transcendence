@@ -27,7 +27,7 @@ export function renderMenuOnline() {
 
     async function joinOnlineLobby(lobby_id) {
         try {
-            const response = await fetch(`/tm/join/${lobby_id}/`, {
+            const response = await fetch(`/tm/join_online_lobby/${lobby_id}/`, {
                 method: 'GET',
                 credentials: 'include'
             });

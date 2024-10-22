@@ -29,11 +29,9 @@ export function renderMenuTournament() {
     </div>
     `;
 
-    
-    
     async function joinTournamentLobby(lobby_id) {
         try {
-            const response = await fetch(`/tm/join/${lobby_id}/`, {
+            const response = await fetch(`/tm/join_tournament_lobby/${lobby_id}/`, {
                 method: 'GET',
                 credentials: 'include'
             });
