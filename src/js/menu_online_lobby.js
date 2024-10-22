@@ -24,8 +24,7 @@ export function runWebsocket(socket) {
 
                 const li = document.createElement('li');
 
-                li.className = 'friends-add-list-user';
-                li.innerHTML = `<span class="list-item-content">${data.admin_username}</span>`;
+                li.innerHTML = `<span class="list-item-content"><span>${data.admin_username}</span><span style="color: red; font-size: 0.8em"> (*)</span></span>`;
 
                 matchPlayers.appendChild(li);
 
@@ -170,9 +169,9 @@ export function renderMenuOnlineLobby(lobbyId) {
                         <div id="tournamentLobby">
                             <div class="tournament-table-header">
                                 <p>PLAYERS</p>
-                            </div>  
+                            </div> 
 
-                            <ul id="matchPlayers" style="list-style-type: none; padding: 0; margin: 0;"></ul>
+                            <ul id="matchPlayers" class="match-players-list" style="list-style-type: none; padding: 0; margin: 0;"></ul>
 
                         </div>
                     </div>
