@@ -35,11 +35,11 @@ def join_match_lobby(request, lobby_id):
     user = request.user
     if (redis.exists(match_lobby_string(lobby_id))):
         lobby_data = json.loads(redis.get(match_lobby_string(lobby_id)))
-        member_id = lobby_data.get('member_id')
-        if (member_username != '' or member_username != user.username):
-            return (JsonResponse({'type': 'error', 'message': 'Lobby already full.'}))
-        else: 
+        member_username = str(lobby_data.get('member_username'))
+        if (member_username == "" or member_username == user.username):
             return(JsonResponse({'type': 'success'}))
+        else: 
+            return (JsonResponse({'type': 'error', 'message': 'Lobby already full.'}))
     else: 
         return(JsonResponse({'type': 'error', 'message': 'Lobby does not exist.'}))
 
