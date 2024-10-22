@@ -8,6 +8,9 @@ redis = redis.Redis(host='redis', port=6379, db=0)
 def tournament_string(lobby_id):
 	return (f"tournament_{lobby_id}")
 
+def match_lobby_string(lobby_id):
+	return (f"match_{lobby_id}")
+
 def round_completed(matches, round):
 	for match in matches:
 		if match['round'] > round:
@@ -156,7 +159,6 @@ async def update_match(lobby_id, match):
 	if (match['status'] == 'freegame' or match['status'] == 'disconnected'):
 		return
 	if match['status'] == 'finished':
-		print("ICH MUSS DOCH ZWEIMAL HIER REIN?!")
 		reset_match(lobby_id, match)
 	await set_match_data(lobby_id, match['match_id'], 0, 0, 'disconnected')
 
