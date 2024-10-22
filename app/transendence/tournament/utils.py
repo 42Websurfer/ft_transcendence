@@ -2,6 +2,7 @@ import redis
 import json
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+from .models import OnlineMatch
 
 redis = redis.Redis(host='redis', port=6379, db=0)
 
@@ -99,6 +100,21 @@ async def update_tournament_group(lobby_id, match_data):
 			'type': 'send_tournament_users',
 		}
 	)
+
+async def set_online_match(data, lobby_id):
+	if (data.home_score > data.away_score):
+		data['winner'] = data.get('home')
+	else:
+		data['winner'] = data.get('away')
+	
+	match = OnlineMatch(
+		home = data.home,
+		away = data.away,
+		home_score = data.home_score,
+		away_score = data.away_score,
+		modus = 'test'
+	)
+	match.save()
 
 async def set_match_data(lobby_id, match_id, score_home, score_away, status):
 	tournament = redis.get(tournament_string(lobby_id))
