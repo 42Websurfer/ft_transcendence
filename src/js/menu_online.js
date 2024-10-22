@@ -9,7 +9,7 @@ export function renderMenuOnline() {
     <div class="menu">
         <div class="menu-friends"></div>
         <div class="menu-gamemodes">
-            <div class="menu-item" id="onlineItemCreate">
+            <div class="menu-item" id="onlineItemLobby">
                 <h1>Create Lobby</h1>
                 <p>Play 1 vs 1 with a friend<p>
             </div>  
@@ -72,10 +72,10 @@ export function renderMenuOnline() {
 
     }
 
-    const createLobbyButton = document.getElementById('onlineItemCreate');
+    const createLobbyButton = document.getElementById('onlineItemLobby');
     createLobbyButton.addEventListener('click', async () => {
         const response = await createOnlineLobby();
-        showSection('onlineLobby', response.lobby.id);
+        showSection('menu_online_lobby', response.lobby.id);
     });
 
 }

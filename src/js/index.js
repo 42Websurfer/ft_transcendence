@@ -377,13 +377,17 @@ export async function showSection(section, lobbyId)
             import('./menu_dashboard.js').then(module => {
                 module.renderMenuDashboard();
             });
-        else if (section === 'settings')
-            import('./settings.js').then(module => {
-                module.renderSettings();
+        else if (section === 'menu_online_lobby')
+            import('./menu_online_lobby.js').then(module => {
+                module.renderMenuOnlineLobby(lobbyId);
             });
         else if (section === 'menu_tournament_roundrobin')
             import('./menu_tournament_roundrobin.js').then(module => {
                 module.renderMenuTournamentRoundRobin(lobbyId);
+            });
+        else if (section === 'settings')
+            import('./settings.js').then(module => {
+                module.renderSettings();
             });
         else if (section === 'pong')
             import('./pong.js').then(module => {
