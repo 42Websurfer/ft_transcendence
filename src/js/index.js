@@ -393,6 +393,11 @@ export async function showSection(section, lobbyId)
                 module.renderBlockchain();
             });
         }
+        else if (section === 'online') {
+            import('./online.js').then(module => {
+                module.renderOnline();
+            });
+        }
     }
     else if (section != 'login' && section != 'register' && section != 'username42') {
         import('./login.js').then(module => {

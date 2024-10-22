@@ -295,4 +295,10 @@ export function renderWelcome() {
         showSection('dashboard');
     });
 
+    const onlineButton = document.getElementById('menu-item-online');
+    onlineButton.addEventListener('click', () => {
+        console.log("clicked");
+        showSection('online');
+    });
+
 }

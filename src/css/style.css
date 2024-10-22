@@ -800,6 +800,18 @@ body {
     color: #000000;
 }
 
+#onlineLobbyId {
+    font-size: 1.6em;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    height: 2em;
+    width: 110%;
+    font-family: 'Courier New', Courier, monospace;
+    text-align: left;
+    padding-left: 0.6em;
+    color: #000000;
+}
+
 #joinLobbyButton {
     background: none;
     border: none;
@@ -825,6 +837,10 @@ body {
 
 #tournamentItemKO {
     background: linear-gradient(to bottom, rgba(7, 112, 24, 0.7) 0%, rgba(15, 156, 39, 0.7) 100%);
+}
+
+#onlineItemCreate {
+    background: linear-gradient(to bottom, rgba(221, 88, 10, 0.7) 0%, rgba(226, 121, 60, 0.7) 100%);
 }
 
 .tournament-container {
@@ -1371,12 +1387,12 @@ body {
 }
 
 .item3 {
-    grid-column: span 4;
+    grid-column: span 3;
     grid-row: span 8;
 }
 
 .item4 {
-    grid-column: span 8;
+    grid-column: span 9;
     grid-row: span 8;
 }
 
