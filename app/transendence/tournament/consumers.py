@@ -114,11 +114,10 @@ class OnlineMatch(AsyncWebsocketConsumer):
 			User = get_user_model()
 			user = await sync_to_async(User.objects.get)(id=self.user.id)
 			if (redis.exists(self.match_name)):
-				lobby_data = json.loads(redis.get(match_name))
+				lobby_data = json.loads(redis.get(self.match_name))
 				if (lobby_data.get('member_id') == -1):
-					member_id = user.id
-					member_username = user.username
-				#nochmal checken was mir hier machen? denke return response das er schon connected ist oder ? 
+					lobby_data['member_id'] = user.id
+					lobby_data['member_username'] = user.username
 			else:
 				lobby_data = {'admin_id': user.id, 'admin_username': user.username, 'member_id': -1,  'member_username': '', 'matches': []}
 			redis.set(self.match_name, json.dumps(lobby_data))
@@ -135,7 +134,7 @@ class OnlineMatch(AsyncWebsocketConsumer):
 				self.match_name,
 				self.channel_name
 			)
-			lobby_data = redis.get(self.match_name)
+			lobby_data = json.loads(redis.get(self.match_name))
 			if (lobby_data.get('admin_id') is self.user.id):
 				await self.close()
 				redis.delete(self.match_name)
@@ -143,7 +142,7 @@ class OnlineMatch(AsyncWebsocketConsumer):
 				member_id = lobby_data.get('member_id')
 				member_id = -1
 			await self.channel_layer.group_send(
-				self.group_name,
+				self.match_name,
 				{
 					'type': 'send_online_lobby_user'
 				}
