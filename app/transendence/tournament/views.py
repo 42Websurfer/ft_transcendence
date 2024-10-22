@@ -6,10 +6,10 @@ import json
 import requests
 import sys
 import logging
-from .utils import set_online_match, tournament_string, round_completed, update_tournament_group, set_match_data, match_lobby_string
+from .utils import update_online_match_socket, set_online_match, tournament_string, round_completed, update_tournament_group, set_match_data, match_lobby_string
 from django.views.decorators.csrf import csrf_exempt
 from channels.layers import get_channel_layer
-from asgiref.sync import async_to_sync
+from asgiref.sync import sync_to_async
 from .models import GameStatsUser
 
 logging.basicConfig(level=logging.DEBUG)
@@ -126,20 +126,21 @@ def check_round_completion(request, lobby_id, round):
         return JsonResponse({'type': 'Round is NOT completed'})
 
 
-def test_set_online_match(request):
+async def test_set_online_match(request):
     data = json.loads(request.body)
 
     home_username = data.get('player1')
     away_username = data.get('player2')
     lobby_id = data.get('lobby_id')
-    home = GameStatsUser.objects.get(username=home_username)
-    away = GameStatsUser.objects.get(username=away_username)
+    home = await sync_to_async(GameStatsUser.objects.get)(username=home_username)
+    away = await sync_to_async(GameStatsUser.objects.get)(username=away_username)
     match = {}
     match['home'] = home
     match['away'] = away
     match['home_score'] = data.get('score_player1')
     match['away_score'] = data.get('score_player2')
-    set_online_match(match, lobby_id)
+    sync_to_async(set_online_match)(match, lobby_id)
+    await update_online_match_socket(match, lobby_id)
     return (JsonResponse({'type': 'success'}))
     
 
