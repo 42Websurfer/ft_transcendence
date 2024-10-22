@@ -160,3 +160,13 @@ class OnlineMatch(AsyncWebsocketConsumer):
 			'member_username': lobby_data.get('member_username'),
 		}
 		await self.send(json.dumps(data))
+
+	async def send_online_match_list(self, event):
+		lobby_data_json = redis.get(self.match_name)
+		if (lobby_data_json):
+			lobby_data = json.loads(lobby_data_json)
+			data = {
+				'type': 'match_list',
+				'matches': lobby_data.get('matches')
+			}
+		await self.send(json.dumps(data))
