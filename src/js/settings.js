@@ -106,6 +106,6 @@ async function handleFormSubmit(event) {
 
     const result = await response.json();
     displayMessages(result);
-	showSection('login');
+	showSection('auth_login');
 
 }

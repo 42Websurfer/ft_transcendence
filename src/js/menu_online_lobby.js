@@ -179,7 +179,7 @@ function closeWebsocket(socket) {
     logoutButton.addEventListener('click', () => {socket.close(1000)});
 }
 
-export function renderTournamentRR(lobbyId) {
+export function renderMenuOnlineLobby(lobbyId) {
 
     const app = document.getElementById('app');
 
@@ -188,7 +188,7 @@ export function renderTournamentRR(lobbyId) {
         <div class="tournament-container">
 
             <div class="tournament-container-header">
-                <p>Round-Robin-Tournament</p>
+                <p>1 vs 1 Match</p>
             </div>
             
             <hr class="tournament-container-divider">

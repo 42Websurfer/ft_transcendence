@@ -1,5 +1,5 @@
 import { handleLogoutSubmit, getCookie } from './utils.js';
-import { renderUsername42 } from './username42.js';
+import { renderAuth42 } from './auth_42.js';
 import { renderWaiting } from './waiting.js';
 
 let wsBool;
@@ -43,7 +43,7 @@ async function renderLoginLogoutButton(isAuthenticated, section) {
     }
     else
     {
-        if (section === 'register')
+        if (section === 'auth_register')
         {
             app.innerHTML = `
             <div class="col-5">
@@ -52,10 +52,10 @@ async function renderLoginLogoutButton(isAuthenticated, section) {
             `;
             const loginButton = document.getElementById('loginButton')
             loginButton.addEventListener('click', () => {
-                showSection('login');
+                showSection('auth_login');
             });
         }
-        else //(section === 'login')
+        else //(section === 'auth_login')
         {
             app.innerHTML = `
             <div class="col-5">
@@ -64,7 +64,7 @@ async function renderLoginLogoutButton(isAuthenticated, section) {
             `;
             const registerButton = document.getElementById('registerButton')
             registerButton.addEventListener('click', () => {
-                showSection('register');
+                showSection('auth_register');
             });
         }
 
@@ -78,7 +78,7 @@ settingsButton.addEventListener('click', () => {
 
 const homeButton = document.getElementById('webpong-button');
 homeButton.addEventListener('click', () => {
-    showSection('welcome');
+    showSection('menu');
 });
 
 export async function handleFriendRequest(url) {
@@ -335,17 +335,17 @@ export async function showSection(section, lobbyId)
 {
     const isAuthenticated = await checkAuthentication();
     renderLoginLogoutButton(isAuthenticated, section);
-    if (section === 'register')
-        import('./register.js').then(module => {
-            module.renderRegister();
+    if (section === 'auth_register')
+        import('./auth_register.js').then(module => {
+            module.renderAuthRegister();
         });
-    else if (section === 'login')
-        import('./login.js').then(module => {
-            module.renderLogin();    
+    else if (section === 'auth_login')
+        import('./auth_login.js').then(module => {
+            module.renderAuthLogin();    
         });
-    else if (section === 'username42')
-        import('./username42.js').then(module => {
-            module.renderUsername42();    
+    else if (section === 'auth_42')
+        import('./auth_42.js').then(module => {
+            module.renderAuth42();    
         });
     if (isAuthenticated) {
         if (!wsBool)
@@ -353,61 +353,65 @@ export async function showSection(section, lobbyId)
             initOnlineStatus();
             wsBool = true;
         }
-        if (section === 'welcome')
-                import('./welcome.js').then(module => {
-                    module.renderWelcome();
-                });
+        if (section === 'menu')
+            import('./menu.js').then(module => {
+                module.renderMenu();
+            });
+        else if (section === 'menu_local')
+            import('./menu_local.js').then(module => {
+                module.renderMenuLocal(lobbyId);
+            });
+        else if (section === 'menu_online')
+            import('./menu_online.js').then(module => {
+                module.renderMenuOnline();
+            });
+        else if (section === 'menu_tournament')
+            import('./menu_tournament.js').then(module => {
+                module.renderMenuTournament();
+            });
+        else if (section === 'menu_multiplayer')
+            import('./menu_multiplayer.js').then(module => {
+                module.renderMenuMultiplayer();
+            });
+        else if (section === 'menu_dashboard')
+            import('./menu_dashboard.js').then(module => {
+                module.renderMenuDashboard();
+            });
+        else if (section === 'menu_online_lobby')
+            import('./menu_online_lobby.js').then(module => {
+                module.renderMenuOnlineLobby(lobbyId);
+            });
+        else if (section === 'menu_tournament_roundrobin')
+            import('./menu_tournament_roundrobin.js').then(module => {
+                module.renderMenuTournamentRoundRobin(lobbyId);
+            });
         else if (section === 'settings')
             import('./settings.js').then(module => {
                 module.renderSettings();
-            });
-        else if (section === 'tournament')
-            import('./tournament.js').then(module => {
-                module.renderTournament();
-            });
-        else if (section === 'tournamentRR')
-            import('./tournamentRR.js').then(module => {
-                module.renderTournamentRR(lobbyId);
             });
         else if (section === 'pong')
             import('./pong.js').then(module => {
                 module.renderPong();
             });
-        else if (section === 'lobby') {
-            import('./lobby.js').then(module => {
-                module.renderLobby(lobbyId);
-            });
-        }
-        else if (section === 'dashboard') {
-            import('./dashboard.js').then(module => {
-                module.renderDashboard();
-            });
-        }
-        else if (section === 'waiting') {
+        else if (section === 'waiting')
             import('./waiting.js').then(module => {
                 module.renderWaiting();
             });
-        }
-        else if (section === 'blockchain') {
-            import('./blockchain.js').then(module => {
-                module.renderBlockchain();
-            });
-        }
     }
-    else if (section != 'login' && section != 'register' && section != 'username42') {
-        import('./login.js').then(module => {
-            module.renderLogin();    
+    else if (section != 'auth_login' && section != 'auth_register' && section != 'auth_42') {
+        import('./auth_login.js').then(module => {
+            module.renderAuthLogin();    
         });
-        section = 'login';
+        section = 'auth_login';
     }
 }
 
 async function initApp() {
     const isAuthenticated = await checkAuthentication();
     if (isAuthenticated) {
-        showSection('welcome');
+        showSection('menu');
     } else {
-        showSection('login');
+        showSection('auth_login');
     }
 }
 
@@ -460,11 +464,11 @@ window.onload = async function() {
         const response = await sendCodeToBackend(code);
         if (response.type === 'registration')
         {
-            renderUsername42(response);
+            renderAuth42(response);
             return;
         }
         else if (response.type === 'success')
-            showSection('welcome');
+            showSection('menu');
         else if (response.type === 'error')
             showSection(login);
         console.log('Response = ', response);

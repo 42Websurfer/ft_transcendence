@@ -34,7 +34,7 @@ function closeWebsocket(socket) {
     });
 }
 
-export function renderLobby(groupName) {
+export function renderMenuLocal(groupName) {
     
     const app = document.getElementById('app');
     app.innerHTML = `

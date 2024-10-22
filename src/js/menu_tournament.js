@@ -1,7 +1,7 @@
 import { getCookie, displayMessages } from './utils.js';
 import { selectedListItem, setSelectedListItem, handleFriendRequest, showSection } from './index.js';
 
-export function renderTournament() {
+export function renderMenuTournament() {
 
     const app = document.getElementById('app');
 
@@ -29,11 +29,9 @@ export function renderTournament() {
     </div>
     `;
 
-    
-    
     async function joinTournamentLobby(lobby_id) {
         try {
-            const response = await fetch(`/tm/join/${lobby_id}/`, {
+            const response = await fetch(`/tm/join_tournament_lobby/${lobby_id}/`, {
                 method: 'GET',
                 credentials: 'include'
             });
@@ -52,7 +50,7 @@ export function renderTournament() {
                 console.log(`Trying to enter lobby with id: ${lobbyId}`);
                 const response = await joinTournamentLobby(lobbyId);
                 if (response.type === 'success')
-                    showSection('tournamentRR', lobbyId);
+                    showSection('menu_tournament_roundrobin', lobbyId);
                 else
                 {
                     joinMessage.textContent = response.message;
@@ -81,7 +79,7 @@ export function renderTournament() {
     const tournamentRRButton = document.getElementById('tournamentItemRR');
     tournamentRRButton.addEventListener('click', async () => {
         const response = await createTournamentLobby();
-        showSection('tournamentRR', response.lobby.id);
+        showSection('menu_tournament_roundrobin', response.lobby.id);
     });
 
 }

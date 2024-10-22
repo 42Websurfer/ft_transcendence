@@ -139,7 +139,7 @@ function displayMatches(response)
     addMatchItem(playedMatches, "fwechslefwechsle", "fwechslefwechsle", "6:0", "2024-10-18 12:15", "");
 }
 
-export function renderDashboard() {
+export function renderMenuDashboard() {
 
     const app = document.getElementById('app');
 

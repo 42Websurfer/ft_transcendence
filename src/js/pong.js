@@ -346,5 +346,5 @@ const id = setInterval(function() {
 
 socket.onclose = () => {
 	clearInterval(id);
-	showSection('welcome');
+	showSection('menu');
 }

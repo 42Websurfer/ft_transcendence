@@ -1,7 +1,7 @@
 import { getCookie, displayMessages } from './utils.js';
 import { selectedListItem, setSelectedListItem, handleFriendRequest, showSection } from './index.js';
 
-export function renderWelcome() {
+export function renderMenu() {
 
     const app = document.getElementById('app');
 
@@ -29,29 +29,29 @@ export function renderWelcome() {
                 </div>
                 <div class="friends-options">
                     <div class="friends-options-add">
-                        <button id="friends-options-add-button">ADD FRIEND</button>
+                        <button id="friendsOptionsAddButton">ADD FRIEND</button>
                     </div>
                 </div>
             </div>
         </div>
         <div class="menu-gamemodes">
-            <div class="menu-item" id="menu-item-local">
+            <div class="menu-item" id="menuItemLocal">
                 <h1>Local</h1>
                 <p>Play local - alone or with a friend<p>
             </div>  
-            <div class="menu-item" id="menu-item-online">
+            <div class="menu-item" id="menuItemOnline">
                 <h1>Online</h1>
                 <p>Play 1 vs 1 with a friend<p>
             </div>
-            <div class="menu-item" id="menu-item-tournament">
+            <div class="menu-item" id="menuItemTournament">
                 <h1>Tournament</h1>
                 <p>Play an exciting Tournament<p>
             </div>
-            <div class="menu-item" id="menu-item-multiplayer">
+            <div class="menu-item" id="menuItemMultiplayer">
                 <h1>Multiplayer</h1>
                 <p>Play online in multiplayer mode<p>
             </div>
-            <div class="menu-item" id="menu-item-dashboard">
+            <div class="menu-item" id="menuItemDashboard">
                 <h1>Dashboard</h1>
                 <p>Check your game stats<p>
             </div>
@@ -139,7 +139,7 @@ export function renderWelcome() {
     </div>
     `;
     
-    const addButton = document.getElementById('friends-options-add-button');
+    const addButton = document.getElementById('friendsOptionsAddButton');
     const friendsAddModal = document.getElementById('friendsAddModal');
     const closeModalButton = document.getElementById('closeModal1Button');
     const inviteButton = document.getElementById('sendInvitationButton');
@@ -174,14 +174,13 @@ export function renderWelcome() {
         else
             invitationMessage.style.color = 'red';
         
-        invitationMessage.style.animation = 'none'; // Reset animation
-        invitationMessage.offsetHeight; // Trigger reflow
+        invitationMessage.style.animation = 'none';
+        invitationMessage.offsetHeight;
         invitationMessage.style.animation = 'wiggle 0.5s ease-in-out';
     });
 
     addButton.addEventListener('click', () => {
         friendsAddModal.style.display = 'block';
-        // friendSelectOnlineOffline.style.display = 'block';   
     });
 
     closeModalButton.addEventListener('click', () => {
@@ -270,29 +269,29 @@ export function renderWelcome() {
         }
     });
 
-    const tournamentButton = document.getElementById('menu-item-tournament');
-    tournamentButton.addEventListener('click', () => {
-        console.log("clicked");
-        showSection('tournament');
+    const menuLocalButton = document.getElementById('menuItemLocal');
+    menuLocalButton.addEventListener('click', () => {
+        showSection('menu_local', 'W5FN');
     });
 
-    const lobbyButton = document.getElementById('menu-item-local');
-    lobbyButton.addEventListener('click', () => {
-        console.log("clicked");
-        showSection('lobby', 'W5FN');
+    const menuOnlineButton = document.getElementById('menuItemOnline');
+    menuOnlineButton.addEventListener('click', () => {
+        showSection('menu_online');
     });
 
-    const multiplayerButton = document.getElementById('menu-item-multiplayer');
-    multiplayerButton.addEventListener('click', () => {
-        console.log("clicked blockchain");
-
-        showSection('blockchain');
+    const menuTournamentButton = document.getElementById('menuItemTournament');
+    menuTournamentButton.addEventListener('click', () => {
+        showSection('menu_tournament');
     });
 
-    const dashboardButton = document.getElementById('menu-item-dashboard');
-    dashboardButton.addEventListener('click', () => {
-        console.log("clicked");
-        showSection('dashboard');
+    const menuMultiplayerButton = document.getElementById('menuItemMultiplayer');
+    menuMultiplayerButton.addEventListener('click', () => {
+        showSection('menu_multiplayer');
+    });
+
+    const menuDashboardButton = document.getElementById('menuItemDashboard');
+    menuDashboardButton.addEventListener('click', () => {
+        showSection('menu_dashboard');
     });
 
 }

@@ -1,7 +1,7 @@
 import { getCookie, displayMessages } from './utils.js';
 import { selectedListItem, setSelectedListItem, handleFriendRequest, showSection } from './index.js';
 
-export function renderBlockchain() {
+export function renderMenuMultiplayer() {
 
     const app = document.getElementById('app');
 
