@@ -24,8 +24,7 @@ export function renderMenuTournament() {
                 <input type="text" id="tournamentLobbyId" placeholder="Enter a lobby-id and hit enter...">
             </div>
             <div id="joinMessage" class="join-message"></div>
-        </div>
-        
+        </div> 
     </div>
     `;
 
