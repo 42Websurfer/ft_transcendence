@@ -1,8 +1,12 @@
 import redis
 import json
+import logging
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from .models import OnlineMatch
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 redis = redis.Redis(host='redis', port=6379, db=0)
 
@@ -101,20 +105,22 @@ async def update_tournament_group(lobby_id, match_data):
 		}
 	)
 
-async def set_online_match(data, lobby_id):
-	if (data.home_score > data.away_score):
+def set_online_match(data, lobby_id):
+	logger.debug(f"KOMMST DU RAN?! lobby_id = {data}")
+	if (data.get('home_score') > data.get('away_score')):
 		data['winner'] = data.get('home')
 	else:
 		data['winner'] = data.get('away')
 	
 	match = OnlineMatch(
-		home = data.home,
-		away = data.away,
-		home_score = data.home_score,
-		away_score = data.away_score,
+		home = data.get('home'),
+		away = data.get('away'),
+		home_score = data.get('home_score'),
+		away_score = data.get('away_score'),
 		modus = 'test'
 	)
 	match.save()
+	logger.debug(f"Könnte erfolgreich gewesen sein?")
 
 async def set_match_data(lobby_id, match_id, score_home, score_away, status):
 	tournament = redis.get(tournament_string(lobby_id))

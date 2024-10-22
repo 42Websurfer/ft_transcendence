@@ -131,14 +131,16 @@ def test_set_online_match(request):
 
     home_username = data.get('player1')
     away_username = data.get('player2')
-    home = GameStatsUser.get(username=home_username)
-    away = GameStatsUser.get(username=away_username)
+    lobby_id = data.get('lobby_id')
+    home = GameStatsUser.objects.get(username=home_username)
+    away = GameStatsUser.objects.get(username=away_username)
     match = {}
     match['home'] = home
     match['away'] = away
     match['home_score'] = data.get('score_player1')
     match['away_score'] = data.get('score_player2')
-    set_online_match(match, data.get('lobby_id'))
+    set_online_match(match, lobby_id)
+    return (JsonResponse({'type': 'success'}))
     
 
 
