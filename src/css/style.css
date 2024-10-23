@@ -1594,9 +1594,7 @@ body {
     width: 100%;
     height: 48em;
     background-color: rgba(0, 0, 0, 0.4);
-    /* padding: 2em; */
-    /* padding-bottom: 1em; */
-    padding: 2em;
+    padding: 2em 4em;
     border-radius: 12px;
     border: 0.1em solid #000000;
     flex-direction: row;
