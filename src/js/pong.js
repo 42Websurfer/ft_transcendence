@@ -9,9 +9,7 @@ export function renderPong(match_id) {
 		app.style.position = 'relative';
 		app.innerHTML = `
 		<div class="menu" style="justify-content: center; padding: 2em;">
-			<div class="game-container">
-				<div id="gameContainer" style="width: 100%; display: flex; flex-direction: row; justify-content: center;"></div>
-			</div>
+			<div id="gameContainer" class="game-container"></div>
 		</div>
 		`;
 
@@ -19,7 +17,6 @@ export function renderPong(match_id) {
 
 		canvas.style.maxHeight = '100%';
         canvas.style.maxWidth = '100%';
-        // canvas.style.objectFit = 'contain';
 
 		gameContainer.appendChild(canvas);
 		selectGamemode(match_id);
