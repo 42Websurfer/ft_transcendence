@@ -37,6 +37,11 @@ class OnlineMatch(models.Model):
             self.home_username = self.home.username
         if self.away:
             self.away_username = self.away.username
+        if self.home and self.away:
+            if self.home_score > self.away_score:
+                self.winner = self.home
+            else:
+                self.winner = self.away
         super().save(*args, **kwargs)
         if self.home and self.away:
             self.home.goals_for += self.home_score
@@ -57,3 +62,9 @@ class OnlineMatch(models.Model):
 
     def __str__(self):
         return f"{self.home.username} vs {self.away.username}"
+
+
+# class Tournament(models.Model):
+#     tournament_id 
+
+# class TournamentResults(models.Model):
