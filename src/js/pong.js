@@ -6,41 +6,56 @@ export function renderPong() {
 	const app = document.getElementById('app');
 	if (app)
 	{
+		app.style.position = 'relative';
 		app.innerHTML = '';
 		app.appendChild(canvas);
+		let buttonContainer = document.createElement('div');
+		buttonContainer.id = 'buttonContainer';
+		buttonContainer.style.display = 'flex';
+		buttonContainer.style.flexDirection = 'column';
+		buttonContainer.style.position = 'absolute';
+		buttonContainer.style.top = '50%';
+		buttonContainer.style.left = '50%';
+		buttonContainer.style.transform = 'translate(-50%, -50%)';
+		let localBut = document.createElement('button');
+		let multiBut = document.createElement('button');
+		localBut.innerText = 'Local';
+		multiBut.innerText = 'Multiplayer';
+		localBut.onclick = () => selectGamemode(buttonContainer, true);
+		multiBut.onclick = () => selectGamemode(buttonContainer, false);
+		buttonContainer.appendChild(localBut);
+		buttonContainer.appendChild(multiBut);
+		app.appendChild(buttonContainer);
 	}
 }
 
 class Ball extends Entity{
 	constructor(x = canvas.width / 2, y = canvas.height / 2){
 		super(x, y);
-		this.net = new Network();
-		this.addComponent(Network, this.net);
 		this.addComponent(Mesh, new Circle(40));
 		this.physics = new Physics(0,0, false, false);
 		// this.physics.hasGravity = false;
 		this.addComponent(Physics, this.physics);
 		this.lastHit = undefined;
+		this.secondLastHit = undefined;
 	}
 
 	resetBall(){
 		this.physics.setVelocity(0, 0);
-		// this.lastHit = undefined;
 		this.position.x = canvas.width / 2;
 		this.position.y = canvas.height / 2;
 	}
 
 	move(xAdd, yAdd){
 		let newPos = this.position.add(new Vector(xAdd, yAdd));
-		if (this.net.isLocal && (this.position.x !== newPos.x || this.position.y !== newPos.y)){
-			socket.send(JSON.stringify({type: 'game_loop', id: this.id, x: this.position.x, y: this.position.y}));
-		}
 		this.position = newPos;
 	}
 
 	onCollision(other, collisionPoint = undefined){
-		if (other instanceof Player)
+		if (other instanceof Player){
+			this.secondLastHit = this.lastHit != other ? this.lastHit : this.secondLastHit;
 			this.lastHit = other;
+		}
 		if (collisionPoint === undefined)
 			return;
 		let ba = this.position.sub(collisionPoint);
@@ -52,23 +67,45 @@ class Ball extends Entity{
 		reflection.scale(this.physics.velocity.length());
 		this.physics.setVelocityV(reflection);
 	}
+
+	update(){
+		ctx.fillStyle = 'red';
+		if (this.lastHit)
+			ctx.fillRect(this.lastHit.position.x, this.lastHit.position.y, 5, 5);
+		ctx.fillStyle = 'blue';
+		if (this.secondLastHit)
+			ctx.fillRect(this.secondLastHit.position.x, this.secondLastHit.position.y, 5, 5);
+		ctx.fillStyle = 'black';
+	}
 }
 
 class Player extends Entity{
 	constructor(x, y, length = 250){
 		super(x, y);
+		this.height = length;
 		this.mesh = new Box(25, length);
 		this.physics = new Physics(0, 0, true, false);
-		this.net = new Network();
 		this.addComponent(Mesh, this.mesh);
 		this.addComponent(Physics, this.physics);
-		this.addComponent(Network, this.net);
 		this.keyBinds = {up: 'remote', down: 'remote'};
-		window.addEventListener('keydown', (event) => this.keyDown(event));
-		window.addEventListener('keyup', (event) => this.keyUp(event));
 		this.score = 0;
 		this.startPos = undefined;
 		this.goalHeight = 0;
+	}
+
+	update(){
+		this.drawScore();
+	}
+
+	drawScore(){
+		const center = new Vector(canvas.width * .5, canvas.height * .5);
+		let startPos = this.startPos ? this.startPos : this.position;
+		let lineToCenter = center.sub(startPos);
+		lineToCenter.rotate(25);
+		lineToCenter.normalize();
+		lineToCenter.scale(100);
+		let drawPos = lineToCenter.add(startPos);
+		drawText(this.score, drawPos.x, drawPos.y, '120px Arial', '#5e5e5e');
 	}
 
 	move(xAdd, yAdd){
@@ -97,9 +134,6 @@ class Player extends Entity{
 			if (point.y < 0 || point.y > canvas.height)
 				return;
 		}
-		if (this.net.isLocal && (this.position.x !== newPos.x || this.position.y !== newPos.y)){
-			socket.send(JSON.stringify({type: 'game_loop', id: this.id, x: this.position.x, y: this.position.y}));
-		}
 		this.position = newPos;
 	}
 
@@ -115,24 +149,6 @@ class Player extends Entity{
 			ophys.velocity.normalize();
 			ophys.velocity.scale(prevScale);
 		}
-	}
-
-	keyDown(event){
-		if (event.key === this.keyBinds.up){
-			let dir = new Vector(this.up.x, this.up.y);
-			dir.scale(PLAYER_MOVE_SPEED);
-			this.physics.velocity = dir;
-		} else if (event.key === this.keyBinds.down) {
-			let dir = new Vector(this.up.x, this.up.y);
-			dir.scale(-PLAYER_MOVE_SPEED);
-			this.physics.velocity = dir;
-		} else if (event.key === 'g') {
-			this.rotate(this.rotation + 5);
-		}
-		else {
-			return;
-		}
-		event.preventDefault();
 	}
 
 	keyUp(event){
@@ -166,20 +182,6 @@ class PlayerSection extends Entity{
 		world.addEntity(this.player);
 	}
 
-	update(){
-		this.drawScore();
-	}
-
-	drawScore(){
-		const center = new Vector(canvas.width * .5, canvas.height * .5);
-		let lineToCenter = center.sub(this.position);
-		lineToCenter.rotate(25);
-		lineToCenter.normalize();
-		lineToCenter.scale(100);
-		let drawPos = lineToCenter.add(this.position);
-		drawText(this.player.score, drawPos.x, drawPos.y, '120px Arial');
-	}
-
 	bindPlayer(){
 		this.player.position.x = this.goal.position.x;
 		this.player.position.y = this.goal.position.y;
@@ -196,11 +198,12 @@ class PlayerSection extends Entity{
 	}
 }
 
-class PongGameManager extends Entity{
+class PongLocalManager extends Entity{
 	constructor(){
 		super(0, 0);
 		this.sections = [];
 		this.ball = new Ball();
+		this.winner = undefined;
 		world.addEntity(this.ball);
 		this.initGame();
 	}
@@ -214,6 +217,7 @@ class PongGameManager extends Entity{
 			this.sections.push(new PlayerSection(0, canvas.height * .5, 0, canvas.height));
 			this.sections.push(new PlayerSection(canvas.width, canvas.height * .5, 0, canvas.height));
 			this.sections[0].player.keyBinds = {up: 'w', down: 's'};
+			this.sections[1].player.keyBinds = {up: 'ArrowUp', down: 'ArrowDown'};
 			world.addEntity(new Wall(canvas.width * .5, 0, 90, canvas.width));
 			world.addEntity(new Wall(canvas.width * .5, canvas.height, 90, canvas.width));
 			return;
@@ -249,7 +253,15 @@ class PongGameManager extends Entity{
 			world.addEntity(section);
 			section.goal.onTrigger = (other) =>{
 				if (other instanceof Ball){
-					other.lastHit.score++;
+					if (other.lastHit){
+						if (other.lastHit != section.player){
+							other.lastHit.score++;
+						} else if(other.secondLastHit) {
+							other.secondLastHit.score++;
+						} else {
+							console.log("WHAT THE FUCK DO WE DO NOW?");
+						}
+					}
 					this.resetRound();
 				}
 			};
@@ -261,90 +273,188 @@ class PongGameManager extends Entity{
 				event.preventDefault();
 			}
 		})
-
-		this.ball.physics.setVelocity(15, 0);
-
 	}
 
 	startRound(){
+		if (this.winner){
+			for (let s of this.sections){
+				s.player.score = 0;
+			}
+			this.winner = undefined;
+		}
 		let dir = undefined;
 		if (this.ball.lastHit !== undefined){
 			dir = this.ball.lastHit.position.sub(this.ball.position);
 			dir.normalize();
-			dir.scale(15);
+			dir.scale(50);
 		}
 		else{
-			dir = new Vector(15, 0);
+			dir = new Vector(50, 0);
 		}
 		this.ball.physics.setVelocity(dir.x, dir.y);
 	}
 
-	resetRound(){
-		this.ball.resetBall();
+	checkWinCondition(){
+		for (const sec of this.sections) {			
+			if (sec.player.score >= 11){
+				for (const s of this.sections){
+					if (sec != s){
+						if (Math.abs(sec.player.score - s.player.score) >= 2)
+							return (sec.player.score > s.player.score ? sec.player : s.player);
+					}
+				}
+				return (sec.player);
+			}
+		}
+		return (undefined);
 	}
 
+	resetRound(){
+		this.ball.resetBall();
+		this.winner = this.checkWinCondition();
+		if (this.winner){
+			let a = document.getElementById('buttonContainer');
+			a.innerHTML = `${this.winner} has Won!`;
+			console.log(this.winner, 'Is winner');
+		}
+	}
 }
 
-class MultiplayerManage extends Entity{
+//!!!STRAY FUNCTION!!!
+function lerp(start, end, t) {
+	return start * (1 - t) + end * t;
+}
+
+class RemoteHandler extends Entity{
 	constructor(){
 		super(0, 0);
+		this.entities = {};
+		this.localPlayer = undefined;
+	}
+
+	initLocal(data){
+		this.localPlayer = this.entities[data.id];
+		let net = this.localPlayer.getComponent(Network);
+		net.isLocal = true;
+	}
+
+	newEntity(data){
+		let ent = undefined;
+		if (data.entType === 'Player'){
+			ent = new Player(0, 0, data.constr.height);
+		} else if (data.entType === 'Ball'){
+			ent = new Ball(0,0);
+		} else if (data.entType === 'Wall'){
+			ent = new Wall(0, 0, 0, data.constr.height);
+		} else {
+			ent = new Entity(0, 0);
+		}
+		ent.addComponent(Network, new Network(socket));
+		ent.id = data.id;
+		this.addEntity(ent.id, ent);
+		this.moveEntity(ent.id, data.transform);
+	}
+
+	addEntity(id, ent){
+		this.entities[id] = ent;
+		world.addEntity(ent);
+	}
+
+	moveEntity(id, transform){
+		const ent = this.entities[id];
+
+		ent.position.x = transform.position.x;
+		ent.position.y = transform.position.y;
+		ent.rotate(transform.rotation);
+	}
+
+	removeEntity(id){
+		world.removeEntity(this.entities[id]);
+		delete this.entities[id];
 	}
 }
 
 let world = new World();
 
 world.addSystem(new RenderSystem());
-world.addSystem(new CollisionSystem());
-world.addSystem(new MovementSystem());
 
-let socket = new WebSocket(`ws://${window.location.host}/ws/pong/test/`);
+let intervalId = 0;
 
-socket.onopen = () => {
-	console.log('Connected to WebSocket server');
+let manager = undefined;
+let socket = undefined;
+
+
+function sendMovementInput(event) {
+	if (event.type == 'keypress') {
+		if (event.key == 'w') {
+			socket.send(0b01);
+		} else if (event.key == 's') {
+			socket.send(0b10);
+		}
+	} else if (event.type == 'keyup' && (event.key == 's' || event.key == 'w')) {
+		socket.send(0b00);
+	} 
 }
 
-socket.onmessage = (event) => {
-	const data = JSON.parse(event.data);
-	console.log(data);
-	if (data.type === 'currentState'){
-		world.entities = data.entities;
-	} else if (data.type === 'newPlayer') {
-		if (data.player === 'Player1'){
-			left.net.isLocal = true;
-			left.keyBinds = {up: 'ArrowUp', down: 'ArrowDown'};
-			ball.net.isLocal = true;
-			window.addEventListener('keydown', (event) => {
-				if (event.key === ' '){
-					ball.physics.setVelocity(15, 0);
-				}
-			});
-		}
-		else if (data.player === 'Player2'){
-			right.net.isLocal = true;
-			right.keyBinds = {up: 'ArrowUp', down: 'ArrowDown'};
-		}
-	} else if (data.type === 'updatePos'){
-		world.entities[data.id].position = new Vector(data.pos.x, data.pos.y);
-	} else if (data.type === 'setScore'){
-		//player/entity id and data.newScore ???
+function selectGamemode(container, local){
+	container.innerHTML = '';
+	if (local){
+		world.addSystem(new CollisionSystem());
+		world.addSystem(new MovementSystem());
+		manager = new PongLocalManager();
 	}
+	else if (local == false){
+		const groupName = prompt("Please enter the group name:");
+		socket = new WebSocket(`ws://${window.location.host}/ws/pong/${groupName}/`);
+		window.addEventListener('keypress', sendMovementInput);
+		window.addEventListener('keyup', sendMovementInput);
+		manager = new RemoteHandler();
+		setupSocketHandlers(socket);
+	}
+	else{
+		return;
+	}
+	world.addEntity(manager);
+	intervalId = setInterval(function() {
+		world.update();
+	}, 10);
 }
-let left = new Player(canvas.width * 0.1, canvas.height * 0.5);
-let right = new Player(canvas.width * 0.9, canvas.height * 0.5);
-let ball = new Ball();
-world.addEntity(left);
-world.addEntity(right);
-world.addEntity(ball);
-world.addEntity(new Wall(canvas.width * .5, 0, 90, canvas.width));
-world.addEntity(new Wall(canvas.width * .5, canvas.height, 90, canvas.width));
-world.addEntity(new Wall(0, canvas.height * 0.5, 0, canvas.height));
-world.addEntity(new Wall(canvas.width, canvas.height * 0.5, 0, canvas.height));
 
-const id = setInterval(function() {
-	world.update();
-}, 10);
+function setupSocketHandlers(socket){
 
-socket.onclose = () => {
-	clearInterval(id);
-	showSection('menu');
+
+	socket.onopen = () => {
+		console.log("Connection to remote Pong serverer");
+	}
+	
+	socket.onmessage = (event) => {
+		const data = JSON.parse(event.data);
+		if (data instanceof Number) {
+			console.log(data);
+			return;
+		}
+		if (data.type !== 'updatePos')
+			console.log(data);
+		if (data.type === 'currentState'){
+			world.entities = data.entities;
+		} else if (data.type === 'initLocal'){
+			manager.localPlayer = manager.entities[data.id];
+			manager.localPlayer.keyBinds = {up: 'ArrowUp', down: 'ArrowDown'};
+			console.log(manager.localPlayer, manager.localPlayer.keyBinds);
+			console.log(manager.localPlayer.id);
+		} else if (data.type === 'newEntity') {
+			manager.newEntity(data);
+		} else if (data.type === 'updatePos'){
+			manager.moveEntity(data.id, data.transform);
+		} else if (data.type === 'setScore'){
+			manager.entities[data.id].score = data.score;
+		}
+	}
+	
+	socket.onclose = () => {
+		clearInterval(intervalId);
+		world.entities = [];
+		world.systems = [];
+		showSection('welcome');
+	}
 }
