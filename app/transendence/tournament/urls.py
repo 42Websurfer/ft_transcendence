@@ -12,5 +12,5 @@ urlpatterns = [
     path('bc_delete_score/', views.bc_delete_score, name="bc_delete_score"),
     path('join_online_lobby/<str:lobby_id>/', views.join_match_lobby, name='join_online_lobby'),
     path('test_set_online_match/', views.test_set_online_match, name='test_set_online_match'),
-
+    path('start_game/<str:lobby_id>/', views.start_game_loop, name='start_game_loop'),
 ]

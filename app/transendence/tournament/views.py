@@ -143,6 +143,15 @@ async def test_set_online_match(request):
     await update_online_match_socket(match, lobby_id)
     return (JsonResponse({'type': 'success'}))
         
+async def start_game_loop(request, lobby_id):
+    channel_layer = get_channel_layer()	
+    await channel_layer.group_send(
+        match_lobby_string(lobby_id),
+        {
+            'type': 'send_online_start_match',
+        }
+    )
+    return (JsonResponse({'type': 'success'}))
 
 # BLOCKCHAIN-SERVICE
 
