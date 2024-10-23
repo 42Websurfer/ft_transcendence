@@ -5,7 +5,7 @@ from .GameSystem import *
 
 # Constants
 PLAYER_MOVE_SPEED = 20
-CANVAS_WIDTH = 1640
+CANVAS_WIDTH = 1280
 CANVAS_HEIGHT = 780
 
 class Ball(Entity):
@@ -32,7 +32,7 @@ class Ball(Entity):
 		dot_product = tangent.dir.dot(velocity_normalized)
 		reflection = velocity_normalized.dup().sub(ba.scale(2 * dot_product))
 		reflection.scale(self.physics.velocity.length())
-		self.physics.set_velocity(reflection)
+		self.physics.set_velocity_v(reflection)
 
 	def move(self, x_add, y_add):
 		new_pos = Vector(self.position.x + x_add, self.position.y + y_add)
@@ -98,15 +98,12 @@ class Player(Entity):
 			dir = Vector(self.up.x, self.up.y)
 			dir.scale(PLAYER_MOVE_SPEED)
 			self.physics.velocity = dir
-			print('will go up')
 		elif input == 2:
 			dir = Vector(self.up.x, self.up.y)
 			dir.scale(-PLAYER_MOVE_SPEED)
-			print('will go down')
 			self.physics.velocity = dir
 		elif input == 0:
 			self.physics.set_velocity(0, 0)
-			print('will stop moving')
 
 	def on_collision(self, other, collision_point=None):
 		ophys = other.get_component(Physics)
