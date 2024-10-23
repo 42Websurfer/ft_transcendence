@@ -5,7 +5,7 @@ from .GameSystem import *
 
 # Constants
 PLAYER_MOVE_SPEED = 20
-CANVAS_WIDTH = 1640
+CANVAS_WIDTH = 1280
 CANVAS_HEIGHT = 780
 
 class Ball(Entity):

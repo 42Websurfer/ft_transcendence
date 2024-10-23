@@ -1,5 +1,5 @@
 export const canvas = document.createElement('canvas');
-canvas.width = 1640;
+canvas.width = 1280;
 canvas.height = 780;
 export const ctx = canvas.getContext('2d');
 
