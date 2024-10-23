@@ -30,7 +30,10 @@ class Tournament(AsyncWebsocketConsumer):
 			user = await sync_to_async(User.objects.get)(id=self.user.id)		
 			if (not left_user):
 				if redis.exists(self.group_name):
-					results = json.loads(redis.get(self.group_name))
+					results_json = redis.get(self.group_name)
+					if not results_json:
+						return
+					results = json.loads(results_json)
 					results.append(create_user_structure(self.user.id, 'member', user.username))
 					redis.set(self.group_name, json.dumps(results))
 				else:
@@ -52,8 +55,10 @@ class Tournament(AsyncWebsocketConsumer):
 				self.group_name,
 				self.channel_name
 			)
-			results = json.loads(redis.get(self.group_name))
-			
+			results_json = redis.get(self.group_name)
+			if not results_json:
+				return
+			results = json.loads(results_json)			
 			new_results = []
 			admin_disconnected = False
 
@@ -85,7 +90,10 @@ class Tournament(AsyncWebsocketConsumer):
 			)
 	
 	async def send_tournament_users(self, event):
-		results = json.loads(redis.get(self.group_name))
+		results_json = redis.get(self.group_name)
+		if not results_json:
+			return
+		results = json.loads(results_json)
 		data = {
 			'type': 'send_tournament_users',
 			'results': results,
@@ -94,10 +102,13 @@ class Tournament(AsyncWebsocketConsumer):
 		await self.send(text_data=json.dumps(data))
 
 	async def match_list(self, event):
-			matchList = json.loads(redis.get(tournament_string(self.group_name)))			
+			match_list_json = redis.get(tournament_string(self.group_name))
+			if not match_list_json:
+				return
+			match_list = json.loads(match_list_json)			
 			data = {
 				'type': 'match_list',
-				'matches': matchList
+				'matches': match_list
 			}
 			await self.send(text_data=json.dumps(data))
 
@@ -115,7 +126,10 @@ class OnlineMatch(AsyncWebsocketConsumer):
 			User = get_user_model()
 			user = await sync_to_async(User.objects.get)(id=self.user.id)
 			if (redis.exists(self.match_name)):
-				lobby_data = json.loads(redis.get(self.match_name))
+				lobby_data_json = redis.get(self.match_name)
+				if not lobby_data_json:
+					return
+				lobby_data = json.loads(lobby_data_json)
 				if (lobby_data.get('member_id') == -1):
 					lobby_data['member_id'] = user.id
 					lobby_data['member_username'] = user.username
@@ -135,7 +149,10 @@ class OnlineMatch(AsyncWebsocketConsumer):
 				self.match_name,
 				self.channel_name
 			)
-			lobby_data = json.loads(redis.get(self.match_name))
+			lobby_data_json = redis.get(self.match_name)
+			if not lobby_data_json:
+				return 
+			lobby_data = json.loads(lobby_data_json)
 			if (lobby_data.get('admin_id') is self.user.id):
 				await self.close()
 				redis.delete(self.match_name)
@@ -152,7 +169,10 @@ class OnlineMatch(AsyncWebsocketConsumer):
 
 			
 	async def send_online_lobby_user(self, event):
-		lobby_data = json.loads(redis.get(self.match_name))
+		lobby_data_json = redis.get(self.match_name)
+		if not lobby_data_json:
+			return
+		lobby_data = json.loads(lobby_data_json)
 		data = {
 			'type': 'send_online_users',
 			'admin_id': lobby_data.get('admin_id'),
