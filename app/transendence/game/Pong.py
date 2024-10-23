@@ -37,15 +37,15 @@ class Ball(Entity):
 	def move(self, x_add, y_add):
 		new_pos = Vector(self.position.x + x_add, self.position.y + y_add)
 		if self.position.x != new_pos.x or self.position.y != new_pos.y:
-			asyncio.run_coroutine_threadsafe(remoteHandler.host.channel_layer.group_send(
-				remoteHandler.host.group_name,
+			asyncio.run_coroutine_threadsafe(thread_local.host.channel_layer.group_send(
+				thread_local.host.group_name,
 				{
 					'type': 'move_entity',
 					'id': self.id,
 					'transform': self.serialize()
 				}
 				),
-				event_loop)
+				thread_local.event_loop)
 		self.position = new_pos
 
 class Player(Entity):
@@ -82,6 +82,7 @@ class Player(Entity):
 				return
 		if self.position.x != new_pos.x or self.position.y != new_pos.y:
 			self.position = new_pos
+			#send new position to everyone
 			asyncio.run_coroutine_threadsafe(thread_local.host.channel_layer.group_send(
 				thread_local.host.group_name,
 				{
@@ -137,6 +138,7 @@ class PlayerSection:
 		self.player.rotate(self.goal.rotation)
 		if self.player.up.dot(Vector(0, -1)) < 0:
 			self.player.rotate(180)
+
 		
 		forward = Vector(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2).sub(self.player.position)
 		forward.normalize()
@@ -166,6 +168,7 @@ class GameLogicManager(Entity):
 	def __init__(self):
 		super().__init__(0, 0)
 		self.sections = []
+		self.ball = Ball()
 		self.initalized = False
 	
 	def buildDynamicField(self, world, playerCount):
@@ -189,47 +192,26 @@ class GameLogicManager(Entity):
 		# 	point1.rotate(rotationStep)
 		# 	point2.rotate(rotationStep)
 		# 	rot += rotationStep
+		world.addEntity(self.ball)
 		for section in self.sections:
+			section.goal.on_collision_lambda = lambda other: (
+				print('SOME goal scored')
+				# other.last_hit.score + 1 if other.last_hit and other.last_hit != section.player else (
+				# 	other.second_last_hit.score + 1 if other.second_last_hit else print("WHAT THE HECK DO WE DO NOW?")
+				# ),
+				# section.reset_round()
+			) if isinstance(other, Ball) else None
 			world.addEntity(section.player)
 			world.addEntity(section.goal)
 
 
-# world = World()
-# world.addSystem(CollisionSystem())
-# world.addSystem(MovementSystem())
-
-# remoteHandler = RemoteHandler()
-# gameLogic = GameLogicManager()
-
-
-# world.addEntity(gameLogic)
-
-# def game_loop():
-# 	while True:
-# 		world.update()
-# 		time.sleep(0.016)
-
-# event_loop = None
-
-# def thread_main():
-# 	global event_loop
-# 	event_loop = asyncio.new_event_loop()
-# 	asyncio.set_event_loop(event_loop)
-# 	event_loop.run_forever()
-
-# asyncio_thread = None
-# game_thread = None
-# asyncio_thread = threading.Thread(target=thread_main)
-# asyncio_thread.start()
-
-# game_thread = threading.Thread(target=game_loop)
-# game_thread.start()
 
 thread_local = threading.local()
 
-class Game:
+#all the stuff for one pong game
+class PongGame:
 	def __init__(self, player1, player2):
-		self.game_complete = False #not needed
+		self.game_complete = False #not needed jet
 		self.stop_thread = False
 		self.player1 = player1
 		self.player2 = player2
@@ -272,6 +254,7 @@ class Game:
 		thread_local.game_thread = self.game_thread
 		thread_local.event_loop = self.event_loop
 		thread_local.host = self.player1
+		thread_local.world = self.world
 		iter = 0
 		while not self.stop_thread:
 			self.world.update()
@@ -327,8 +310,8 @@ class GamesHandler:
 		else:
 			print('too many players!!! disconnect consumer')
 		if self.players.__len__() == 2:
-			print('init Game class!')
-			self.game = Game(self.players[0], self.players[1])
+			print('init PongGame class!')
+			self.game = PongGame(self.players[0], self.players[1])
 			self.game.start_game()
 	
 	def remove_consumer(self, consumer):
