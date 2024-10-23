@@ -203,7 +203,36 @@ class MovementSystem(System):
 
 class CollisionSystem(System):
 	def execute(self, entities):
-		pass
+		for current_ent in entities:
+			ent_mesh = current_ent.get_component(Mesh)
+			if not ent_mesh:
+				continue
+			for other_ent in entities:
+				if current_ent != other_ent:
+					other_mesh = other_ent.get_component(Mesh)
+					if not other_mesh:
+						continue
+					ab = other_ent.position.sub(current_ent.position)
+					threshold = max(max(ent_mesh.width, ent_mesh.height), max(other_mesh.width, other_mesh.height))
+					if ab.length() < threshold:
+						o_closest = other_mesh.get_closest_point(other_ent, current_ent.position)
+						s_closest = ent_mesh.get_closest_point(current_ent, o_closest)
+						diff = o_closest.sub(s_closest)
+						if diff.dot(ab) < 0:
+							phys = current_ent.get_component(Physics)
+							o_phys = other_ent.get_component(Physics)
+							if phys and not phys.is_static:
+								current_ent.move(diff.x, diff.y)
+							if o_phys and not o_phys.is_static:
+								other_ent.move(-diff.x, -diff.y)
+							if ent_mesh.is_trigger:
+								current_ent.on_trigger(other_ent, s_closest)
+							else:
+								current_ent.on_collision(other_ent, s_closest)
+							if other_mesh.is_trigger:
+								other_ent.on_trigger(current_ent, o_closest)
+							else:
+								other_ent.on_collision(current_ent, o_closest)
 
 class World:
 	def __init__(self):
