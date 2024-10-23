@@ -1,5 +1,6 @@
 import { getCookie, displayMessages } from './utils.js';
 import { selectedListItem, setSelectedListItem, handleFriendRequest, showSection } from './index.js';
+import { renderPong } from './pong.js';
 
 export function runWebsocket(socket) {
 
@@ -26,16 +27,19 @@ export function runWebsocket(socket) {
 
                 matchPlayers.appendChild(li);
 
+                const startMatchButton = document.getElementById('matchStartButton');
 
                 if (data.member_id != -1)
                 {
                     const li = document.createElement('li');
-
+                    startMatchButton.style.display = 'block';
                     li.className = 'friends-add-list-user';
                     li.innerHTML = `<span class="list-item-content">${data.member_username}</span>`;
     
                     matchPlayers.appendChild(li);
                 }
+                else
+                    startMatchButton.style.display = 'none';
             }
             else if (data.type === 'match_list')
             {
@@ -46,6 +50,12 @@ export function runWebsocket(socket) {
                 console.log("matches: ", data.matches);
                 
                 displayMatches(data.matches);
+            }
+            else if (data.type === 'start_match')
+            {
+                console.log('Looop_id = ', data.match_id);
+                if (data.match_id)
+                    renderPong(data.match_id)
             }
         }
         catch (error) {
@@ -190,8 +200,7 @@ export function renderMenuOnlineLobby(lobbyId) {
                         </div>
                     </div>
                     <button id="controlsButton"><span class="button-text">Controls</span></button>
-                    <button id="tournamentStartButton" class="start-button"><span id="tournamentStartButtonSpan">Start tournament</span></button>
-                    <button id="roundStartButton" class="start-button"><span id="roundStartButtonSpan">Start Round</span></button>
+                    <button id="matchStartButton" class="start-match-button"><span id="matchStartButtonSpan">Start match</span></button>
                     <div id="copyMessage" class="copy-message">Copied to clipboard!</div>  
                 </div>  
             </div>
@@ -309,20 +318,19 @@ export function renderMenuOnlineLobby(lobbyId) {
 
     };
 
-    const tournamentStartButton = document.getElementById('tournamentStartButton');
-    const roundStartButton = document.getElementById('roundStartButton');
+    const matchStartButton = document.getElementById('matchStartButton');
 
-    tournamentStartButton.addEventListener('click', async() => {
-        tournamentStartButton.style.display = 'none';
-        roundStartButton.style.display = 'block';
-        await showHistoricMatches();
+    matchStartButton.addEventListener('click', async() => {
+        try {
+            const response = await fetch(`/tm/start_game/${lobbyId}/`, {
+                method: 'GET',
+                credentials: 'include'
+            });
+            console.log('Response: ', response);
+        } catch (error) {
+            console.log('Error: ', error);
+        }
     });
-
-    roundStartButton.addEventListener('click', async() => {
-        roundStartButton.disabled = true;
-        startGame();
-    });
-
 
     // COUNTDOWN TEST
 

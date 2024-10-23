@@ -1579,3 +1579,7 @@ body {
     width: 72%;
     padding: 2em;
 }
+
+.start-match-button {
+    display: none;
+}

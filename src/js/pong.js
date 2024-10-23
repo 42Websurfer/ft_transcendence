@@ -2,30 +2,14 @@ import {Vector, Plane, World, Entity, Mesh, Physics, Network, Box, Circle, Rende
 
 const PLAYER_MOVE_SPEED = 20;
 
-export function renderPong() {
+export function renderPong(match_id) {
 	const app = document.getElementById('app');
 	if (app)
 	{
 		app.style.position = 'relative';
 		app.innerHTML = '';
 		app.appendChild(canvas);
-		let buttonContainer = document.createElement('div');
-		buttonContainer.id = 'buttonContainer';
-		buttonContainer.style.display = 'flex';
-		buttonContainer.style.flexDirection = 'column';
-		buttonContainer.style.position = 'absolute';
-		buttonContainer.style.top = '50%';
-		buttonContainer.style.left = '50%';
-		buttonContainer.style.transform = 'translate(-50%, -50%)';
-		let localBut = document.createElement('button');
-		let multiBut = document.createElement('button');
-		localBut.innerText = 'Local';
-		multiBut.innerText = 'Multiplayer';
-		localBut.onclick = () => selectGamemode(buttonContainer, true);
-		multiBut.onclick = () => selectGamemode(buttonContainer, false);
-		buttonContainer.appendChild(localBut);
-		buttonContainer.appendChild(multiBut);
-		app.appendChild(buttonContainer);
+		selectGamemode(match_id);
 	}
 }
 
@@ -396,24 +380,22 @@ function sendMovementInput(event) {
 	} 
 }
 
-function selectGamemode(container, local){
-	container.innerHTML = '';
-	if (local){
+function selectGamemode(groupName){
+	if (!groupName){
 		world.addSystem(new CollisionSystem());
 		world.addSystem(new MovementSystem());
 		manager = new PongLocalManager();
 	}
-	else if (local == false){
-		const groupName = prompt("Please enter the group name:");
+	else {
 		socket = new WebSocket(`ws://${window.location.host}/ws/pong/${groupName}/`);
 		window.addEventListener('keypress', sendMovementInput);
 		window.addEventListener('keyup', sendMovementInput);
 		manager = new RemoteHandler();
 		setupSocketHandlers(socket);
 	}
-	else{
-		return;
-	}
+	// else{
+	// 	return;
+	// }
 	world.addEntity(manager);
 	intervalId = setInterval(function() {
 		world.update();
