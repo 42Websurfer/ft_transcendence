@@ -6,8 +6,12 @@
         "vscode": {
             "settings": {
                 "terminal.integrated.shell.linux": "/bin/bash"
-
-            }
+            },
+            "extensions": [
+                "ms-python.python",         // Python extension
+                "ecmel.vscode-html-css",    // CSS extension
+                "GitHub.copilot"            // GitHub Copilot extension
+            ]            
         }
     },
     "workspaceFolder": "/workspaces",

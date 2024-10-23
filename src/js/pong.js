@@ -7,8 +7,21 @@ export function renderPong(match_id) {
 	if (app)
 	{
 		app.style.position = 'relative';
-		app.innerHTML = '';
-		app.appendChild(canvas);
+		app.innerHTML = `
+		<div class="menu" style="justify-content: center; padding: 2em;">
+			<div class="game-container">
+				<div id="gameContainer" style="width: 100%; display: flex; flex-direction: row; justify-content: center;"></div>
+			</div>
+		</div>
+		`;
+
+		const gameContainer = document.getElementById('gameContainer');
+
+		canvas.style.maxHeight = '100%';
+        canvas.style.maxWidth = '100%';
+        // canvas.style.objectFit = 'contain';
+
+		gameContainer.appendChild(canvas);
 		selectGamemode(match_id);
 	}
 }
@@ -59,7 +72,7 @@ class Ball extends Entity{
 		ctx.fillStyle = 'blue';
 		if (this.secondLastHit)
 			ctx.fillRect(this.secondLastHit.position.x, this.secondLastHit.position.y, 5, 5);
-		ctx.fillStyle = 'black';
+		ctx.fillStyle = 'white';
 	}
 }
 

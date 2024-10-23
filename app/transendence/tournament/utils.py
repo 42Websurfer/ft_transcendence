@@ -69,7 +69,10 @@ async def update_tournament_group(lobby_id, match_data):
 	away = match_data['away']
 	score_home = match_data['score_home']
 	score_away  = match_data['score_away']
-	results = json.loads(redis.get(lobby_id))
+	results_json = redis.get(lobby_id)
+	if not results_json:
+		return
+	results = json.loads(results_json)
 	home_winner = False
 	if (score_home > score_away):
 		home_winner = True
@@ -167,7 +170,10 @@ def reset_match(lobby_id, match):
 	away = match['away']
 	score_home = match['score_home']
 	score_away  = match['score_away']
-	results = json.loads(redis.get(lobby_id))
+	results_json = redis.get(lobby_id)
+	if not results_json:
+		return
+	results = json.loads(results_json)
 	home_winner = False
 	if (score_home > score_away):
 		home_winner = True
@@ -204,7 +210,10 @@ async def update_match(lobby_id, match):
 
 
 async def update_matches_disconnect(user_id, lobby_id):
-	matches = json.loads(redis.get(tournament_string(lobby_id)))
+	matches_json = redis.get(tournament_string(lobby_id))
+	if not matches_json:
+		return 
+	matches = json.loads(matches_json)
 	if not matches:
 		return
 	for match in matches['matches']:

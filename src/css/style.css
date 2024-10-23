@@ -859,16 +859,22 @@ body {
 }
 
 .lobby-container {
-    width: 100%;
+    width:100%;
     height: 46em;
     background-color: rgba(0, 0, 0, 0.4);
-    padding: 2em;
+    padding: 1em;
     padding-bottom: 1em;
     border-radius: 8px;
     border: 0.1em solid #000000;
-    overflow: hidden;
     flex-direction: column;
     display: flex;
+    overflow: scroll;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.lobby-container::-webkit-scrollbar {
+    display: none;
 }
 
 .lobby-container-header {
@@ -1581,5 +1587,26 @@ body {
 }
 
 .start-match-button {
+    display: none;
+}
+
+.game-container {
+    width: 100%;
+    height: 48em;
+    background-color: rgba(0, 0, 0, 0.4);
+    /* padding: 2em; */
+    /* padding-bottom: 1em; */
+    padding: 2em;
+    border-radius: 12px;
+    border: 0.1em solid #000000;
+    flex-direction: row;
+    display: flex;
+    justify-content: center;
+    overflow: scroll;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.game-container::-webkit-scrollbar {
     display: none;
 }
