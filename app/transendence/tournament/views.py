@@ -34,7 +34,10 @@ def create_lobby(request):
 def join_match_lobby(request, lobby_id):
     user = request.user
     if (redis.exists(match_lobby_string(lobby_id))):
-        lobby_data = json.loads(redis.get(match_lobby_string(lobby_id)))
+        lobby_data_json = redis.get(match_lobby_string(lobby_id))
+        if not lobby_data_json: 
+            return (JsonResponse({'type': 'error', 'message': 'No data in redis.'}))
+        lobby_data = json.loads(lobby_data_json)
         member_username = str(lobby_data.get('member_username'))
         if (member_username == "" or member_username == user.username):
             return(JsonResponse({'type': 'success'}))
@@ -52,7 +55,10 @@ def join_lobby(request, lobby_id):
         return(JsonResponse({'type': 'error', 'message': 'Lobby does not exist.'}))
 
 async def start_group_tournament(request, lobby_id):
-    results = json.loads(redis.get(lobby_id))
+    results_json = redis.get(lobby_id)
+    if (not results_json):
+        return (JsonResponse({'type': 'error', 'message': 'No data in redis.'}))
+    results = json.loads(results.json)
     if (len(results) % 2 != 0):
         results.append({'user_id': -1})
     num_rounds = len(results) - 1
@@ -116,9 +122,10 @@ async def set_tournament_match(request):
 
 
 def check_round_completion(request, lobby_id, round):
-    tournament = redis.get(tournament_string(lobby_id))
-
-    tournament = json.loads(tournament)
+    tournament_json = redis.get(tournament_string(lobby_id))
+    if (not tournament_json):
+        return (JsonResponse({'type': 'error', 'message': 'No data in redis.'}))
+    tournament = json.loads(tournament_json)
     matches = tournament['matches']
     if round_completed(matches, round):
         return JsonResponse({'type': 'Round is completed'})
