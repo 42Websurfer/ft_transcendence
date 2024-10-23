@@ -139,15 +139,10 @@ async def test_set_online_match(request):
     match['away'] = away
     match['home_score'] = data.get('score_player1')
     match['away_score'] = data.get('score_player2')
-    sync_to_async(set_online_match)(match, lobby_id)
+    await sync_to_async(set_online_match)(match, lobby_id)
     await update_online_match_socket(match, lobby_id)
     return (JsonResponse({'type': 'success'}))
-    
-
-
-
-#def set_online_match(request, lobby_id):
-    
+        
 
 # BLOCKCHAIN-SERVICE
 
