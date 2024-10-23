@@ -105,6 +105,7 @@ class OnlineMatch(AsyncWebsocketConsumer):
 	async def connect(self):
 		self.user = self.scope["user"]
 		self.match_name = match_lobby_string(self.scope['url_route']['kwargs']['match_name'])
+		self.lobby_id = self.scope['url_route']['kwargs']['match_name']
 		if (self.user.is_authenticated):
 			await self.channel_layer.group_add(
 				self.match_name, 
@@ -170,3 +171,10 @@ class OnlineMatch(AsyncWebsocketConsumer):
 				'matches': lobby_data.get('matches')
 			}
 		await self.send(json.dumps(data))
+
+	async def send_online_start_match(self, event):
+		data = {
+			'type': 'start_match',
+			'match_id': self.match_name + '_loop',
+		}
+		await self.send(json.dumps(data))					
