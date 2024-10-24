@@ -321,3 +321,18 @@ async def update_matches_disconnect(user_id, lobby_id):
 	#checken die vorherigen Spiele, falls schon welche gespielt worden sind dann natürlich die als erster rauslöschen aus Standing und überschreiben mit der 0:7
 	# dann standing aktualisieren
 	# dann standing und matches erneut senden.
+
+def get_longest_winstreak(form):
+    
+    current = 0
+    highest = 0
+
+    for item in form:
+        if (item == 'W'):
+            current += 1
+            if (current > highest):
+                highest = current 
+        if (item == "L"):
+            current = 0
+
+    return (highest)

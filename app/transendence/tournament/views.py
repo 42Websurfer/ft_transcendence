@@ -6,7 +6,7 @@ import json
 import requests
 import sys
 import logging
-from .utils import update_online_match_socket, set_online_match, tournament_string, round_completed, update_tournament_group, set_match_data, match_lobby_string
+from .utils import get_longest_winstreak, update_online_match_socket, set_online_match, tournament_string, round_completed, update_tournament_group, set_match_data, match_lobby_string
 from django.views.decorators.csrf import csrf_exempt
 from channels.layers import get_channel_layer
 from asgiref.sync import sync_to_async
@@ -151,10 +151,14 @@ async def start_game_loop(request, lobby_id):
 
 def get_last_tournament_data(user_game_stats):
 	try:
-		last_tournament_result = TournamentResults.objects.filter(user=user_game_stats).order_by('-tournament_id__date').first()
+		tournaments = TournamentResults.objects.filter(user=user_game_stats).order_by('-tournament_id__date').all()
+
+		if not tournaments:
+			return None, 0
+		last_tournament_result = tournaments.first()
 		
 		if not last_tournament_result:
-			return None
+			return None, 0
 
 		last_tournament = last_tournament_result.tournament_id
 
@@ -176,10 +180,10 @@ def get_last_tournament_data(user_game_stats):
 				'points': result.points,
 			})
 
-		return results_data
+		return (results_data, len(tournaments))
 
 	except ObjectDoesNotExist:
-		return None
+		return None, 0
    
 
 def get_match_data(user_game_stats):
@@ -230,7 +234,7 @@ def get_dashboard_data(request):
 	all_matches, highest_win, highest_loss, form = get_match_data(user_game_stats)
 	logger.debug(f"all_matches from the user: \n {all_matches}")
 	logger.debug(f"Highest_win = {highest_win}, \nhighest_loss = {highest_loss}\nForm = {form}")
-	tournament_data = get_last_tournament_data(user_game_stats)
+	tournament_data, tournaments_played = get_last_tournament_data(user_game_stats)
 	logger.debug(f"Tournament info\n {tournament_data}")
 
 	data = {
@@ -247,7 +251,9 @@ def get_dashboard_data(request):
 		'highest_win': highest_win,
 		'highest_loss': highest_loss,
 		'form': form,
-
+		'tournaments_played': tournaments_played,
+		'registered': user_game_stats.user.date_joined.strftime('%d-%m-%Y %H:%M'),
+		'winstrike': get_longest_winstreak(form),
 	}
 	return JsonResponse(data)
 	#
