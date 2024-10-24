@@ -74,9 +74,9 @@ class Player(Entity):
 		# Check if the mesh is still inside the canvas
 		transformed_points = [p.dup().rotate(self.rotation).add(new_pos) for p in self.mesh.points]
 		for point in transformed_points:
-			if point.x < 0 or point.y > CANVAS_WIDTH:
+			if point.x < 0 or point.x > CANVAS_WIDTH:
 				return
-			if point.x < 0 or point.y > CANVAS_HEIGHT:
+			if point.y < 0 or point.y > CANVAS_HEIGHT:
 				return
 		if self.position.x != new_pos.x or self.position.y != new_pos.y:
 			self.position = new_pos
@@ -182,10 +182,10 @@ class GameLogicManager(Entity):
 			) if isinstance(other, Ball) else None
 			world.addEntity(section.player)
 			world.addEntity(section.goal)
+		self.ball.physics.set_velocity(15, 0)
 
 
 async def getCurrentState(world, consumer):
-	print(world.entities)
 	for ent in world.entities:
 		print('Sending ent id:', ent.id)
 		await consumer.client_create_entity(

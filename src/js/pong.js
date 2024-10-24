@@ -1,4 +1,5 @@
 import {Vector, Plane, World, Entity, Mesh, Physics, Network, Box, Circle, RenderSystem, CollisionSystem, MovementSystem, canvas, drawText, strokeText, drawLine, ctx} from './GameSystem.js';
+import { showSection } from './index.js';
 
 const PLAYER_MOVE_SPEED = 20;
 
@@ -423,6 +424,12 @@ function setupSocketHandlers(socket){
 			manager.setEntityPosition(data.id, data.transform);
 		} else if (data.type === 'setScore'){
 			manager.entities[data.id].score = data.score;
+		} else if (data.type === 'drawDot'){
+			ctx.fillStyle = 'red';
+			ctx.fillRect(data.x, data.y, 5, 5);
+			ctx.fillStyle = 'white';
+		} else if (data.type === 'drawLine'){
+			drawLine(new Vector(data.x1, data.y1), new Vector(data.x2, data.y2), 'blue');
 		}
 	}
 	

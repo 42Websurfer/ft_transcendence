@@ -29,11 +29,13 @@ class Vector:
 		return self
 
 	def rotate(self, degree):
-		radians = degree * math.pi / 180
+		radians = degree * (math.pi / 180)
 		cos = math.cos(radians)
 		sin = math.sin(radians)
-		self.x = self.x * cos - self.y * sin
-		self.y = self.x * sin + self.y * cos
+		new_x = self.x * cos - self.y * sin
+		new_y = self.x * sin + self.y * cos
+		self.x = new_x
+		self.y = new_y
 		return self
 
 	def dot(self, other):
@@ -234,6 +236,7 @@ class CollisionSystem(System):
 								other_ent.on_trigger(current_ent, o_closest)
 							else:
 								other_ent.on_collision(current_ent, o_closest)
+
 
 class World:
 	def __init__(self):
