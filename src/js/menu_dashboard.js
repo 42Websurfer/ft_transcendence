@@ -161,7 +161,7 @@ function displayTournament(tournament)
     for (let index = 0; index < tournament.length; index++)
     {
         const t = tournament[index];
-        addTableRowItem(tableBody, t.rank, t.player, t.games, t.wins, t.losses, t.goals + ":" + t.goals_against, t.diff, t.points);
+        addTableRowItem(tableBody, t.rank, t.player, t.games, t.wins, t.losses, t.goals_for + ":" + t.goals_against, t.diff, t.points);
     }
 }
 
