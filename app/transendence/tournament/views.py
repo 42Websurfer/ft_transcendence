@@ -249,7 +249,7 @@ def get_dashboard_data(request):
 		'matches': all_matches,
 		'last_tournament': tournament_data,
 		'highest_win': highest_win,
-		'highest_loss': highest_loss,
+		'biggest_loss': highest_loss,
 		'form': form,
 		'tournaments_played': tournaments_played,
 		'registered': user_game_stats.user.date_joined.strftime('%d-%m-%Y %H:%M'),
