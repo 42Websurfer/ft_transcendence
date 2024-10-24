@@ -151,7 +151,12 @@ async def start_game_loop(request, lobby_id):
 
 def get_last_tournament_data(user_game_stats):
 	try:
-		last_tournament_result = TournamentResults.objects.filter(user=user_game_stats).order_by('-tournament_id__date').first()
+		tournaments = TournamentResults.objects.filter(user=user_game_stats).order_by('-tournament_id__date')
+
+		if not tournaments:
+			return None
+		
+		last_tournament_result = tournaments.first()
 		
 		if not last_tournament_result:
 			return None
@@ -176,7 +181,7 @@ def get_last_tournament_data(user_game_stats):
 				'points': result.points,
 			})
 
-		return results_data
+		return (results_data, len(tournaments))
 
 	except ObjectDoesNotExist:
 		return None
