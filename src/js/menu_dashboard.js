@@ -149,8 +149,14 @@ function displayTournament(tournament)
     const tableBody = document.getElementById('tournamentStandingsTableBody');
     if (!tableBody)
         return;
-
+    
     tableBody.innerHTML = "";
+
+    if (!tournament)
+    {
+        addTableRowItem(tableBody, 0, "no data yet...", 0, 0, 0, "0:0", 0, 0);
+        return;
+    }
 
     for (let index = 0; index < tournament.length; index++)
     {
@@ -167,8 +173,7 @@ function displayDashboardData(data)
     displayGeneralInformation(data.username, data.wins + data.losses, data.tournament_wins);
     displayForm(data.form);
     displayMatches(data.matches);
-    if (data.last_tournament)
-        displayTournament(data.last_tournament);
+    displayTournament(data.last_tournament);
 }
 
 export async function renderMenuDashboard() {
