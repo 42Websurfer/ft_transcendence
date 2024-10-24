@@ -166,7 +166,7 @@ export async function renderMenuDashboard() {
 
     //render waiting section
 
-    const response = fetch_get("/get_dashboard/");
+    const response = fetch_get("/tm/get_dashboard/");
 
     if (response.type === "error")
     {

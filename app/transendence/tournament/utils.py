@@ -2,8 +2,9 @@ import redis
 import json
 import logging
 from channels.layers import get_channel_layer
-from asgiref.sync import async_to_sync
-from .models import OnlineMatch
+from asgiref.sync import sync_to_async
+from django.core.exceptions import ObjectDoesNotExist
+from .models import OnlineMatch, GameStatsUser, Tournament, TournamentResults 
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -19,9 +20,10 @@ def match_lobby_string(lobby_id):
 def round_completed(matches, round):
 	logger.debug(f"Current round = {round}")
 	for index, match in enumerate(matches):
+		logger.debug(f"Current round: {round} | Loop match_round = {match['round']} | loop match_status = {match['status']}")
 		if match['round'] > round:
 			return True, False
-		elif match['status'] != 'finished':
+		elif match['status'] == 'pending':
 			return False, False
 		elif match['status'] == 'freegame' or match['status'] == 'disconnected':
 			continue
@@ -159,6 +161,65 @@ def set_online_match(data, lobby_id):
 #     else:
 #         return False
 
+def safe_tournament_data(lobby_id):
+	results_json = redis.get(lobby_id)
+	if not results_json:
+		return
+	results = json.loads(results_json)
+	tournament = Tournament(tournament_id = lobby_id)
+	tournament.save()
+	logger.debug(f"Lets see the result: \n {results}")
+	for result in results: 
+		logger.debug(f"Player = {result['player']}")
+		try:
+			user_Gamestats = GameStatsUser.objects.get(username=result['player'])
+		except ObjectDoesNotExist:
+			continue
+		tournament_result = TournamentResults(
+			tournament_id = tournament,
+			rank = result['rank'],
+			games = result['games'],
+			won = result['won'],
+			lost = result['lost'],
+			goals_for = result['goals'],
+			goals_against = result['goals_against'],
+			diff = result['diff'],
+			points = result['points'],
+			user = user_Gamestats,
+		)
+		tournament_result.save()
+		
+	tournament_json = redis.get(tournament_string(lobby_id))
+	if not tournament_json:
+		return
+	tournament = json.loads(tournament_json)
+	matches = tournament['matches']
+	logger.debug(f"Lets see the matches: \n {matches}")
+	for match in matches:
+		logger.debug (f"Gamestatsuser home = {match['player_home']}")
+		logger.debug (f"Gamestatsuser away = {match['player_away']}")
+		try:
+			home_user = GameStatsUser.objects.get(username=match['player_home'])
+			away_user = GameStatsUser.objects.get(username=match['player_away'])
+		except ObjectDoesNotExist:
+			continue
+
+		online_match = OnlineMatch(
+			home = home_user,
+			away = away_user,
+			home_score = match['score_home'],
+			away_score = match['score_away'],
+			modus = 'RoundRobin',
+		)
+		online_match.save()
+
+		#need to delete redis database!!. and set everything to finish!
+
+
+	#tournament = 
+	#1. safe tournament_id in Tournament object
+	#2. Tournament_results!
+
 async def set_match_data(lobby_id, match_id, score_home, score_away, status):
 	tournament = redis.get(tournament_string(lobby_id))
 	if tournament is None:
@@ -181,19 +242,22 @@ async def set_match_data(lobby_id, match_id, score_home, score_away, status):
 	)
 	status, tournament_finished = round_completed(tournament_dic['matches'], match['round'])
 	if status and not tournament_finished:
+		logger.debug(f"Round completed")
 		await channel_layer.group_send(
 			lobby_id,
 			{
 				'type': 'send_round_completed'
 			}
 		)
-	elif status and tournament_finished: 
+	elif status and tournament_finished:
+		logger.debug(f"Tournament completed") 
 		await channel_layer.group_send(
 			lobby_id,
 			{
 				'type': 'send_tournament_finished',
 			}
 		)
+		await (sync_to_async)(safe_tournament_data)(lobby_id)
 	return True
 
 def reset_match(lobby_id, match):
