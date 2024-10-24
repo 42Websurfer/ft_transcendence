@@ -26,7 +26,7 @@ function displayGoalsChart(dataset)
     myGoalsChart.update();
 }
 
-function displayGeneralInformation(username, games, tournament_games, tournament_wins, winstreak, date, tourn)
+function displayGeneralInformation(username, games, tournament_games, tournament_wins, winstreak, date)
 {
     const usernameSpan = document.getElementById('infoUsername');
     const gamesSpan = document.getElementById('infoGames');
@@ -86,7 +86,7 @@ function displayForm(form)
     addFormItem(formDiv, 'next');
 }
 
-function addMatchItem(list, player_home, player_away, score, date) {
+function addMatchItem(list, player_home, player_away, score, date, result) {
 
     if (!list)
         return;
@@ -99,7 +99,10 @@ function addMatchItem(list, player_home, player_away, score, date) {
         margin-bottom: 0.6em;
     `;  
 
-    li.style.background = 'linear-gradient(to bottom, rgba(7, 136, 7, 0.5), rgba(7, 136, 7, 0.5) 100%)';
+    if (result === "win")
+        li.style.background = 'linear-gradient(to bottom, rgba(7, 136, 7, 0.5), rgba(7, 136, 7, 0.5) 100%)'; //grün
+    else
+        li.style.background = 'linear-gradient(to bottom, rgba(242, 7, 7, 0.5), rgba(242, 7, 7, 0.5) 100%)'; //rot
 
     li.innerHTML = `
     <div class="dashboard-match">
@@ -113,7 +116,7 @@ function addMatchItem(list, player_home, player_away, score, date) {
     list.appendChild(li);
 }
 
-function displayMatches(matches)
+function displayMatches(matches, username)
 {
     const list = document.getElementById('playedMatches');
     if (list)
@@ -124,8 +127,10 @@ function displayMatches(matches)
         const m = matches[index];
 
         // es gibt auch noch m.modus!!!
-
-        addMatchItem(list, m.player_home, m.player_away, m.score_home + ":" + m.score_away, m.date);
+        let result = "loss";
+        if (m.winner === username)
+            result = "win";
+        addMatchItem(list, m.player_home, m.player_away, m.score_home + ":" + m.score_away, m.date, result);
     }
 }
 
@@ -172,36 +177,42 @@ function displayTournament(tournament)
     }
 }
 
-function displayHighlights(highest_win, biggest_loss)
+function displayHighlights(highest_win, biggest_loss, username)
 {
     const highestWinSpan = document.getElementById('highestWin');
     const biggestLossSpan = document.getElementById('biggestLoss');
 
-    highestWinSpan.textContent = highest_win;
-    biggestLossSpan.textContent = biggest_loss;
-    
     if (!highest_win)
-    {
         highestWinSpan.textContent = "no data yet...";
-        highestWinSpan.style.fontSize = "0.9em";
-    }
-    if (!biggest_loss)
+    else
     {
+        if (username === highest_win.player_home)
+            highestWinSpan.textContent = highest_win.score_home + ":" + highest_win.score_away + " vs " + highest_win.player_away;
+        else
+            highestWinSpan.textContent = highest_win.score_away + ":" + highest_win.score_home + " vs " + highest_win.player_home;
+    }
+
+        
+    if (!biggest_loss)
         biggestLossSpan.textContent = "no data yet...";
-        biggestLossSpan.style.fontSize = "0.9em";
+    else
+    {
+        if (username === biggest_loss.player_home)
+            biggestLossSpan.textContent = biggest_loss.score_home + ":" + biggest_loss.score_away + " vs " + biggest_loss.player_away;
+        else
+            biggestLossSpan.textContent = biggest_loss.score_away + ":" + biggest_loss.score_home + " vs " + biggest_loss.player_home;
     }
 }
 
 function displayDashboardData(data)
 {
     displayGamesChart([data.wins, data.losses]);
-    console.log("f: ", data.goals_for, " a: ", data.goals_against);
     displayGoalsChart([data.goals_for, data.goals_against]);
-    displayGeneralInformation(data.username, data.wins + data.losses, data.tournament_games, data.tournament_wins, data.winstreak, data.date);
+    displayGeneralInformation(data.username, data.wins + data.losses, data.tournaments_played, data.tournament_wins, data.winstreak, data.registered);
     displayForm(data.form);
-    displayMatches(data.matches);
+    displayMatches(data.matches, data.username);
     displayTournament(data.last_tournament);
-    displayHighlights(data.highest_win, data.biggest_loss);
+    displayHighlights(data.highest_win, data.biggest_loss, data.username);
 }
 
 export async function renderMenuDashboard() {
@@ -245,13 +256,13 @@ export async function renderMenuDashboard() {
                         <div class="dashboard-highlight-item">
                             <div>
                                 <span style="color: #b7b6bb;">Highest win:</span>
-                                <span id="highestWin">7:0 vs fwechslefwechsle</span>
+                                <span id="highestWin"></span>
                             </div>
                         </div>
                         <div class="dashboard-highlight-item">
                             <div>
                                 <span style="color: #b7b6bb;">Biggest loss:</span>
-                                <span id="biggestLoss">6:7 vs nsassenb</span>
+                                <span id="biggestLoss"></span>
                             </div>
                         </div>
                     </div>
@@ -494,8 +505,8 @@ export async function renderMenuDashboard() {
         displayGeneralInformation("fheid", "42", "4", "2", "19", "2024-10-18 12:15");
         displayForm("WLWLWWLLW");
 
-        const matches = [{"player_home": "fheid", "player_away": "fwechsle", "score_home": 4, "score_away": 0, "date": "2024-10-18 12:15"}];
-        displayMatches(matches);
+        const matches = [{"player_home": "fheid", "player_away": "fwechsle", "score_home": 4, "score_away": 0, "date": "2024-10-18 12:15", "winner": "fheid"}];
+        displayMatches(matches, "fheid");
 
         const tournament = [{"rank": "1", "player": "fwechslefwechsle", "games": 4, "wins": 4, "losses": 0, "goals": 28, "goals_against": 0, "diff": 28, "points": 12}];
         displayTournament(tournament);
