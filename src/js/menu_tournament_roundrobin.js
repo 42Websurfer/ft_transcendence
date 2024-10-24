@@ -30,7 +30,7 @@ export function runWebsocket(socket) {
                     console.log('User_id from from reults: ' + user.user_id);
                     console.log('Status: ' + user.role);
 
-                    if (data.user_id == user.user_id && user.role != 'admin')
+                    if (data.user_id === user.user_id && user.role != 'admin')
                     {
                         const startButton = document.getElementById('tournamentStartButton');
                         if (startButton)
