@@ -248,8 +248,8 @@ def get_dashboard_data(request):
 		'form': 'WLWWLW', #muss noch gebaut werden
 		'matches': all_matches,
 		'last_tournament': tournament_data,
-		'highest_win': highest_win,
-		'biggest_loss': highest_loss,
+		'highest_win': highest_win if highest_win else None,
+		'biggest_loss': highest_loss if highest_loss else None,
 		'form': form,
 		'tournaments_played': tournaments_played,
 		'registered': user_game_stats.user.date_joined.strftime('%d-%m-%Y %H:%M'),
