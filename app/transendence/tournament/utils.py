@@ -17,12 +17,17 @@ def match_lobby_string(lobby_id):
 	return (f"match_{lobby_id}")
 
 def round_completed(matches, round):
-	for match in matches:
+	logger.debug(f"Current round = {round}")
+	for index, match in enumerate(matches):
 		if match['round'] > round:
-			return True
-		elif match['status'] != 'completed':
-			return False
-	return True
+			return True, False
+		elif match['status'] != 'finished':
+			return False, False
+		elif match['status'] == 'freegame' or match['status'] == 'disconnected':
+			continue
+		if index == len(matches) - 1:
+			return True, True
+	return True, True
 
 def create_user_structure(user_id, role, username):
 	user_data = {
@@ -143,6 +148,17 @@ def set_online_match(data, lobby_id):
 	)
 	match.save()
 
+# def check_round_completion(lobby_id, roundm machtes):
+#     tournament_json = redis.get(tournament_string(lobby_id))
+#     if (not tournament_json):
+#         return False
+#     tournament = json.loads(tournament_json)
+#     matches = tournament['matches']
+#     if round_completed(matches, round):
+#         return True
+#     else:
+#         return False
+
 async def set_match_data(lobby_id, match_id, score_home, score_away, status):
 	tournament = redis.get(tournament_string(lobby_id))
 	if tournament is None:
@@ -163,6 +179,21 @@ async def set_match_data(lobby_id, match_id, score_home, score_away, status):
 			'type': 'match_list',
 		}
 	)
+	status, tournament_finished = round_completed(tournament_dic['matches'], match['round'])
+	if status and not tournament_finished:
+		await channel_layer.group_send(
+			lobby_id,
+			{
+				'type': 'send_round_completed'
+			}
+		)
+	elif status and tournament_finished: 
+		await channel_layer.group_send(
+			lobby_id,
+			{
+				'type': 'send_tournament_finished',
+			}
+		)
 	return True
 
 def reset_match(lobby_id, match):

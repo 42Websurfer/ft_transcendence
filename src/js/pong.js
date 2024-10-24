@@ -9,16 +9,23 @@ export function renderPong(match_id) {
 		app.style.position = 'relative';
 		app.innerHTML = `
 		<div class="menu" style="justify-content: center; padding: 2em;">
-			<div id="gameContainer" class="game-container"></div>
+			<div class="game-container">
+				<div class="game-information">
+					<span class="game-name">fwechslex</span>
+					<span class="game-score">4</span>
+				</div>
+				<div id="canvasContainer"></div>
+				<div class="game-information">
+					<span class="game-name">fwechslex</span>
+					<span class="game-score">0</span>
+				</div>
+			</div>
 		</div>
 		`;
 
-		const gameContainer = document.getElementById('gameContainer');
+		const canvasContainer = document.getElementById('canvasContainer');
 
-		canvas.style.maxHeight = '100%';
-        canvas.style.maxWidth = '100%';
-
-		gameContainer.appendChild(canvas);
+		canvasContainer.appendChild(canvas);
 		selectGamemode(match_id);
 	}
 }

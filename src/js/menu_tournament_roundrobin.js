@@ -3,6 +3,7 @@ import { selectedListItem, setSelectedListItem, handleFriendRequest, showSection
 
 export function runWebsocket(socket) {
 
+    let admin = false;
 
     socket.onopen = function() {
         console.log("Connected to Websocket of a Tournament")
@@ -29,12 +30,14 @@ export function runWebsocket(socket) {
                     console.log('User_id from from reults: ' + user.user_id);
                     console.log('Status: ' + user.role);
 
-                    if (data.user_id == user.user_id && user.role != 'admin')
+                    if (data.user_id === user.user_id && user.role != 'admin')
                     {
                         const startButton = document.getElementById('tournamentStartButton');
                         if (startButton)
                             startButton.remove();
                     }
+                    else if (data.user_id == user.user_id && user.role == 'admin')
+                        admin = true;
                     
                     let rank = user.rank;
                     let player = user.player;
@@ -58,7 +61,21 @@ export function runWebsocket(socket) {
                 
                 const matches = data.matches
                 displayMatches(matches);
-            } 
+            }
+            else if (data.type === 'round_completed')
+            {
+                if (admin)
+                {
+                    console.log('Round completed');
+                    const roundStartButton = document.getElementById('roundStartButton');
+                    if (roundStartButton)
+                        roundStartButton.disabled = false;
+                }
+            }
+            else if (data.type === 'tournament_finished')
+                console.log('Tournament finished');
+
+
         }
         catch (error) {
             console.error("Error with Parsing Tournament user:", error);
@@ -95,7 +112,6 @@ function displayMatches(response)
 
         addMatchItem(tournamentMatchesList, player_home, player_away, score, status);
     }
-    addMatchItem(tournamentMatchesList, "nsassenb", "fwechsle", "6:0", "running");
 }
 
 function addRowToStandingsTable(rank, player, games, wins, losses, goals, diff, points) {
