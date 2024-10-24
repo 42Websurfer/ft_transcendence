@@ -76,7 +76,7 @@ class Ball extends Entity{
 		ctx.fillStyle = 'blue';
 		if (this.secondLastHit)
 			ctx.fillRect(this.secondLastHit.position.x, this.secondLastHit.position.y, 5, 5);
-		ctx.fillStyle = 'white';
+		ctx.fillStyle = '#d8d3d3';
 	}
 }
 
