@@ -76,14 +76,6 @@ export function renderMenuLocal(groupName) {
         });
     }
 
-    async function check_completion(tournament_id, round) {
-        const response = await fetch(`/tm/check_completion/${tournament_id}/${round}/`, {
-            method: 'GET',
-            credentials: 'include'
-        });
-        return response;
-    }
-
     async function showTournamentMatches() {
         try {
             const response = await fetch(`/tm/start_tournament/${lobbyId}/`, {
