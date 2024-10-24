@@ -10,7 +10,6 @@ redis = redis.Redis(host='redis', port=6379, db=0)
 class MyConsumer(AsyncWebsocketConsumer):
 	
 	async def connect(self):
-		self.player = 'DEFAULT'
 		self.player_c = None;
 		User = get_user_model()
 		self.group_name = self.scope['url_route']['kwargs']['group_name']
@@ -29,6 +28,10 @@ class MyConsumer(AsyncWebsocketConsumer):
 		redis.sadd(self.group_name, self.user.id)
 		GamesHandler.add_consumer_to_game(self, self.group_name)
 
+	async def assign_player(self, pong_player):
+		self.player_c = pong_player
+		# here send the assign local stuff maybe?
+
 
 	async def disconnect(self, close_code):
 		GamesHandler.disconnect_consumer_from_game(self, self.group_name)
@@ -40,7 +43,7 @@ class MyConsumer(AsyncWebsocketConsumer):
 			self.group_name,
 			{
 				'type': 'disconnectedMsg',
-				'player': self.player
+				'player': 'something?'
 			}
 		)
 		redis.srem(self.group_name, self.user.id)

@@ -355,17 +355,12 @@ export class CollisionSystem extends System{
 						let sClosest = entMesh.getClosestPoint(currentEnt, oClosest);
 						let diff = oClosest.sub(sClosest);
 						if (diff.dot(ab) < 0){
-							// drawLine(currentEnt.position, sClosest, 'red');
 							let phys = currentEnt.getComponent(Physics);
 							let ophys = otherEnt.getComponent(Physics);
 							if (phys && !phys.isStatic){
-								// drawLine(currentEnt.position, currentEnt.position.add(diff));
-								// drawText('Move dist', currentEnt.position.x, currentEnt.position.y);
 								currentEnt.move(diff.x, diff.y);
 							}
 							if (ophys && !ophys.isStatic){
-								// drawLine(otherEnt.position, otherEnt.position.add(diff));
-								// drawText('Move dist', otherEnt.position.x, otherEnt.position.y);
 								otherEnt.move(-diff.x, -diff.y)
 							}
 							if (entMesh.isTrigger){

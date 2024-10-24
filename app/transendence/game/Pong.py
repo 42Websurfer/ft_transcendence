@@ -1,6 +1,4 @@
 import threading, time, asyncio
-
-from typing import List, Dict, Tuple
 from .GameSystem import *
 
 # Constants
@@ -145,22 +143,6 @@ class PlayerSection:
 		self.player.start_pos = forward
 		self.player.goal_height = self.goal.height
 
-async def getCurrentState(world, consumer):
-	print(world.entities)
-	for ent in world.entities:
-		print('Sending ent id:', ent.id)
-		await consumer.client_create_entity(
-			{
-				'type': 'client_create_entity',
-				'id': ent.id,
-				'entType': type(ent).__name__,
-				'transform': ent.serialize(),
-				'constr':{
-					'height': 0 if not hasattr(ent, 'height') else ent.height
-				}
-			}
-		)
-
 class GameLogicManager(Entity):
 	def __init__(self):
 		super().__init__(0, 0)
@@ -202,6 +184,21 @@ class GameLogicManager(Entity):
 			world.addEntity(section.goal)
 
 
+async def getCurrentState(world, consumer):
+	print(world.entities)
+	for ent in world.entities:
+		print('Sending ent id:', ent.id)
+		await consumer.client_create_entity(
+			{
+				'type': 'client_create_entity',
+				'id': ent.id,
+				'entType': type(ent).__name__,
+				'transform': ent.serialize(),
+				'constr':{
+					'height': 0 if not hasattr(ent, 'height') else ent.height
+				}
+			}
+		)
 
 thread_local = threading.local()
 
@@ -228,8 +225,6 @@ class PongGame:
 		print('Starting threads and game!')
 
 		self.gameLogic.buildDynamicField(self.world, 2)
-		self.player1.player_c = self.gameLogic.sections[0].player
-		self.player2.player_c = self.gameLogic.sections[1].player
 
 		self.event_loop = asyncio.new_event_loop()
 		self.asyncio_thread = threading.Thread(target=self.thread_main)
@@ -237,6 +232,12 @@ class PongGame:
 
 		self.game_thread = threading.Thread(target=self.game_loop)
 		self.game_thread.start()
+
+		# self.player1.player_c = self.gameLogic.sections[0].player
+		# self.player2.player_c = self.gameLogic.sections[1].player
+
+		asyncio.run_coroutine_threadsafe(self.player1.assign_player(self.gameLogic.sections[0].player), self.event_loop)
+		asyncio.run_coroutine_threadsafe(self.player2.assign_player(self.gameLogic.sections[1].player), self.event_loop)
 
 		asyncio.run_coroutine_threadsafe(getCurrentState(self.world, self.player1), self.event_loop)
 		asyncio.run_coroutine_threadsafe(getCurrentState(self.world, self.player2), self.event_loop)
