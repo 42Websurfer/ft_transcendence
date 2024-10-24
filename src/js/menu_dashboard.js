@@ -34,117 +34,6 @@ function displayGeneralInformation(username, games, tournament_wins)
     tournamentWinsSpan.textContent = tournament_wins;
 }
 
-function displayForm(form)
-{
-    const formDiv = document.getElementById('formContainer');
-    if (formDiv)
-        formDiv.innerHTML = '';
-
-    for (let index = 0; index < form.length && index < 6; index++)
-        addFormItem(formDiv, form[index]);
-
-    addFormItem(formDiv, 'next');
-}
-
-function displayMatches(matches)
-{
-    const list = document.getElementById('playedMatches');
-    if (list)
-        list.innerHTML = '';
-
-    for (let index = 0; index < matches.length; index++)
-    {
-        const m = matches[index];
-        addMatchItem(list, m.player_home, m.player_away, m.score_home + ":" + m.score_away, m.date, m.result);
-    }
-
-    // addMatchItem(playedMatches, "fwechslefwechsle", "fwechslefwechsle", "6:0", "2024-10-18 12:15", "win");
-    // addMatchItem(playedMatches, "fwechslefwechsle", "fwechslefwechsle", "6:0", "2024-10-18 12:15", "loss");
-    // addMatchItem(playedMatches, "fheid", "fwechsle", "6:0", "2024-10-18 12:15", "win");
-    // addMatchItem(playedMatches, "fwechslefwechsle", "fwechslefwechsle", "6:0", "2024-10-18 12:15", "win");
-    // addMatchItem(playedMatches, "fwechslefwechsle", "fwechslefwechsle", "6:0", "2024-10-18 12:15", "loss");
-    // addMatchItem(playedMatches, "fwechslefwechsle", "fwechslefwechsle", "6:0", "2024-10-18 12:15", "win");
-    // addMatchItem(playedMatches, "fwechslefwechsle", "fwechslefwechsle", "6:0", "2024-10-18 12:15", "");
-}
-
-function displayDashboardData(data)
-{
-    displayGamesChart([data.wins, data.losses]);
-    displayGoalsChart([data.goals_for, data.goals_against]);
-    displayGeneralInformation(data.username, data.wins + data.losses, data.tournament_wins);
-    displayForm(data.form);
-    displayMatches(data.matches);
-
-    data.wins;
-    data.losses;
-    data.goals_for;
-    data.goals_against;
-    data.username;
-    data.tournament_wins;
-    data.last_tournament; // liste dahinter
-    data.matches; // liste dahinter
-    data.form; // string dahinter
-
-    {
-        const tournamentStandingsTable = document.getElementById("tournamentStandingsTable");
-        if (!tournamentStandingsTable) 
-            return;
-        
-        const tableBody = document.getElementById('tournamentStandingsTableBody');
-        if (!tableBody)
-            return;
-
-        tableBody.innerHTML = '';
-
-        const results = data.results;
-        for (let index = 0; index < results.length; index++) {
-
-            if (data.user_id === user.user_id && user.role != 'admin')
-            {
-                const startButton = document.getElementById('tournamentStartButton');
-                if (startButton)
-                    startButton.remove();
-            }
-            else if (data.user_id == user.user_id && user.role == 'admin')
-                admin = true;
-            
-            let rank = user.rank;
-            let player = user.player;
-            let games = user.games;
-            let wins = user.won;
-            let losses = user.lost;
-            let goals = user.goals + ":" + user.goals_against;
-            let diff = user.diff;
-            let points = user.points;
-            
-            addRowToStandingsTable(rank, player, games, wins, losses, goals, diff, points);
-        }
-    }
-}
-
-function addRowToStandingsTable(rank, player, games, wins, losses, goals, diff, points) {
-
-    const tableBody = document.getElementById('tournamentStandingsTableBody');
-
-    if (!tableBody)
-        return;
-
-    const row = document.createElement('tr');
-
-    row.innerHTML = `
-        <td>${rank}</td>
-        <td>${player}</td>
-        <td>${games}</td>
-        <td>${wins}</td>
-        <td>${losses}</td>
-        <td>${goals}</td>
-        <td>${diff}</td>
-        <td>${points}</td>
-    `;
-
-    tableBody.appendChild(row);
-}
-
 function addFormItem(formDiv, result) {
 
     if (!formDiv)
@@ -173,9 +62,21 @@ function addFormItem(formDiv, result) {
     formDiv.appendChild(item);
 }
 
-function addMatchItem(tournamentMatchesList, player_home, player_away, score, date, result) {
+function displayForm(form)
+{
+    const formDiv = document.getElementById('formContainer');
+    if (formDiv)
+        formDiv.innerHTML = '';
 
-    if (!tournamentMatchesList)
+    for (let index = 0; index < form.length && index < 6; index++)
+        addFormItem(formDiv, form[index]);
+
+    addFormItem(formDiv, 'next');
+}
+
+function addMatchItem(list, player_home, player_away, score, date, result) {
+
+    if (!list)
         return;
 
     const li = document.createElement('li');
@@ -190,7 +91,7 @@ function addMatchItem(tournamentMatchesList, player_home, player_away, score, da
         li.style.background = 'linear-gradient(to bottom, rgba(7, 136, 7, 0.5), rgba(7, 136, 7, 0.5) 100%)';
     else if (result === 'loss')
         li.style.background = 'linear-gradient(to bottom, rgba(242, 7, 7, 0.5), rgba(242, 7, 7, 0.5) 100%)';
-    else // undefined
+    else
         li.style.background = 'linear-gradient(to bottom, rgba(112, 111, 122, 0.5), rgba(112, 111, 122, 0.5) 100%)';
 
     li.innerHTML = `
@@ -202,7 +103,65 @@ function addMatchItem(tournamentMatchesList, player_home, player_away, score, da
     </div>
     `;
 
-    tournamentMatchesList.appendChild(li);
+    list.appendChild(li);
+}
+
+function displayMatches(matches)
+{
+    const list = document.getElementById('playedMatches');
+    if (list)
+        list.innerHTML = '';
+
+    for (let index = 0; index < matches.length; index++)
+    {
+        const m = matches[index];
+        addMatchItem(list, m.player_home, m.player_away, m.score_home + ":" + m.score_away, m.date, m.result);
+    }
+}
+
+function addTableRowItem(list, rank, player, games, wins, losses, goals, diff, points) {
+
+    const row = document.createElement('tr');
+
+    row.innerHTML = `
+        <td>${rank}</td>
+        <td>${player}</td>
+        <td>${games}</td>
+        <td>${wins}</td>
+        <td>${losses}</td>
+        <td>${goals}</td>
+        <td>${diff}</td>
+        <td>${points}</td>
+    `;
+
+    list.appendChild(row);
+}
+
+function displayTournament(tournament)
+{
+    const tournamentStandingsTable = document.getElementById("tournamentStandingsTable");
+    if (!tournamentStandingsTable) 
+        return;
+    
+    const tableBody = document.getElementById('tournamentStandingsTableBody');
+    if (!tableBody)
+        return;
+
+    for (let index = 0; index < tournament.length; index++)
+    {
+        const t = tournament[index];
+        addTableRowItem(tableBody, t.rank, t.player, t.games, t.wins, t.losses, t.goals + ":" + t.goals_against, t.diff, t.points);
+    }
+}
+
+function displayDashboardData(data)
+{
+    displayGamesChart([data.wins, data.losses]);
+    displayGoalsChart([data.goals_for, data.goals_against]);
+    displayGeneralInformation(data.username, data.wins + data.losses, data.tournament_wins);
+    displayForm(data.form);
+    displayMatches(data.matches);
+    displayTournament(data.last_tournament);
 }
 
 export async function renderMenuDashboard() {
@@ -578,8 +537,10 @@ export async function renderMenuDashboard() {
         displayForm("WLWLWWLLW");
 
         const matches = [{"player_home": "fheid", "player_away": "fwechsle", "score_home": 4, "score_away": 0, "date": "2024-10-18 12:15", "result": "win"}];
-
         displayMatches(matches);
+
+        const tournament = [{"rank": "1", "player": "fwechslefwechsle", "games": 4, "wins": 4, "losses": 0, "goals": 28, "goals_against": 0, "diff": 28, "points": 12}];
+        displayTournament(tournament);
     });
 
 }
