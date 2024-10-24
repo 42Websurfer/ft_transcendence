@@ -66,3 +66,16 @@ export async function checkAuthentication() {
     }
     return result.authenticated;
 }
+
+export async function fetch_get(url)
+{
+    try {
+        const response = await fetch(url, {
+            method: 'GET',
+            credentials: 'include'
+        });
+        return (await response.json());
+    } catch (error) {
+        return ({"type": "error", "message": error});
+    }
+}

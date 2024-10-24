@@ -14,7 +14,6 @@ export function runWebsocket(socket) {
             const data = JSON.parse(event.data);
             if (data.type === 'send_tournament_users')
             {
-                
                 const tournamentStandingsTable = document.getElementById("tournamentStandingsTable");
                 if (!tournamentStandingsTable) 
                     return;

@@ -1,6 +1,149 @@
-import { getCookie, displayMessages } from './utils.js';
-import { selectedListItem, setSelectedListItem, handleFriendRequest, showSection } from './index.js';
-import { ctx } from './GameSystem.js';
+import { getCookie, displayMessages, fetch_get } from './utils.js';
+import { selectedListItem, setSelectedListItem, handleFriendRequest, showSection, addListItem } from './index.js';
+import { CollisionSystem, ctx } from './GameSystem.js';
+
+let myGamesChart;
+let myGoalsChart;
+
+function displayGamesChart(dataset)
+{
+    if (!myGamesChart)
+        return;
+
+    myGamesChart.data.datasets[0].data = dataset;
+    myGamesChart.update();
+}
+
+function displayGoalsChart(dataset)
+{
+    if (!myGoalsChart)
+        return;
+
+    myGoalsChart.data.datasets[0].data = dataset;
+    myGoalsChart.update();
+}
+
+function displayGeneralInformation(username, games, tournament_wins)
+{
+    const usernameSpan = document.getElementById('infoUsername');
+    const gamesSpan = document.getElementById('infoGames');
+    const tournamentWinsSpan = document.getElementById('infoTournamentWins');
+
+    usernameSpan.textContent = username;
+    gamesSpan.textContent = games;
+    tournamentWinsSpan.textContent = tournament_wins;
+}
+
+function displayForm(form)
+{
+    const formDiv = document.getElementById('formContainer');
+    if (formDiv)
+        formDiv.innerHTML = '';
+
+    for (let index = 0; index < form.length && index < 6; index++)
+        addFormItem(formDiv, form[index]);
+
+    addFormItem(formDiv, 'next');
+}
+
+function displayMatches(matches)
+{
+    const list = document.getElementById('playedMatches');
+    if (list)
+        list.innerHTML = '';
+
+    for (let index = 0; index < matches.length; index++)
+    {
+        const m = matches[index];
+        addMatchItem(list, m.player_home, m.player_away, m.score_home + ":" + m.score_away, m.date, m.result);
+    }
+
+    // addMatchItem(playedMatches, "fwechslefwechsle", "fwechslefwechsle", "6:0", "2024-10-18 12:15", "win");
+    // addMatchItem(playedMatches, "fwechslefwechsle", "fwechslefwechsle", "6:0", "2024-10-18 12:15", "loss");
+    // addMatchItem(playedMatches, "fheid", "fwechsle", "6:0", "2024-10-18 12:15", "win");
+    // addMatchItem(playedMatches, "fwechslefwechsle", "fwechslefwechsle", "6:0", "2024-10-18 12:15", "win");
+    // addMatchItem(playedMatches, "fwechslefwechsle", "fwechslefwechsle", "6:0", "2024-10-18 12:15", "loss");
+    // addMatchItem(playedMatches, "fwechslefwechsle", "fwechslefwechsle", "6:0", "2024-10-18 12:15", "win");
+    // addMatchItem(playedMatches, "fwechslefwechsle", "fwechslefwechsle", "6:0", "2024-10-18 12:15", "");
+}
+
+function displayDashboardData(data)
+{
+    displayGamesChart([data.wins, data.losses]);
+    displayGoalsChart([data.goals_for, data.goals_against]);
+    displayGeneralInformation(data.username, data.wins + data.losses, data.tournament_wins);
+    displayForm(data.form);
+    displayMatches(data.matches);
+
+    data.wins;
+    data.losses;
+    data.goals_for;
+    data.goals_against;
+    data.username;
+    data.tournament_wins;
+    data.last_tournament; // liste dahinter
+    data.matches; // liste dahinter
+    data.form; // string dahinter
+
+    {
+        const tournamentStandingsTable = document.getElementById("tournamentStandingsTable");
+        if (!tournamentStandingsTable) 
+            return;
+        
+        const tableBody = document.getElementById('tournamentStandingsTableBody');
+        if (!tableBody)
+            return;
+
+        tableBody.innerHTML = '';
+
+        const results = data.results;
+        for (let index = 0; index < results.length; index++) {
+
+            if (data.user_id === user.user_id && user.role != 'admin')
+            {
+                const startButton = document.getElementById('tournamentStartButton');
+                if (startButton)
+                    startButton.remove();
+            }
+            else if (data.user_id == user.user_id && user.role == 'admin')
+                admin = true;
+            
+            let rank = user.rank;
+            let player = user.player;
+            let games = user.games;
+            let wins = user.won;
+            let losses = user.lost;
+            let goals = user.goals + ":" + user.goals_against;
+            let diff = user.diff;
+            let points = user.points;
+            
+            addRowToStandingsTable(rank, player, games, wins, losses, goals, diff, points);
+        }
+    }
+}
+
+function addRowToStandingsTable(rank, player, games, wins, losses, goals, diff, points) {
+
+    const tableBody = document.getElementById('tournamentStandingsTableBody');
+
+    if (!tableBody)
+        return;
+
+    const row = document.createElement('tr');
+
+    row.innerHTML = `
+        <td>${rank}</td>
+        <td>${player}</td>
+        <td>${games}</td>
+        <td>${wins}</td>
+        <td>${losses}</td>
+        <td>${goals}</td>
+        <td>${diff}</td>
+        <td>${points}</td>
+    `;
+
+    tableBody.appendChild(row);
+}
 
 function addFormItem(formDiv, result) {
 
@@ -11,17 +154,17 @@ function addFormItem(formDiv, result) {
 
     item.classList.add('dashboard-form-item');
 
-    if (result === 'win')
+    if (result === 'W')
     {
         item.style.background = 'linear-gradient(to bottom, rgba(7, 136, 7, 0.5), rgba(7, 136, 7, 0.5) 100%)';
         item.innerHTML = "<span>W</span>";
     }
-    else if (result === 'loss')
+    else if (result === 'L')
     {
         item.style.background = 'linear-gradient(to bottom, rgba(242, 7, 7, 0.5), rgba(242, 7, 7, 0.5) 100%)';
         item.innerHTML = "<span>L</span>";
     }
-    else //next
+    else
     {
         item.style.background = 'linear-gradient(to bottom, rgba(112, 111, 122, 0.5), rgba(112, 111, 122, 0.5) 100%)';
         item.innerHTML = "<span>?</span>";
@@ -62,84 +205,21 @@ function addMatchItem(tournamentMatchesList, player_home, player_away, score, da
     tournamentMatchesList.appendChild(li);
 }
 
-function displayForm(response)
-{
-    // const matches = response.matches;
+export async function renderMenuDashboard() {
 
-    // MAXIMAL 7 FORM-ELEMENTE (wobei das letzte immer ? ist)!
+    //render waiting section
 
-    const formDiv = document.getElementById('formContainer');
-    if (formDiv)
-        formDiv.innerHTML = '';
+    const response = fetch_get("/get_dashboard");
 
-    // Das hier als for-loop von 1-6 //
+    if (response.type === "error")
+    {
+        console.log("error: ", response.message);
+        return;
+    }
 
-    addFormItem(formDiv, 'win');
-    addFormItem(formDiv, 'loss');
-    addFormItem(formDiv, 'win');
-    addFormItem(formDiv, 'loss');
-    addFormItem(formDiv, 'win');
-    addFormItem(formDiv, 'win');
-    
-    // Und dann standardmäßig das hier als 7. (oder erstes wenn es noch kein spiel gibt)
-    
-    addFormItem(formDiv, 'next');
+    // displayDashboardDate function callen
 
-
-
-
-    // for (let index = 0; index < matches.length; index++) {
-        
-    //     const match = matches[index];
-        
-    //     let player_home = match.player_home;
-    //     let player_away = match.player_away;
-    //     let score = '';
-
-    //     if (match.home == -1 || match.away == -1)
-    //         score = "-:-";
-    //     else
-    //         score = match.score_home + ":" + match.score_away;
-    //     let status = match.status;
-
-    //     addMatchItem(playedMatches, player_home, player_away, score, status);
-    // }
-}
-
-function displayMatches(response)
-{
-    // const matches = response.matches;
-
-    const playedMatches = document.getElementById('playedMatches');
-    if (playedMatches)
-        playedMatches.innerHTML = '';
-
-    // for (let index = 0; index < matches.length; index++) {
-        
-    //     const match = matches[index];
-        
-    //     let player_home = match.player_home;
-    //     let player_away = match.player_away;
-    //     let score = '';
-
-    //     if (match.home == -1 || match.away == -1)
-    //         score = "-:-";
-    //     else
-    //         score = match.score_home + ":" + match.score_away;
-    //     let status = match.status;
-
-    //     addMatchItem(playedMatches, player_home, player_away, score, status);
-    // }
-    addMatchItem(playedMatches, "fwechslefwechsle", "fwechslefwechsle", "6:0", "2024-10-18 12:15", "win");
-    addMatchItem(playedMatches, "fwechslefwechsle", "fwechslefwechsle", "6:0", "2024-10-18 12:15", "loss");
-    addMatchItem(playedMatches, "fheid", "fwechsle", "6:0", "2024-10-18 12:15", "win");
-    addMatchItem(playedMatches, "fwechslefwechsle", "fwechslefwechsle", "6:0", "2024-10-18 12:15", "win");
-    addMatchItem(playedMatches, "fwechslefwechsle", "fwechslefwechsle", "6:0", "2024-10-18 12:15", "loss");
-    addMatchItem(playedMatches, "fwechslefwechsle", "fwechslefwechsle", "6:0", "2024-10-18 12:15", "win");
-    addMatchItem(playedMatches, "fwechslefwechsle", "fwechslefwechsle", "6:0", "2024-10-18 12:15", "");
-}
-
-export function renderMenuDashboard() {
+    console.log("response: ", response);
 
     const app = document.getElementById('app');
 
@@ -155,8 +235,8 @@ export function renderMenuDashboard() {
 
             <div class="dashboard-grid-container">
 
-                <div id="chartGames" class="grid-item item1"><p class="graph-title">Games</p></div>
-                <div id="chartGoals" class="grid-item item2"><p class="graph-title">Goals</p></div>
+                <div id="gamesChart" class="grid-item item1"><p class="graph-title">Games</p></div>
+                <div id="goalsChart" class="grid-item item2"><p class="graph-title">Goals</p></div>
                 <div id="chartPlaytime" class="grid-item item3"><p class="graph-title">Playtime [minutes]</p></div>
                 <div class="grid-item item4">
                     <p class="graph-title" style="margin-bottom: 0.8em;">Matches</p>
@@ -168,19 +248,45 @@ export function renderMenuDashboard() {
                         <div class="dashboard-highlight-item">
                             <div>
                                 <span style="color: #b7b6bb;">Highest win:</span>
-                                <span id="infoUsername">7:0 vs fwechslefwechsle</span>
+                                <span id="highestWin">7:0 vs fwechslefwechsle</span>
                             </div>
                         </div>
                         <div class="dashboard-highlight-item">
                             <div>
                                 <span style="color: #b7b6bb;">Biggest loss:</span>
-                                <span id="infoGames">6:7 vs nsassenb</span>
+                                <span id="biggestLoss">6:7 vs nsassenb</span>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div id="" class="grid-item item6">
-                    <span style="color: white; font-size: 1em; font-family: 'Press Start 2P'; text-shadow: 1px 1px 2px #000000;">Hier könnte ihre Werbung stehen!</span>
+                <div class="grid-item item6" style="justify-content: flex-start;">
+                    <p class="graph-title" style="margin-bottom: 0.8em;">Last tournament</p>
+                    <table id="tournamentStandingsTable" class="tournament-standings-table" style="font-size: 0.6em;">
+                        <colgroup>
+                            <col style="width: 6%;">
+                            <col style="width: 29%;">
+                            <col style="width: 10%;">
+                            <col style="width: 10%;">
+                            <col style="width: 10%;">
+                            <col style="width: 15%;">
+                            <col style="width: 10%;">
+                            <col style="width: 10%;">
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>PLAYER</th>
+                                <th>PLAYED</th>
+                                <th>WON</th>
+                                <th>LOST</th>
+                                <th>GOALS</th>
+                                <th>DIFF</th>
+                                <th>POINTS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tournamentStandingsTableBody" class="tournament-table-body"></tbody>
+                    </table>
+                    <button id="test123">UPDATE</button>
                 </div>
                 <div id="" class="grid-item item7">
                     <p class="graph-title" style="margin-bottom: 0.8em;">General information</p>
@@ -188,19 +294,19 @@ export function renderMenuDashboard() {
                         <div class="dashboard-information-item">
                             <div>
                                 <span style="color: #b7b6bb;">Username:</span>
-                                <span id="infoUsername">fheid</span>
+                                <span id="infoUsername"></span>
                             </div>
                         </div>
                         <div class="dashboard-information-item">
                             <div>
                                 <span style="color: #b7b6bb;">Games played:</span>
-                                <span id="infoGames">42</span>
+                                <span id="infoGames"></span>
                             </div>
                         </div>
                         <div class="dashboard-information-item">
                             <div>
                                 <span style="color: #b7b6bb;">Tournaments won:</span>
-                                <span id="infoTournaments">4</span>
+                                <span id="infoTournamentWins"></span>
                             </div>
                         </div>
                         <div class="dashboard-information-item">
@@ -233,20 +339,17 @@ export function renderMenuDashboard() {
     </div>
     `;
 
-    displayMatches();
-    displayForm();
-
     const canvas1 = document.createElement('canvas'); // Create a canvas element
-    canvas1.id = 'myChart';  // Set an id
+    canvas1.id = 'gamesChart';  // Set an id
     // canvas1.height = 400;
-    document.getElementById('chartGames').appendChild(canvas1);  // Append to the app div
+    document.getElementById('gamesChart').appendChild(canvas1);  // Append to the app div
     
-    const myChart1 = new Chart(canvas1, {
+    myGamesChart = new Chart(canvas1, {
         type: 'bar',  // Example chart type: bar, line, etc.
         data: {
             labels: ['Losses', 'Wins'],
             datasets: [{
-                data: [12, 13],
+                data: [0, 0],
                 backgroundColor: [
                     'rgba(242, 7, 7, 0.5)',
                     'rgba(7, 136, 7, 0.5)'
@@ -311,16 +414,16 @@ export function renderMenuDashboard() {
     });
 
     const canvas2 = document.createElement('canvas'); // Create a canvas element
-    canvas2.id = 'myChart';  // Set an id
+    canvas2.id = 'goalsChart';  // Set an id
     // canvas2.height = 400;
-    document.getElementById('chartGoals').appendChild(canvas2);  // Append to the app div
+    document.getElementById('goalsChart').appendChild(canvas2);  // Append to the app div
     
-    const myChart2 = new Chart(canvas2, {
+    myGoalsChart = new Chart(canvas2, {
         type: 'bar',  // Example chart type: bar, line, etc.
         data: {
             labels: ['Against', 'For'],
             datasets: [{
-                data: [9, 42],
+                data: [0, 0],
                 backgroundColor: [
                     'rgba(242, 7, 7, 0.5)',
                     'rgba(7, 136, 7, 0.5)'
@@ -464,6 +567,19 @@ export function renderMenuDashboard() {
             mode: null
         }
     }
+    });
+
+    const addButton = document.getElementById('test123');
+
+    addButton.addEventListener('click', () => {
+        displayGamesChart([31, 2]);
+        displayGoalsChart([31, 2]);
+        displayGeneralInformation("fheid", "42", "4");
+        displayForm("WLWLWWLLW");
+
+        const matches = [{"player_home": "fheid", "player_away": "fwechsle", "score_home": 4, "score_away": 0, "date": "2024-10-18 12:15", "result": "win"}];
+
+        displayMatches(matches);
     });
 
 }

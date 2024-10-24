@@ -68,6 +68,16 @@ class Ball extends Entity{
 		reflection.scale(this.physics.velocity.length());
 		this.physics.setVelocityV(reflection);
 	}
+
+	update(){
+		ctx.fillStyle = 'red';
+		if (this.lastHit)
+			ctx.fillRect(this.lastHit.position.x, this.lastHit.position.y, 5, 5);
+		ctx.fillStyle = 'blue';
+		if (this.secondLastHit)
+			ctx.fillRect(this.secondLastHit.position.x, this.secondLastHit.position.y, 5, 5);
+		ctx.fillStyle = '#d8d3d3';
+	}
 }
 
 class Player extends Entity{
@@ -355,7 +365,7 @@ class RemoteHandler extends Entity{
 }
 
 let world = new World();
-ctx.fillStyle = 'white';
+ctx.fillStyle = '#white';
 world.addSystem(new RenderSystem());
 
 let intervalId = 0;
