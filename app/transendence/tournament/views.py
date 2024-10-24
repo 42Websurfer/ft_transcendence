@@ -194,7 +194,7 @@ def get_match_data(user_game_stats):
 			'score_home': match.home_score,
 			'score_away': match.away_score,
 			#'winner': match.winner.username if match.winner else None,
-			'data': match.created_at.strftime('%d-%m-%Y %H:%M'),
+			'date': match.created_at.strftime('%d-%m-%Y %H:%M'),
 			'modus': match.modus,
 		})
 	return matches_data
