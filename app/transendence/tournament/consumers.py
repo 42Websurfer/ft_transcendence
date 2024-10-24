@@ -102,15 +102,27 @@ class Tournament(AsyncWebsocketConsumer):
 		await self.send(text_data=json.dumps(data))
 
 	async def match_list(self, event):
-			match_list_json = redis.get(tournament_string(self.group_name))
-			if not match_list_json:
-				return
-			match_list = json.loads(match_list_json)			
-			data = {
-				'type': 'match_list',
-				'matches': match_list
-			}
-			await self.send(text_data=json.dumps(data))
+		match_list_json = redis.get(tournament_string(self.group_name))
+		if not match_list_json:
+			return
+		match_list = json.loads(match_list_json)			
+		data = {
+			'type': 'match_list',
+			'matches': match_list
+		}
+		await self.send(text_data=json.dumps(data))
+	
+	async def send_round_completed(self, event):
+		data = {
+			'type': 'round_completed',
+		}
+		await self.send(text_data=json.dumps(data))
+
+	async def send_tournament_finished(self, event):
+		data = {
+			'type': 'tournament_finished',
+		}
+		await self.send(text_data=json.dumps(data))
 
 class OnlineMatch(AsyncWebsocketConsumer): 
 	async def connect(self):

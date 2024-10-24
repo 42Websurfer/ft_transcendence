@@ -58,7 +58,7 @@ async def start_group_tournament(request, lobby_id):
     results_json = redis.get(lobby_id)
     if (not results_json):
         return (JsonResponse({'type': 'error', 'message': 'No data in redis.'}))
-    results = json.loads(results.json)
+    results = json.loads(results_json)
     if (len(results) % 2 != 0):
         results.append({'user_id': -1})
     num_rounds = len(results) - 1
@@ -119,18 +119,6 @@ async def set_tournament_match(request):
         return (JsonResponse({'type': 'success'}))
     else:
         return (JsonResponse({'type': 'error'}))
-
-
-def check_round_completion(request, lobby_id, round):
-    tournament_json = redis.get(tournament_string(lobby_id))
-    if (not tournament_json):
-        return (JsonResponse({'type': 'error', 'message': 'No data in redis.'}))
-    tournament = json.loads(tournament_json)
-    matches = tournament['matches']
-    if round_completed(matches, round):
-        return JsonResponse({'type': 'Round is completed'})
-    else:
-        return JsonResponse({'type': 'Round is NOT completed'})
 
 
 async def test_set_online_match(request):

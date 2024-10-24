@@ -3,11 +3,6 @@ canvas.width = 1280;
 canvas.height = 780;
 export const ctx = canvas.getContext('2d');
 
-export function renderPong() {
-	const app = document.getElementById('app');
-	if (app)
-		app.appendChild(canvas);
-}
 
 export class Vector{
 	constructor(x, y){
