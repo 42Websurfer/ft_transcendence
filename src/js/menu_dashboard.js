@@ -17,7 +17,10 @@ function displayGamesChart(dataset)
 function displayGoalsChart(dataset)
 {
     if (!myGoalsChart)
+    {
+        console.log("HEEEEEEElp");
         return;
+    }
 
     myGoalsChart.data.datasets[0].data = dataset;
     myGoalsChart.update();
@@ -25,6 +28,8 @@ function displayGoalsChart(dataset)
 
 function displayGeneralInformation(username, games, tournament_wins)
 {
+    console.log("username: ", username);
+
     const usernameSpan = document.getElementById('infoUsername');
     const gamesSpan = document.getElementById('infoGames');
     const tournamentWinsSpan = document.getElementById('infoTournamentWins');
@@ -145,6 +150,8 @@ function displayTournament(tournament)
     if (!tableBody)
         return;
 
+    tableBody.innerHTML = "";
+
     for (let index = 0; index < tournament.length; index++)
     {
         const t = tournament[index];
@@ -155,18 +162,20 @@ function displayTournament(tournament)
 function displayDashboardData(data)
 {
     displayGamesChart([data.wins, data.losses]);
+    console.log("f: ", data.goals_for, " a: ", data.goals_against);
     displayGoalsChart([data.goals_for, data.goals_against]);
     displayGeneralInformation(data.username, data.wins + data.losses, data.tournament_wins);
     displayForm(data.form);
     displayMatches(data.matches);
-    displayTournament(data.last_tournament);
+    if (data.last_tournament)
+        displayTournament(data.last_tournament);
 }
 
 export async function renderMenuDashboard() {
 
     //render waiting section
 
-    const response = fetch_get("/tm/get_dashboard/");
+    const response = await fetch_get("/tm/get_dashboard/");
 
     if (response.type === "error")
     {
@@ -175,8 +184,6 @@ export async function renderMenuDashboard() {
     }
 
     console.log("response: ", response);
-
-    displayDashboardData(response);
 
     const app = document.getElementById('app');
 
@@ -525,6 +532,8 @@ export async function renderMenuDashboard() {
         }
     }
     });
+
+    displayDashboardData(response);
 
     const addButton = document.getElementById('test123');
 
