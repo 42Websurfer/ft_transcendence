@@ -26,17 +26,24 @@ function displayGoalsChart(dataset)
     myGoalsChart.update();
 }
 
-function displayGeneralInformation(username, games, tournament_wins)
+function displayGeneralInformation(username, games, tournament_games, tournament_wins, winstreak, date, tourn)
 {
-    console.log("username: ", username);
-
     const usernameSpan = document.getElementById('infoUsername');
     const gamesSpan = document.getElementById('infoGames');
+    const tournamentsPlayedSpan = document.getElementById('infoTournamentsPlayed');
     const tournamentWinsSpan = document.getElementById('infoTournamentWins');
+    const tournamentWinstreakSpan = document.getElementById('infoWinstreak');
+    const registerDateSpan = document.getElementById('infoRegisterDate')
 
     usernameSpan.textContent = username;
     gamesSpan.textContent = games;
+    tournamentsPlayedSpan.textContent = tournament_games;
     tournamentWinsSpan.textContent = tournament_wins;
+    tournamentWinstreakSpan.textContent = winstreak;
+    registerDateSpan.textContent = date;
+
+    if (!winstreak)
+        tournamentWinstreakSpan.textContent = 0;
 }
 
 function addFormItem(formDiv, result) {
@@ -165,15 +172,36 @@ function displayTournament(tournament)
     }
 }
 
+function displayHighlights(highest_win, biggest_loss)
+{
+    const highestWinSpan = document.getElementById('highestWin');
+    const biggestLossSpan = document.getElementById('biggestLoss');
+
+    highestWinSpan.textContent = highest_win;
+    biggestLossSpan.textContent = biggest_loss;
+    
+    if (!highest_win)
+    {
+        highestWinSpan.textContent = "no data yet...";
+        highestWinSpan.style.fontSize = "0.9em";
+    }
+    if (!biggest_loss)
+    {
+        biggestLossSpan.textContent = "no data yet...";
+        biggestLossSpan.style.fontSize = "0.9em";
+    }
+}
+
 function displayDashboardData(data)
 {
     displayGamesChart([data.wins, data.losses]);
     console.log("f: ", data.goals_for, " a: ", data.goals_against);
     displayGoalsChart([data.goals_for, data.goals_against]);
-    displayGeneralInformation(data.username, data.wins + data.losses, data.tournament_wins);
+    displayGeneralInformation(data.username, data.wins + data.losses, data.tournament_games, data.tournament_wins, data.winstreak, data.date);
     displayForm(data.form);
     displayMatches(data.matches);
     displayTournament(data.last_tournament);
+    displayHighlights(data.highest_win, data.biggest_loss);
 }
 
 export async function renderMenuDashboard() {
@@ -206,11 +234,11 @@ export async function renderMenuDashboard() {
 
                 <div id="gamesChart" class="grid-item item1"><p class="graph-title">Games</p></div>
                 <div id="goalsChart" class="grid-item item2"><p class="graph-title">Goals</p></div>
-                <div id="chartPlaytime" class="grid-item item3"><p class="graph-title">Playtime [minutes]</p></div>
-                <div class="grid-item item4">
-                    <p class="graph-title" style="margin-bottom: 0.8em;">Matches</p>
-                    <ul id="playedMatches" class="dashboard-matches-list"></ul>
+                <div class="grid-item item3">
+                <p class="graph-title" style="margin-bottom: 0.8em;">Matches</p>
+                <ul id="playedMatches" class="dashboard-matches-list"></ul>
                 </div>
+                <div id="avatarItem" class="grid-item item4"><p class="graph-title">Avatar</p></div>
                 <div id="" class="grid-item item5">
                     <p class="graph-title" style="margin-bottom: 0.8em;">Highlights</p>
                     <div class="dashboard-highlight-container">
@@ -274,26 +302,26 @@ export async function renderMenuDashboard() {
                         </div>
                         <div class="dashboard-information-item">
                             <div>
+                                <span style="color: #b7b6bb;">Tournaments played:</span>
+                                <span id="infoTournamentsPlayed"></span>
+                            </div>
+                        </div>
+                        <div class="dashboard-information-item">
+                            <div>
                                 <span style="color: #b7b6bb;">Tournaments won:</span>
                                 <span id="infoTournamentWins"></span>
                             </div>
                         </div>
                         <div class="dashboard-information-item">
                             <div>
-                                <span style="color: #b7b6bb;">Friends:</span>
-                                <span id="infoFriends">4</span>
-                            </div>
-                        </div>
-                        <div class="dashboard-information-item">
-                            <div>
-                                <span style="color: #b7b6bb;">Arch enemy:</span>
-                                <span id="infoArchEnemy">fwechsle</span>
+                                <span style="color: #b7b6bb;">Longest winstreak:</span>
+                                <span id="infoWinstreak"></span>
                             </div>
                         </div>
                         <div class="dashboard-information-item">
                             <div>
                                 <span style="color: #b7b6bb;">Registered:</span>
-                                <span id="infoDate">2024-10-18 12:15</span>
+                                <span id="infoRegisterDate"></span>
                             </div>
                         </div>
                     </div>
@@ -456,88 +484,6 @@ export async function renderMenuDashboard() {
     }
     });
 
-    const ctx2 = document.createElement('canvas'); // Create a canvas element
-    ctx2.id = 'myChart';  // Set an id
-    // ctx2.height = 100;
-    document.getElementById('chartPlaytime').appendChild(ctx2);  // Append to the app div
-    
-    const myChart3 = new Chart(ctx2, {
-        type: 'line',  // Example chart type: bar, line, etc.
-        data: {
-            labels: ['05/24', '06/24', '07/24', '08/24', '09/24', '10/24'],
-            datasets: [{
-                data: [0, 94, 155, 290, 344, 367],
-                backgroundColor: [
-                    'rgba(255, 99, 132, 0.5)',
-                    'rgba(54, 162, 235, 0.5)',
-                    'rgba(255, 206, 86, 0.5)',
-                    'rgba(75, 192, 192, 0.5)',
-                    'rgba(153, 102, 255, 0.5)',
-                    'rgba(255, 159, 64, 0.5)'
-                ],
-                borderColor: 'rgba(75, 192, 192, 0.7)',
-                tension: 0.3,
-                borderWidth: 2.5,
-                pointRadius: 2, // Remove points
-                pointHoverRadius: 0, // Disable hover effect on points
-                // fill: false
-            }]
-        },
-    options: {
-        maintainAspectRatio: false, // Allow the chart to resize freely
-        aspectRatio: 2, // Adjust the aspect ratio as needed
-        scales: {
-            y: {
-                beginAtZero: true,
-                grid: {
-                    color: 'rgba(0, 0, 0, 0.2)', // Strong black grid lines
-                    borderColor: 'rgba(0, 0, 0, 1)' // Strong black border
-                },
-                ticks: {
-                    color: 'rgba(255, 255, 255, 0.8)',
-                    font: {
-                        weight: 'bold'
-                    }
-                }
-            },
-            x: {
-                grid: {
-                    color: 'rgba(0, 0, 0, 0)', // Strong black grid lines
-                    borderColor: 'rgba(0, 0, 0, 1)' // Strong black border
-                },
-                ticks: {
-                    color: 'rgba(255, 255, 255, 0.8)',
-                    font: {
-                        weight: 'bold'
-                    }
-                }
-            }
-        },
-        plugins: {
-            legend: {
-                display: false,
-                labels: {
-                    color: 'rgba(255, 255, 255, 0.8)', // Strong black legend labels
-                    font: {
-                        size: 14,
-                        weight: 'bold'
-                    }
-                },
-                onClick: null
-            },
-            tooltip: {
-                enabled: false,
-                backgroundColor: 'rgba(0, 0, 0, 1)', // Strong black tooltip background
-                titleColor: 'rgba(255, 255, 255, 1)', // White tooltip title
-                bodyColor: 'rgba(255, 255, 255, 1)' // White tooltip body
-            }
-        },
-        hover: {
-            mode: null
-        }
-    }
-    });
-
     displayDashboardData(response);
 
     const addButton = document.getElementById('test123');
@@ -545,7 +491,7 @@ export async function renderMenuDashboard() {
     addButton.addEventListener('click', () => {
         displayGamesChart([31, 2]);
         displayGoalsChart([31, 2]);
-        displayGeneralInformation("fheid", "42", "4");
+        displayGeneralInformation("fheid", "42", "4", "2", "19", "2024-10-18 12:15");
         displayForm("WLWLWWLLW");
 
         const matches = [{"player_home": "fheid", "player_away": "fwechsle", "score_home": 4, "score_away": 0, "date": "2024-10-18 12:15"}];
