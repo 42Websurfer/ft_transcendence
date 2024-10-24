@@ -207,18 +207,21 @@ def get_match_data(user_game_stats):
 		if (match.winner == user_game_stats):
 			form += ('W')
 			if (match.winner == match.home): #user wins at home
-				if (not highest_win or (highest_win['score_home'] - highest_win['score_away']) < (match_data['score_home'] - match_data['score_away'])):
+				if (not highest_win or abs(highest_win['score_home'] - highest_win['score_away']) < abs(match_data['score_home'] - match_data['score_away'])):
+					logger.debug(f"\n\nHighest_win = {match_data}\n\n")
 					highest_win = match_data
 			else: #(match.winner is match_data['away']): #user wins away
-				if (not highest_win or (highest_win['score_away'] - highest_win['score_home']) < (match_data['score_away'] - match_data['score_home'])):
+				if (not highest_win or abs(highest_win['score_away'] - highest_win['score_home']) < abs(match_data['score_away'] - match_data['score_home'])):
 					highest_win = match_data
+					logger.debug(f"\n\nHighest_win = {match_data}\n\n")
+
 		else:
 			form += ('L')
 			if (user_game_stats == match.home):
-				if (not highest_loss or (highest_loss['score_away'] - highest_loss['score_home']) < (match_data['score_away'] - match_data['score_home'])):
+				if (not highest_loss or abs(highest_loss['score_away'] - highest_loss['score_home']) < abs(match_data['score_away'] - match_data['score_home'])):
 					highest_loss = match_data
 			else:
-				if (not highest_loss or (highest_loss['score_home'] - highest_loss['score_away']) < (match_data['score_home'] - match_data['score_away'])):
+				if (not highest_loss or abs(highest_loss['score_home'] - highest_loss['score_away']) < abs(match_data['score_home'] - match_data['score_away'])):
 					highest_loss = match_data
 		matches_data.append(match_data)
 	return matches_data, highest_win, highest_loss, form
@@ -253,7 +256,7 @@ def get_dashboard_data(request):
 		'form': form,
 		'tournaments_played': tournaments_played,
 		'registered': user_game_stats.user.date_joined.strftime('%d-%m-%Y %H:%M'),
-		'winstrike': get_longest_winstreak(form),
+		'winstreak': get_longest_winstreak(form),
 	}
 	return JsonResponse(data)
 	#
