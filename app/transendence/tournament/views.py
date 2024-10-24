@@ -10,7 +10,8 @@ from .utils import update_online_match_socket, set_online_match, tournament_stri
 from django.views.decorators.csrf import csrf_exempt
 from channels.layers import get_channel_layer
 from asgiref.sync import sync_to_async
-from .models import GameStatsUser
+from django.core.exceptions import ObjectDoesNotExist
+from .models import GameStatsUser, OnlineMatch, Tournament, TournamentResults
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -147,6 +148,20 @@ async def start_game_loop(request, lobby_id):
         }
     )
     return (JsonResponse({'type': 'success'}))
+
+def get_dashboard_data(request):
+    user = request.user
+    try:
+        user_game_stats = GameStatsUser.objects.get(username=user.username)
+    except ObjectDoesNotExist:
+        return JsonResponse({'type': 'error', 'message': 'User does not exist in GameStats Object'})
+    logger.debug(f"user_game_stats = {user_game_stats}")
+
+    home_matches = OnlineMatch.objects.filter(home=user_game_stats)
+    away_matches = OnlineMatch.objects.filter(away=user_game_stats)
+    all_matches = home_matches.union(away_matches)
+    logger.debug(f"all_matches from the user: \n {all_matches}")
+    
 
 # BLOCKCHAIN-SERVICE
 
