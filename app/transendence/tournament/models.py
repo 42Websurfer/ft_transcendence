@@ -64,7 +64,26 @@ class OnlineMatch(models.Model):
         return f"{self.home.username} vs {self.away.username}"
 
 
-# class Tournament(models.Model):
-#     tournament_id 
+class Tournament(models.Model):
+    tournament_id = models.CharField(max_length=50, unique=True)
+    date = models.DateTimeField(auto_now_add=True)
 
-# class TournamentResults(models.Model):
+    def __str__(self):
+        return f"Tournament: {self.tournament_id}."
+
+#do not forget to set the GameStatsUser in user_id!!!!! check in redis is the user_id setted!
+
+class TournamentResults(models.Model):
+    tournament_id = models.ForeignKey(Tournament, related_name="all_results", on_delete=models.CASCADE)
+    rank = models.IntegerField(default=1)
+    games = models.IntegerField(default=0)
+    won = models.IntegerField(default=0)
+    lost = models.IntegerField(default=0)
+    goals_for = models.IntegerField(default=0)
+    goals_against = models.IntegerField(default=0)
+    diff = models.IntegerField(default=0)
+    points = models.IntegerField(default=0)
+    user = models.ForeignKey(GameStatsUser, related_name="all_tournament_results", on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"Tournament result ({self.tournament_id.tournament_id}) from {self.user.username}"
