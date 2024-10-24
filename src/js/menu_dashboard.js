@@ -74,7 +74,7 @@ function displayForm(form)
     addFormItem(formDiv, 'next');
 }
 
-function addMatchItem(list, player_home, player_away, score, date, result) {
+function addMatchItem(list, player_home, player_away, score, date) {
 
     if (!list)
         return;
@@ -87,12 +87,7 @@ function addMatchItem(list, player_home, player_away, score, date, result) {
         margin-bottom: 0.6em;
     `;  
 
-    if (result === 'win')
-        li.style.background = 'linear-gradient(to bottom, rgba(7, 136, 7, 0.5), rgba(7, 136, 7, 0.5) 100%)';
-    else if (result === 'loss')
-        li.style.background = 'linear-gradient(to bottom, rgba(242, 7, 7, 0.5), rgba(242, 7, 7, 0.5) 100%)';
-    else
-        li.style.background = 'linear-gradient(to bottom, rgba(112, 111, 122, 0.5), rgba(112, 111, 122, 0.5) 100%)';
+    li.style.background = 'linear-gradient(to bottom, rgba(7, 136, 7, 0.5), rgba(7, 136, 7, 0.5) 100%)';
 
     li.innerHTML = `
     <div class="dashboard-match">
@@ -115,7 +110,10 @@ function displayMatches(matches)
     for (let index = 0; index < matches.length; index++)
     {
         const m = matches[index];
-        addMatchItem(list, m.player_home, m.player_away, m.score_home + ":" + m.score_away, m.date, m.result);
+
+        // es gibt auch noch m.modus!!!
+
+        addMatchItem(list, m.player_home, m.player_away, m.score_home + ":" + m.score_away, m.date);
     }
 }
 
@@ -176,9 +174,9 @@ export async function renderMenuDashboard() {
         return;
     }
 
-    // displayDashboardDate function callen
-
     console.log("response: ", response);
+
+    displayDashboardData(response);
 
     const app = document.getElementById('app');
 
@@ -536,7 +534,7 @@ export async function renderMenuDashboard() {
         displayGeneralInformation("fheid", "42", "4");
         displayForm("WLWLWWLLW");
 
-        const matches = [{"player_home": "fheid", "player_away": "fwechsle", "score_home": 4, "score_away": 0, "date": "2024-10-18 12:15", "result": "win"}];
+        const matches = [{"player_home": "fheid", "player_away": "fwechsle", "score_home": 4, "score_away": 0, "date": "2024-10-18 12:15"}];
         displayMatches(matches);
 
         const tournament = [{"rank": "1", "player": "fwechslefwechsle", "games": 4, "wins": 4, "losses": 0, "goals": 28, "goals_against": 0, "diff": 28, "points": 12}];
