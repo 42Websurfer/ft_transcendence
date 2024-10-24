@@ -187,8 +187,11 @@ def get_match_data(user_game_stats):
 	away_matches = OnlineMatch.objects.filter(away=user_game_stats)
 	all_matches = home_matches.union(away_matches)	
 	matches_data = []
+	highest_win = {}
+	highest_loss = {}
+	form = ""	
 	for match in all_matches:
-		matches_data.append({
+		match_data = {
 			'player_home': match.home.username if match.home else None,
 			'player_away': match.away.username if match.away else None,
 			'score_home': match.home_score,
@@ -196,8 +199,25 @@ def get_match_data(user_game_stats):
 			#'winner': match.winner.username if match.winner else None,
 			'date': match.created_at.strftime('%d-%m-%Y %H:%M'),
 			'modus': match.modus,
-		})
-	return matches_data
+		}
+		if (match.winner == user_game_stats):
+			form += ('W')
+			if (match.winner == match.home): #user wins at home
+				if (not highest_win or (highest_win['score_home'] - highest_win['score_away']) < (match_data['score_home'] - match_data['score_away'])):
+					highest_win = match_data
+			else: #(match.winner is match_data['away']): #user wins away
+				if (not highest_win or (highest_win['score_away'] - highest_win['score_home']) < (match_data['score_away'] - match_data['score_home'])):
+					highest_win = match_data
+		else:
+			form += ('L')
+			if (user_game_stats == match.home):
+				if (not highest_loss or (highest_loss['score_away'] - highest_loss['score_home']) < (match_data['score_away'] - match_data['score_home'])):
+					highest_loss = match_data
+			else:
+				if (not highest_loss or (highest_loss['score_home'] - highest_loss['score_away']) < (match_data['score_home'] - match_data['score_away'])):
+					highest_loss = match_data
+		matches_data.append(match_data)
+	return matches_data, highest_win, highest_loss, form
 
 def get_dashboard_data(request):
 	user = request.user
@@ -207,9 +227,9 @@ def get_dashboard_data(request):
 		return JsonResponse({'type': 'error', 'message': 'User does not exist in GameStats Object'})
 	logger.debug(f"user_game_stats = {user_game_stats}")
 
-	all_matches = get_match_data(user_game_stats)
+	all_matches, highest_win, highest_loss, form = get_match_data(user_game_stats)
 	logger.debug(f"all_matches from the user: \n {all_matches}")
-
+	logger.debug(f"Highest_win = {highest_win}, \nhighest_loss = {highest_loss}\nForm = {form}")
 	tournament_data = get_last_tournament_data(user_game_stats)
 	logger.debug(f"Tournament info\n {tournament_data}")
 
@@ -223,7 +243,11 @@ def get_dashboard_data(request):
 		'tournament_wins': user_game_stats.tournament_wins,
 		'form': 'WLWWLW', #muss noch gebaut werden
 		'matches': all_matches,
-		'last_tournament': tournament_data
+		'last_tournament': tournament_data,
+		'highest_win': highest_win,
+		'highest_loss': highest_loss,
+		'form': form,
+
 	}
 	return JsonResponse(data)
 	#
