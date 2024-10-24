@@ -170,11 +170,13 @@ def safe_tournament_data(lobby_id):
 	tournament.save()
 	logger.debug(f"Lets see the result: \n {results}")
 	for result in results: 
-		logger.debug(f"Player = {result['player']}")
 		try:
 			user_Gamestats = GameStatsUser.objects.get(username=result['player'])
 		except ObjectDoesNotExist:
 			continue
+		if result['rank'] == 1:
+			user_Gamestats.tournament_wins += 1
+			user_Gamestats.save()
 		tournament_result = TournamentResults(
 			tournament_id = tournament,
 			rank = result['rank'],
