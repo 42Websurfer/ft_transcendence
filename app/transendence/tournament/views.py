@@ -257,6 +257,7 @@ def get_dashboard_data(request):
 		'tournaments_played': tournaments_played,
 		'registered': user_game_stats.user.date_joined.strftime('%d-%m-%Y %H:%M'),
 		'winstreak': get_longest_winstreak(form),
+		'avatar_url': user_game_stats.avatar.url,
 	}
 	return JsonResponse(data)
 	#
