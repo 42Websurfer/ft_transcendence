@@ -12,13 +12,13 @@ export function renderPong(match_id) {
 		<div class="menu" style="justify-content: center; padding: 2em;">
 			<div class="game-container">
 				<div class="game-information">
-					<span class="game-name">fwechslex</span>
-					<span class="game-score">4</span>
+					<span id="player1_name" class="game-name">fwechslex</span>
+					<span id="player1_score" class="game-score">4</span>
 				</div>
 				<div id="canvasContainer"></div>
 				<div class="game-information">
-					<span class="game-name">fwechslex</span>
-					<span class="game-score">0</span>
+					<span id="player2_name" class="game-name">fwechslex</span>
+					<span id="player2_score" class="game-score">0</span>
 				</div>
 			</div>
 		</div>
@@ -349,6 +349,12 @@ class RemoteHandler extends Entity{
 		ent.rotate(transform.rotation);
 	}
 
+	updatePlayerScore(id, score) {
+		manager.entities[id].score = score;
+		let scoreText = document.getElementById("player2_score");
+		scoreText.innerText = score;
+	}
+
 	removeEntity(id){
 		world.removeEntity(this.entities[id]);
 		delete this.entities[id];
@@ -423,7 +429,7 @@ function setupSocketHandlers(socket){
 		} else if (data.type === 'setPos'){
 			manager.setEntityPosition(data.id, data.transform);
 		} else if (data.type === 'setScore'){
-			manager.entities[data.id].score = data.score;
+			manager.updatePlayerScore(data.id, data.score)
 		} else if (data.type === 'drawDot'){
 			ctx.fillStyle = 'red';
 			ctx.fillRect(data.x, data.y, 5, 5);

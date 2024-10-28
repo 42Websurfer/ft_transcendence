@@ -14,6 +14,7 @@ class Ball(Entity):
 		self.physics = Physics(0, 0, False, False)
 		self.add_component(Physics, self.physics)
 		self.last_hit = None
+		self.second_last_hit = None
 
 	def move(self, x_add, y_add):
 		new_pos = self.position.add(Vector(x_add, y_add))
@@ -21,6 +22,7 @@ class Ball(Entity):
 
 	def on_collision(self, other, collision_point=None):
 		if isinstance(other, Player):
+			self.second_last_hit = self.last_hit if self.last_hit != other else self.second_last_hit
 			self.last_hit = other
 		if collision_point is None:
 			return
@@ -91,6 +93,18 @@ class Player(Entity):
 				}
 				),
 				thread_local.event_loop)
+			
+	def increase_score(self):
+		print('Player', self.id, 'Scored')
+		self.score += 1
+		asyncio.run_coroutine_threadsafe(thread_local.host.channel_layer.group_send(
+			thread_local.host.group_name,
+			{
+				'type': 'player_score',
+				'id': self.id,
+				'score': self.score
+			}
+		), thread_local.event_loop)
 
 	def handle_remote_movement(self, input):
 		if input == 1:
@@ -174,20 +188,24 @@ class GameLogicManager(Entity):
 		# 	rot += rotationStep
 		world.addEntity(self.ball)
 		for section in self.sections:
-			section.goal.on_trigger = partial(self.create_goal_function(), section.goal)
+			section.goal.on_trigger = self.create_goal_function(section)
 		
 			world.addEntity(section.player)
 			world.addEntity(section.goal)
 		self.ball.physics.set_velocity(15, 0)
 
-	def create_goal_function(self):
-		def goal_function(self, other, collision_point=None):
+	def create_goal_function(self, section):
+		def goal_function(other, collision_point=None):
 			if isinstance(other, Ball):
-				if isinstance(self, Wall):
-					print('it should be this! because section.goal is a Wall')
-				elif isinstance(self, GameLogicManager):
-					print('but it is this!')
-				print("Scored a goal")
+				print('We should score goal!')
+				print('last hit:', other.last_hit)
+				if other.last_hit is not None:
+					if other.last_hit != section.player:
+						other.last_hit.increase_score()
+					elif other.second_last_hit is not None:
+						other.second_last_hit.increase_score()
+					else:
+						print("WHAT THE FUCK DO WE DO NOW?")
 		return goal_function
 
 

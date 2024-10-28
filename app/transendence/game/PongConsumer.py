@@ -79,6 +79,13 @@ class MyConsumer(AsyncWebsocketConsumer):
 		# await self.send(text_data=str(2000))
 		# print('move_entity event processed')
 
+	async def player_score(self, event):
+		await self.send(text_data=json.dumps({
+			'type': 'setScore',
+			'id': event.get('id'),
+			'score': event.get('score')
+		}))
+
 	async def disconnectedMsg(self, event):
 		users_data = {
 			'type': 'disconnected',
