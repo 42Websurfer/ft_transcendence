@@ -5,7 +5,8 @@ from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
-from .models import User, Friendship, PongMatches, UserProfile
+from .models import User, Friendship, UserProfile
+from tournament.models import GameStatsUser
 from django.db.models import Q
 from user.utils import updateOnlineStatusChannel
 import json
@@ -38,8 +39,6 @@ def user_login(request):
             data = json.loads(request.body)
             username = data.get('username')
             password = data.get('password')
-            logger.debug(f"Received username: {username}")
-            logger.debug(f"Received password: {password}")
             if User.objects.filter(username=username).exists():
                 user = authenticate(username=username, password=password)
                 if user is not None:
@@ -73,13 +72,16 @@ def user_logout(request):
 def register(request):
     if request.method == 'POST':
         try:
-            data = json.loads(request.body)		
+            #data = json.loads(request.body)		
+            data = request.POST
             email = data.get('email')
             password = data.get('password')
             firstname = data.get('firstname')
             lastname = data.get('lastname')
             username = data.get('username')
-
+            #check if one value is missing!
+            avatar = data = request.FILES.get('avatar')
+            logger.debug(f"print form data: Email: {email}, Firstname: {firstname}")
             if User.objects.filter(email=email).exists():
                 return JsonResponse({'type': 'error', 'message': 'Email address already exists.'}, status=400)
             elif User.objects.filter(username=username).exists():
@@ -87,6 +89,10 @@ def register(request):
             user = User.objects.create_user(username=username, email=email, first_name=firstname, last_name=lastname)
             user.set_password(password)
             user.save()
+            if avatar:
+                user_game_stats = GameStatsUser.objects.get(username=username)
+                user_game_stats.avatar = avatar
+                user_game_stats.save()
             login(request, user)
             return JsonResponse({
                 'type': 'success',
@@ -248,51 +254,6 @@ def friend_list(request):
     ]
     return JsonResponse({'requests': requests_data})
 
-@csrf_exempt
-@login_required
-def addMatches(request):
-    if request.method == 'POST':
-        matchStats = json.loads(request.body)
-        user1 = get_object_or_404(User, id=matchStats.get('player1_id'))
-        user2 = get_object_or_404(User, id=matchStats.get('player2_id'))
-        if user1 is None or user2 is None:
-            return JsonResponse({'type': 'error'}, status=400)
-
-        if matchStats.get('score_player1') > matchStats.get('score_player2'): 
-            winner=user1 
-        else:
-            winner=user2 
-
-        newMatch = PongMatches.objects.create(
-            player1_id=user1,
-            player2_id=user2,
-            score_player1=matchStats.get('score_player1'),
-            score_player2=matchStats.get('score_player2'),
-            winner=winner,
-        )
-        if newMatch:
-            response_data = {'type': 'success'}
-        else:
-            response_data ={'type': 'error'}
-
-        return JsonResponse(response_data, status=201)
-    return JsonResponse({'type': 'error'}, status=405)
-
-def getMatchHistory(request):
-    user = request.user
-    history = PongMatches.objects.filter(Q(player1_id=user) | Q(player2_id=user) )
-    requests_data = [
-        {
-            'player1_id': game.player1_id.username,
-            'player2_id': game.player2_id.username,
-            'score_player1': game.score_player1,
-            'score_player2': game.score_player2,
-            'played_at': game.played_at,
-        }
-        for game in history
-    ]
-    return JsonResponse({'requests': requests_data})
-
 r = redis.Redis(host='redis', port=6379, db=0)
 User = get_user_model()
 
@@ -328,7 +289,6 @@ def check_registration(request, session_data):
 
 @csrf_exempt
 def register_api(request):
-    logger.debug(f"KOMMST DU AN GRATTLER?")
     try:
         data = json.loads(request.body)
         session_data = data.get('session_data', {}).get('data', {})

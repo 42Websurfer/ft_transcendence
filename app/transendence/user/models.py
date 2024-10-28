@@ -29,15 +29,3 @@ class Friendship(models.Model):
 
     def __str__(self):
         return f"{self.user.username} -> {self.friend.username} ({self.status})"
-    
-class PongMatches(models.Model):
-    player1_id = models.ForeignKey(User, related_name='games_as_player1', on_delete=models.CASCADE)
-    player2_id = models.ForeignKey(User, related_name='games_as_player2', on_delete=models.CASCADE)
-    score_player1 = models.IntegerField(default=0)
-    score_player2 = models.IntegerField(default=0)
-    winner = models.ForeignKey(User, related_name='games_won', on_delete=models.CASCADE)
-    played_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"Game {self.id}: {self.player1_id.username} vs {self.player2_id.username}"
-    
