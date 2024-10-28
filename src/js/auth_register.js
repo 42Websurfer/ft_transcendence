@@ -7,7 +7,7 @@ export function renderAuthRegister() {
 	app.innerHTML = `
 	<div class="login">
 		<div class="login-container">
-			<form id="registerForm"">
+			<form id="registerForm" enctype="multipart/form-data">
 				<div id="messages"></div>
 				<input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
 
@@ -17,26 +17,29 @@ export function renderAuthRegister() {
 				
 
 				<div class="login-form-field form-floating">
-					<input type="email" name="register-email" class="form-control" placeholder="name@example.com" required>
+					<input type="email" name="email" class="form-control" placeholder="name@example.com" required>
 					<label for="floatingInput">Email address</label>
 				</div>
 				<div class="login-form-field form-floating">
-					<input type="password" name="register-password" class="form-control" placeholder="Password" required>
+					<input type="password" name="password" class="form-control" placeholder="Password" required>
 					<label for="floatingPassword">Password</label>
 				</div>
 				<div class="login-form-field form-floating">
-					<input type="text" name="register-firstname" class="form-control" placeholder="Firstname" required>
+					<input type="text" name="firstname" class="form-control" placeholder="Firstname" required>
 					<label for="floatingPassword">Firstname</label>
 				</div>
 				<div class="login-form-field form-floating">
-					<input type="text" name="register-lastname" class="form-control" placeholder="Lastname" required>
+					<input type="text" name="lastname" class="form-control" placeholder="Lastname" required>
 					<label for="floatingPassword">Lastname</label>
 				</div>
 				<div class="login-form-field form-floating">
-					<input type="text" name="register-username" class="form-control" placeholder="Username" required>
+					<input type="text" name="username" class="form-control" placeholder="Username" required>
 					<label for="floatingPassword">Username</label>
 				</div>
-
+				<div class="login-form-field form-floating">
+					<input type="file" name="avatar" class="form-control" placeholder="Upload avatar">
+					<label for="floatingPassword">Upload avatar</label>
+				</div>
 				<button class="signin-button btn btn-primary w-100 py-2" type="submit">Sign up</button>
 				
 			</form>
@@ -54,7 +57,10 @@ async function handleFormSubmit(event) {
     event.preventDefault();
     const form = event.target;
     const formData = new FormData(form);
-    const data = {
+    for (let [key, value] of formData.entries()) {
+        console.log(`${key}: ${value}`);
+    }
+	const data = {
         email: formData.get('register-email'),
         password: formData.get('register-password'),
         firstname: formData.get('register-firstname'),
@@ -67,10 +73,9 @@ async function handleFormSubmit(event) {
     const response = await fetch('/register/', {
 		method: 'POST',
         headers: {
-			'Content-Type': 'application/json',
             'X-CSRFToken': csrftoken
         },
-        body: JSON.stringify(data)
+        body: formData//JSON.stringify(data)
     });
 	
     const result = await response.json();

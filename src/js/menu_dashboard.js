@@ -204,6 +204,17 @@ function displayHighlights(highest_win, biggest_loss, username)
     }
 }
 
+function displayAvatar(avatar_url) {
+    if (avatar_url) {
+        const avatarContainer = document.getElementById('avatarItem');
+        const avatarImg = document.createElement('img');
+        avatarImg.src = avatar_url;
+        avatarImg.alt = 'User Avatar';
+        avatarImg.className = 'user-avatar'; // Add any necessary classes
+        avatarContainer.appendChild(avatarImg);
+    }
+}
+
 function displayDashboardData(data)
 {
     displayGamesChart([data.wins, data.losses]);
@@ -213,7 +224,9 @@ function displayDashboardData(data)
     displayMatches(data.matches, data.username);
     displayTournament(data.last_tournament);
     displayHighlights(data.highest_win, data.biggest_loss, data.username);
+    displayAvatar(data.avatar_url);
 }
+
 
 export async function renderMenuDashboard() {
 
@@ -249,7 +262,9 @@ export async function renderMenuDashboard() {
                 <p class="graph-title" style="margin-bottom: 0.8em;">Matches</p>
                 <ul id="playedMatches" class="dashboard-matches-list"></ul>
                 </div>
-                <div id="avatarItem" class="grid-item item4"><p class="graph-title">Avatar</p></div>
+                <div id="avatarItem" class="grid-item item4">
+                <p class="graph-title">Avatar</p></div>
+                
                 <div id="" class="grid-item item5">
                     <p class="graph-title" style="margin-bottom: 0.8em;">Highlights</p>
                     <div class="dashboard-highlight-container">

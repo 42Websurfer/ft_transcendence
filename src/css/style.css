@@ -1380,6 +1380,12 @@ body {
     height: 37em; /* Adjust height based on your need */
 }
 
+#avatarItem > img{
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 50%;
+}
 .grid-item {
     background-color: rgba(255, 255, 255, 0.4);
     
