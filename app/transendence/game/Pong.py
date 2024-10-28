@@ -1,5 +1,6 @@
 import threading, time, asyncio
 from .GameSystem import *
+from functools import partial
 
 # Constants
 PLAYER_MOVE_SPEED = 20
@@ -173,16 +174,21 @@ class GameLogicManager(Entity):
 		# 	rot += rotationStep
 		world.addEntity(self.ball)
 		for section in self.sections:
-			section.goal.on_collision_lambda = lambda other: (
-				print('SOME goal scored')
-				# other.last_hit.score + 1 if other.last_hit and other.last_hit != section.player else (
-				# 	other.second_last_hit.score + 1 if other.second_last_hit else print("WHAT THE HECK DO WE DO NOW?")
-				# ),
-				# section.reset_round()
-			) if isinstance(other, Ball) else None
+			section.goal.on_trigger = partial(self.create_goal_function(), section.goal)
+		
 			world.addEntity(section.player)
 			world.addEntity(section.goal)
 		self.ball.physics.set_velocity(15, 0)
+
+	def create_goal_function(self):
+		def goal_function(self, other, collision_point=None):
+			if isinstance(other, Ball):
+				if isinstance(self, Wall):
+					print('it should be this! because section.goal is a Wall')
+				elif isinstance(self, GameLogicManager):
+					print('but it is this!')
+				print("Scored a goal")
+		return goal_function
 
 
 async def getCurrentState(world, consumer):
