@@ -259,10 +259,10 @@ class PongLocalManager extends Entity{
 		if (this.ball.lastHit !== undefined){
 			dir = this.ball.lastHit.position.sub(this.ball.position);
 			dir.normalize();
-			dir.scale(50);
+			dir.scale(15);
 		}
 		else{
-			dir = new Vector(50, 0);
+			dir = new Vector(15, 0);
 		}
 		this.ball.physics.setVelocity(dir.x, dir.y);
 	}
@@ -302,6 +302,7 @@ class RemoteHandler extends Entity{
 	constructor(){
 		super(0, 0);
 		this.entities = {};
+		this.players = [];
 		this.localPlayer = undefined;
 	}
 
@@ -328,6 +329,10 @@ class RemoteHandler extends Entity{
 		this.setEntityPosition(ent.id, data.transform);
 	}
 
+	addPlayer(entid, uid, uname) {
+		manager.players.push({entid, uid, uname});
+	}
+
 	addEntity(id, ent){
 		this.entities[id] = ent;
 		world.addEntity(ent);
@@ -351,6 +356,10 @@ class RemoteHandler extends Entity{
 
 	updatePlayerScore(id, score) {
 		manager.entities[id].score = score;
+		for (let i = 0; i < this.players.length; i++) {
+			let scoreText = document.getElementById(`player${i+1}_score`);
+			scoreText.innerText = this.entities[this.players[i].entid].score;
+		}
 		let scoreText = document.getElementById("player2_score");
 		scoreText.innerText = score;
 	}
@@ -430,6 +439,8 @@ function setupSocketHandlers(socket){
 			manager.setEntityPosition(data.id, data.transform);
 		} else if (data.type === 'setScore'){
 			manager.updatePlayerScore(data.id, data.score)
+		} else if (data.type === 'initPlayer') {
+			manager.addPlayer(data.ent_id, data.uid, data.uname);
 		} else if (data.type === 'drawDot'){
 			ctx.fillStyle = 'red';
 			ctx.fillRect(data.x, data.y, 5, 5);

@@ -29,7 +29,17 @@ class MyConsumer(AsyncWebsocketConsumer):
 		GamesHandler.add_consumer_to_game(self, self.group_name)
 
 	async def assign_player(self, pong_player):
+		print('consumer gets PongPlayer assigned')
 		self.player_c = pong_player
+		await self.channel_layer.group_send(
+			self.group_name,
+			{
+				'type': "init_players",
+				'ent_id': pong_player.id,
+				'uid': self.user.id,
+				'uname': self.user.username
+			}
+		)
 		# here send the assign local stuff maybe?
 
 
@@ -56,6 +66,17 @@ class MyConsumer(AsyncWebsocketConsumer):
 				self.player_c.handle_remote_movement(text_data_json)
 			return
 		print(f"text:data: {text_data_json}")
+
+	async def init_players(self, event):
+		print('We send what player has wich uid and uname')
+		await self.send(text_data=json.dumps(
+			{
+				'type': 'initPlayer',
+				'ent_id': event.get('ent_id'),
+				# 'pid': event.get('pid'),
+				'uid': event.get('uid'),
+				'uname': event.get('uname')
+			}))
 		
 
 	async def client_create_entity(self, event):
@@ -73,6 +94,16 @@ class MyConsumer(AsyncWebsocketConsumer):
 		# print('move_entity event sent:', event, self.player_c.id)
 		await self.send(text_data=json.dumps({
 			'type': 'updatePos',
+			'id': event.get('id'),
+			'transform': event.get('transform'),
+		}))
+		# await self.send(text_data=str(2000))
+		# print('move_entity event processed')
+
+	async def set_entity_pos(self, event):
+		# print('move_entity event sent:', event, self.player_c.id)
+		await self.send(text_data=json.dumps({
+			'type': 'setPos',
 			'id': event.get('id'),
 			'transform': event.get('transform'),
 		}))
