@@ -16,5 +16,7 @@ urlpatterns = [
     path('get_user_information/', views.get_user_information, name='remove_friendship'),
     path('callback/', views.api_callback, name='callback'),
     path('register_api/', views.register_api, name='register_api'),
+    path('settings/', views.update_user_information, name='settings'),
+    
 ]
 

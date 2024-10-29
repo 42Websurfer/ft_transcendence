@@ -1,3 +1,8 @@
+import json
+import logging
+
+import redis
+import requests
 from django.shortcuts import get_object_or_404, redirect
 from django.http import JsonResponse
 from django.contrib.auth.models import User
@@ -5,17 +10,17 @@ from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
-from .models import User, Friendship, UserProfile
-from tournament.models import GameStatsUser
 from django.db.models import Q
+
 from user.utils import updateOnlineStatusChannel
-import json
-import logging
-import redis
-import requests
+from tournament.models import GameStatsUser
+from .models import User, Friendship, UserProfile
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
+
+r = redis.Redis(host='redis', port=6379, db=0)
+User = get_user_model()
 
 def check_auth(request):
     if request.user.is_authenticated:
@@ -61,6 +66,7 @@ def user_login(request):
             return JsonResponse({'error': 'Invalid JSON.'}, status=400)
     return JsonResponse({'error': 'Invalid request method.'}, status=405)
 
+@login_required 
 def user_logout(request):
     if request.user.is_authenticated: 
         logout(request)
@@ -81,7 +87,6 @@ def register(request):
             username = data.get('username')
             #check if one value is missing!
             avatar = data = request.FILES.get('avatar')
-            logger.debug(f"print form data: Email: {email}, Firstname: {firstname}")
             if User.objects.filter(email=email).exists():
                 return JsonResponse({'type': 'error', 'message': 'Email address already exists.'}, status=400)
             elif User.objects.filter(username=username).exists():
@@ -117,6 +122,45 @@ def get_user_information(request):
         'lastname': user.last_name,
         'username': user.username
     })
+
+@login_required
+def update_user_information(request):
+    if request.method == 'POST':
+        try:
+            data = request.POST
+            email = data.get('email')
+            password = data.get('password')
+            firstname = data.get('firstname')
+            lastname = data.get('lastname')
+            username = data.get('username')
+            avatar = data = request.FILES.get('avatar')
+            user = User.objects.get(id=request.user.id)
+            logger.debug(f"Is 42? : {user.userprofile.is_third_party_user}")
+            if user.userprofile.is_third_party_user:
+                if user.email != email:
+                    return JsonResponse({'type': 'error', 'message': 'Third party user cannot change email'})
+            if username and user.username != username:
+                if User.objects.filter(username=username).exists():
+                    return JsonResponse({'type': 'error', 'message': 'This username already exists.'}, status=400)
+                user.username = username
+            
+            if email and user.email != email: 
+                if User.objects.filter(email=email).exists():
+                    return JsonResponse({'type': 'error', 'message': 'Email address already exists.'}, status=400)
+                user.email = email
+            if password:
+                user.set_password(password)
+            if firstname:
+                user.first_name = firstname
+            if lastname: 
+                user.last_name = lastname
+            if avatar:
+                user.gamestatsuser.avatar = avatar
+                user.gamestatsuser.save()
+            user.save()
+            return (JsonResponse({'type': 'success'}))
+        except User.DoesNotExist:  
+            return JsonResponse({'type': 'error', 'message': 'User does not exist.'})
 
 @login_required
 def send_friend_request(request, username):
@@ -254,9 +298,7 @@ def friend_list(request):
     ]
     return JsonResponse({'requests': requests_data})
 
-r = redis.Redis(host='redis', port=6379, db=0)
-User = get_user_model()
-
+@login_required 
 def get_all_online_users(request):
     online_users_ids = r.smembers("online_users")
 
@@ -301,10 +343,8 @@ def register_api(request):
             return JsonResponse({'type': 'error', 'message': 'This username already exists.'}, status=400)
 
         user= User.objects.create_user(username=username, email=email, first_name=firstname, last_name=lastname)
-        logger.debug(f"User sollte vorkreeirt sein!")
         user.save()
         if user:
-            logger.debug(f"USER IST DA!")
             userprofile = UserProfile.objects.get(user=user)
             userprofile.is_third_party_user = True
             userprofile.save()
@@ -320,19 +360,11 @@ def register_api(request):
 
 @csrf_exempt
 def api_callback(request):
-    # error = request.GET.get('error')
-    # if error:
-    #     return JsonResponse({'error': error}, status=400)
     data = json.loads(request.body) #request.GET.get('code')
     code = data.get('code')
-    logger.debug(f"\n\n\ncode: {code}\n\n\n")
 
     try:
         access_token_response = exchange_code_for_token(code)
-
-
-
-        logger.debug(f"\n\n\nIch habe eine access token vielleicht bekommen?:   {access_token_response}\n\n\n")
 
         user_info = get_user_info(access_token_response['access_token'])
         
@@ -382,9 +414,5 @@ def create_user_session(user_info):
         'last_name': user_info.get('last_name'),
         'username': user_info.get('login')
     }
-
-    # logger.debug(f"\n\n\n\n\nsession_data: {session_data}\n\n\n")
-
-    # USER ADDEN ??? auf jeden fall isAuthenticated auf true setzen und welcome page displayen
 
     return   session_data
