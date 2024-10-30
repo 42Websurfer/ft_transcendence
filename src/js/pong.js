@@ -302,14 +302,8 @@ class RemoteHandler extends Entity{
 	constructor(){
 		super(0, 0);
 		this.entities = {};
-		this.players = [];
+		this.players = {};
 		this.localPlayer = undefined;
-	}
-
-	initLocal(data){
-		this.localPlayer = this.entities[data.id];
-		let net = this.localPlayer.getComponent(Network);
-		net.isLocal = true;
 	}
 
 	newEntity(data){
@@ -330,7 +324,7 @@ class RemoteHandler extends Entity{
 	}
 
 	addPlayer(entid, uid, uname) {
-		manager.players.push({entid, uid, uname});
+		manager.players[entid] = {uid, uname};
 	}
 
 	addEntity(id, ent){
@@ -356,12 +350,16 @@ class RemoteHandler extends Entity{
 
 	updatePlayerScore(id, score) {
 		manager.entities[id].score = score;
-		for (let i = 0; i < this.players.length; i++) {
+		let i = 0;
+		for (const entid in this.players) {
+			const player = this.players[entid];
+			console.log(player);
 			let scoreText = document.getElementById(`player${i+1}_score`);
-			scoreText.innerText = this.entities[this.players[i].entid].score;
+			let scoreName = document.getElementById(`player${i+1}_name`);
+			scoreText.innerText = this.entities[entid].score;
+			scoreName.innerText = player.uname;
+			i++;
 		}
-		let scoreText = document.getElementById("player2_score");
-		scoreText.innerText = score;
 	}
 
 	removeEntity(id){

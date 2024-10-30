@@ -194,13 +194,10 @@ class GameLogicManager(Entity):
 		
 			world.addEntity(section.player)
 			world.addEntity(section.goal)
-		self.ball.physics.set_velocity(15, 0)
 
 	def create_goal_function(self, section):
 		def goal_function(other, collision_point=None):
 			if isinstance(other, Ball):
-				print('We should score goal!')
-				print('last hit:', other.last_hit)
 				if other.last_hit is not None:
 					if other.last_hit != section.player:
 						other.last_hit.increase_score()
