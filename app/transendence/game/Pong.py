@@ -326,8 +326,7 @@ class PongGame:
 		self.event_loop.stop()
 
 	def game_complete(self):
-		self.stop_thread = True
-		self.event_loop.stop()
+		self.stop()
 		#save stuff into database here?!?!
 		pass
 
