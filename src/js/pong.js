@@ -326,6 +326,9 @@ class RemoteHandler extends Entity{
 
 	addPlayer(entid, uid, uname) {
 		this.players[entid] = {uid, uname};
+		if (Object.keys(this.players).length >= 2) {
+			this.updatePlayerScore(entid, 0);
+		}
 	}
 
 	addEntity(id, ent){
