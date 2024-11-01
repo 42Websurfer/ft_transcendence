@@ -60,7 +60,6 @@ class MyConsumer(AsyncWebsocketConsumer):
 
 	async def receive(self, text_data):
 		text_data_json = json.loads(text_data)
-		# print('we got=', text_data_json)
 		if isinstance(text_data_json, int):
 			if self.player_c is not None:
 				self.player_c.handle_remote_movement(text_data_json)
@@ -73,7 +72,6 @@ class MyConsumer(AsyncWebsocketConsumer):
 			{
 				'type': 'initPlayer',
 				'ent_id': event.get('ent_id'),
-				# 'pid': event.get('pid'),
 				'uid': event.get('uid'),
 				'uname': event.get('uname')
 			}))
@@ -90,6 +88,9 @@ class MyConsumer(AsyncWebsocketConsumer):
 		}))
 		print('client_create_entity event processed')
 
+	"""
+	This is to indicate an entity moved, client side will smooth out rough movements
+	"""
 	async def move_entity(self, event):
 		# print('move_entity event sent:', event, self.player_c.id)
 		await self.send(text_data=json.dumps({
@@ -100,15 +101,15 @@ class MyConsumer(AsyncWebsocketConsumer):
 		# await self.send(text_data=str(2000))
 		# print('move_entity event processed')
 
+	"""
+	This is to set the pos aka so for ball reset
+	"""
 	async def set_entity_pos(self, event):
-		# print('move_entity event sent:', event, self.player_c.id)
 		await self.send(text_data=json.dumps({
 			'type': 'setPos',
 			'id': event.get('id'),
 			'transform': event.get('transform'),
 		}))
-		# await self.send(text_data=str(2000))
-		# print('move_entity event processed')
 
 	async def round_start(self, event):
 		await self.send(json.dumps({
