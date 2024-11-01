@@ -12,15 +12,16 @@ export function renderPong(match_id) {
 		<div class="menu" style="justify-content: center; padding: 2em;">
 			<div class="game-container">
 				<div class="game-information">
-					<span class="game-name">fwechslex</span>
-					<span class="game-score">4</span>
+					<span id="player1_name" class="game-name">fwechslex</span>
+					<span id="player1_score" class="game-score">4</span>
 				</div>
 				<div id="canvasContainer"></div>
 				<div class="game-information">
-					<span class="game-name">fwechslex</span>
-					<span class="game-score">0</span>
+					<span id="player2_name" class="game-name">fwechslex</span>
+					<span id="player2_score" class="game-score">0</span>
 				</div>
 			</div>
+			<div class="countdown-container" id="countdownDisplay"></div>
 		</div>
 		`;
 
@@ -259,10 +260,10 @@ class PongLocalManager extends Entity{
 		if (this.ball.lastHit !== undefined){
 			dir = this.ball.lastHit.position.sub(this.ball.position);
 			dir.normalize();
-			dir.scale(50);
+			dir.scale(15);
 		}
 		else{
-			dir = new Vector(50, 0);
+			dir = new Vector(15, 0);
 		}
 		this.ball.physics.setVelocity(dir.x, dir.y);
 	}
@@ -302,13 +303,8 @@ class RemoteHandler extends Entity{
 	constructor(){
 		super(0, 0);
 		this.entities = {};
+		this.players = {};
 		this.localPlayer = undefined;
-	}
-
-	initLocal(data){
-		this.localPlayer = this.entities[data.id];
-		let net = this.localPlayer.getComponent(Network);
-		net.isLocal = true;
 	}
 
 	newEntity(data){
@@ -326,6 +322,13 @@ class RemoteHandler extends Entity{
 		ent.id = data.id;
 		this.addEntity(ent.id, ent);
 		this.setEntityPosition(ent.id, data.transform);
+	}
+
+	addPlayer(entid, uid, uname) {
+		this.players[entid] = {uid, uname};
+		if (Object.keys(this.players).length >= 2) {
+			this.updatePlayerScore(entid, 0);
+		}
 	}
 
 	addEntity(id, ent){
@@ -347,6 +350,20 @@ class RemoteHandler extends Entity{
 		ent.position.x = lerp(ent.position.x, transform.position.x, .8);
 		ent.position.y = lerp(ent.position.y, transform.position.y, .8);
 		ent.rotate(transform.rotation);
+	}
+
+	updatePlayerScore(id, score) {
+		manager.entities[id].score = score;
+		let i = 0;
+		for (const entid in this.players) {
+			const player = this.players[entid];
+			console.log(player);
+			let scoreText = document.getElementById(`player${i+1}_score`);
+			let scoreName = document.getElementById(`player${i+1}_name`);
+			scoreText.innerText = this.entities[entid].score;
+			scoreName.innerText = player.uname;
+			i++;
+		}
 	}
 
 	removeEntity(id){
@@ -402,16 +419,19 @@ function setupSocketHandlers(socket){
 	}
 	
 	socket.onmessage = (event) => {
-		const data = JSON.parse(event.data);
-		if (data instanceof Number) {
+		if (event.data[0] !== '{') {
+			const data = event.data.split(';');
 			console.log(data);
+			manager.setEntityPosition(data[0], {position: {x: data[1], y: data[2]}, rotation: data[3]});
 			return;
 		}
+		const data = JSON.parse(event.data);
+
+		if (!data.hasOwnProperty('type'))
+			console.log("Typeless:", data);
 		if (data.type !== 'updatePos')
 			console.log(data);
-		if (data.type === 'currentState'){
-			world.entities = data.entities;
-		} else if (data.type === 'initLocal'){
+		if (data.type === 'initLocal'){
 			manager.localPlayer = manager.entities[data.id];
 			manager.localPlayer.keyBinds = {up: 'ArrowUp', down: 'ArrowDown'};
 			console.log(manager.localPlayer, manager.localPlayer.keyBinds);
@@ -422,8 +442,12 @@ function setupSocketHandlers(socket){
 			manager.moveEntity(data.id, data.transform);
 		} else if (data.type === 'setPos'){
 			manager.setEntityPosition(data.id, data.transform);
+		} else if (data.type === 'roundStart'){
+			starRound();
 		} else if (data.type === 'setScore'){
-			manager.entities[data.id].score = data.score;
+			manager.updatePlayerScore(data.id, data.score)
+		} else if (data.type === 'initPlayer') {
+			manager.addPlayer(data.ent_id, data.uid, data.uname);
 		} else if (data.type === 'drawDot'){
 			ctx.fillStyle = 'red';
 			ctx.fillRect(data.x, data.y, 5, 5);
@@ -438,5 +462,33 @@ function setupSocketHandlers(socket){
 		world.entities = [];
 		world.systems = [];
 		showSection('welcome');
+	}
+}
+
+
+// COUNTDOWN TEST
+
+let countdown = 3;
+let countdownInterval;
+
+function starRound() {
+	console.log('start the countdown!');
+	countdown = 3
+	let countdownDisplay = document.getElementById('countdownDisplay');
+	countdownDisplay.textContent = countdown.toString();
+	countdownDisplay.style.display = 'block';
+	countdownInterval = setInterval(updateCountdown, 1000);
+}
+
+async function updateCountdown() {
+	
+	if (countdown > 1) {
+		countdown--;
+		document.getElementById('countdownDisplay').textContent = countdown.toString();
+	} else {
+		clearInterval(countdownInterval);
+		document.getElementById('countdownDisplay').style.display = 'none';
+		
+		console.log('Game started!');
 	}
 }

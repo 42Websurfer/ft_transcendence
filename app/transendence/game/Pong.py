@@ -14,6 +14,7 @@ class Ball(Entity):
 		self.physics = Physics(0, 0, False, False)
 		self.add_component(Physics, self.physics)
 		self.last_hit = None
+		self.second_last_hit = None
 
 	def move(self, x_add, y_add):
 		new_pos = self.position.add(Vector(x_add, y_add))
@@ -21,6 +22,7 @@ class Ball(Entity):
 
 	def on_collision(self, other, collision_point=None):
 		if isinstance(other, Player):
+			self.second_last_hit = self.last_hit if self.last_hit != other else self.second_last_hit
 			self.last_hit = other
 		if collision_point is None:
 			return
@@ -91,6 +93,18 @@ class Player(Entity):
 				}
 				),
 				thread_local.event_loop)
+			
+	def increase_score(self):
+		print('Player', self.id, 'Scored')
+		self.score += 1
+		asyncio.run_coroutine_threadsafe(thread_local.host.channel_layer.group_send(
+			thread_local.host.group_name,
+			{
+				'type': 'player_score',
+				'id': self.id,
+				'score': self.score
+			}
+		), thread_local.event_loop)
 
 	def handle_remote_movement(self, input):
 		if input == 1:
@@ -149,7 +163,9 @@ class GameLogicManager(Entity):
 		super().__init__(0, 0)
 		self.sections = []
 		self.ball = Ball()
-		self.initalized = False
+		self.round_running = False
+		self.winner = None
+		self.counter = time.time()
 	
 	def buildDynamicField(self, world, playerCount):
 		if playerCount == 2:
@@ -174,21 +190,78 @@ class GameLogicManager(Entity):
 		# 	rot += rotationStep
 		world.addEntity(self.ball)
 		for section in self.sections:
-			section.goal.on_trigger = partial(self.create_goal_function(), section.goal)
+			section.goal.on_trigger = self.create_goal_function(section)
 		
 			world.addEntity(section.player)
 			world.addEntity(section.goal)
-		self.ball.physics.set_velocity(15, 0)
 
-	def create_goal_function(self):
-		def goal_function(self, other, collision_point=None):
+	def create_goal_function(self, section):
+		def goal_function(other, collision_point=None):
 			if isinstance(other, Ball):
-				if isinstance(self, Wall):
-					print('it should be this! because section.goal is a Wall')
-				elif isinstance(self, GameLogicManager):
-					print('but it is this!')
-				print("Scored a goal")
+				if other.last_hit is not None:
+					if other.last_hit != section.player:
+						other.last_hit.increase_score()
+					elif other.second_last_hit is not None:
+						other.second_last_hit.increase_score()
+					else:
+						print("WHAT NOW? THIS IS AN INVALID GOAL AS THE BALL WAS LAUNCHED FROM CENTER")
+					self.reset_ball()
 		return goal_function
+
+	def reset_ball(self):
+		self.winner = self.player_has_won()
+		if self.winner is not None:
+			thread_local.pong_game.game_complete()
+			print('we have a winner! send message to clients that game is over!')
+			return
+		self.ball.physics.set_velocity(0,0)
+		self.ball.set_pos(CANVAS_WIDTH // 2, CANVAS_HEIGHT // 2)
+		asyncio.run_coroutine_threadsafe(thread_local.host.channel_layer.group_send(
+			thread_local.host.group_name,
+			{
+				'type': 'set_entity_pos',
+				'id': self.ball.id,
+				'transform': self.ball.serialize()
+			}
+		), thread_local.event_loop)
+		asyncio.run_coroutine_threadsafe(thread_local.host.channel_layer.group_send(
+			thread_local.host.group_name,
+			{
+				'type': 'round_start',
+			}
+		), thread_local.event_loop)
+		self.round_running = False
+		self.counter = time.time()
+
+	def player_has_won(self):
+		for section in self.sections:
+			if section.player.score >= 7:
+				for sec in self.sections:
+					if sec != section:
+						if abs(section.player.score - sec.player.score) >= 2:
+							return section.player if section.player.score > sec.player.score else sec.player
+				return section.player
+		return None
+	
+	def update(self):
+		if self.winner is not None:
+			return
+		if not self.round_running:
+			if time.time() - self.counter >= 3.0:
+				print('we launch ball again')
+				dir = None
+				if self.ball.last_hit is not None:
+					dir = self.ball.last_hit.position.sub(self.ball.position)
+					dir.normalize()
+					dir.scale(15)
+				else:
+					dir = Vector(15, 0)
+				self.ball.physics.set_velocity(dir.x, dir.y)
+				self.round_running = True
+		#this check is to reset the round when the ball somehow escapes the play area
+		if self.ball.position.sub(Vector(CANVAS_WIDTH//2, CANVAS_HEIGHT//2)).sqr_length() > (CANVAS_WIDTH*1.5)**2:
+			print('ball escaped!???!')
+			self.reset_ball()
 
 
 async def getCurrentState(world, consumer):
@@ -211,7 +284,6 @@ thread_local = threading.local()
 #all the stuff for one pong game
 class PongGame:
 	def __init__(self, player1, player2):
-		self.game_complete = False #not needed jet
 		self.stop_thread = False
 		self.player1 = player1
 		self.player2 = player2
@@ -253,7 +325,13 @@ class PongGame:
 		self.stop_thread = True
 		self.event_loop.stop()
 
+	def game_complete(self):
+		self.stop()
+		#save stuff into database here?!?!
+		pass
+
 	def game_loop(self):
+		thread_local.pong_game = self
 		thread_local.asyncio_thread = self.asyncio_thread
 		thread_local.game_thread = self.game_thread
 		thread_local.event_loop = self.event_loop
