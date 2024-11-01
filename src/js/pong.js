@@ -21,6 +21,7 @@ export function renderPong(match_id) {
 					<span id="player2_score" class="game-score">0</span>
 				</div>
 			</div>
+			<div class="countdown-container" id="countdownDisplay"></div>
 		</div>
 		`;
 
@@ -324,7 +325,7 @@ class RemoteHandler extends Entity{
 	}
 
 	addPlayer(entid, uid, uname) {
-		manager.players[entid] = {uid, uname};
+		this.players[entid] = {uid, uname};
 	}
 
 	addEntity(id, ent){
@@ -415,16 +416,19 @@ function setupSocketHandlers(socket){
 	}
 	
 	socket.onmessage = (event) => {
-		const data = JSON.parse(event.data);
-		if (data instanceof Number) {
+		if (event.data[0] !== '{') {
+			const data = event.data.split(';');
 			console.log(data);
+			manager.setEntityPosition(data[0], {position: {x: data[1], y: data[2]}, rotation: data[3]});
 			return;
 		}
+		const data = JSON.parse(event.data);
+
+		if (!data.hasOwnProperty('type'))
+			console.log("Typeless:", data);
 		if (data.type !== 'updatePos')
 			console.log(data);
-		if (data.type === 'currentState'){
-			world.entities = data.entities;
-		} else if (data.type === 'initLocal'){
+		if (data.type === 'initLocal'){
 			manager.localPlayer = manager.entities[data.id];
 			manager.localPlayer.keyBinds = {up: 'ArrowUp', down: 'ArrowDown'};
 			console.log(manager.localPlayer, manager.localPlayer.keyBinds);
@@ -435,6 +439,8 @@ function setupSocketHandlers(socket){
 			manager.moveEntity(data.id, data.transform);
 		} else if (data.type === 'setPos'){
 			manager.setEntityPosition(data.id, data.transform);
+		} else if (data.type === 'roundStart'){
+			starRound();
 		} else if (data.type === 'setScore'){
 			manager.updatePlayerScore(data.id, data.score)
 		} else if (data.type === 'initPlayer') {
@@ -453,5 +459,33 @@ function setupSocketHandlers(socket){
 		world.entities = [];
 		world.systems = [];
 		showSection('welcome');
+	}
+}
+
+
+// COUNTDOWN TEST
+
+let countdown = 3;
+let countdownInterval;
+
+function starRound() {
+	console.log('start the countdown!');
+	countdown = 3
+	let countdownDisplay = document.getElementById('countdownDisplay');
+	countdownDisplay.textContent = countdown.toString();
+	countdownDisplay.style.display = 'block';
+	countdownInterval = setInterval(updateCountdown, 1000);
+}
+
+async function updateCountdown() {
+	
+	if (countdown > 1) {
+		countdown--;
+		document.getElementById('countdownDisplay').textContent = countdown.toString();
+	} else {
+		clearInterval(countdownInterval);
+		document.getElementById('countdownDisplay').style.display = 'none';
+		
+		console.log('Game started!');
 	}
 }

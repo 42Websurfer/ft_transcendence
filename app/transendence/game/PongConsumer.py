@@ -110,6 +110,11 @@ class MyConsumer(AsyncWebsocketConsumer):
 		# await self.send(text_data=str(2000))
 		# print('move_entity event processed')
 
+	async def round_start(self, event):
+		await self.send(json.dumps({
+			'type': 'roundStart'
+		}))
+
 	async def player_score(self, event):
 		await self.send(text_data=json.dumps({
 			'type': 'setScore',

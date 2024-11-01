@@ -209,6 +209,11 @@ class GameLogicManager(Entity):
 		return goal_function
 
 	def reset_ball(self):
+		self.winner = self.player_has_won()
+		if self.winner is not None:
+			thread_local.pong_game.game_complete()
+			print('we have a winner! send message to clients that game is over!')
+			return
 		self.ball.physics.set_velocity(0,0)
 		self.ball.set_pos(CANVAS_WIDTH // 2, CANVAS_HEIGHT // 2)
 		asyncio.run_coroutine_threadsafe(thread_local.host.channel_layer.group_send(
@@ -217,6 +222,12 @@ class GameLogicManager(Entity):
 				'type': 'set_entity_pos',
 				'id': self.ball.id,
 				'transform': self.ball.serialize()
+			}
+		), thread_local.event_loop)
+		asyncio.run_coroutine_threadsafe(thread_local.host.channel_layer.group_send(
+			thread_local.host.group_name,
+			{
+				'type': 'round_start',
 			}
 		), thread_local.event_loop)
 		self.round_running = False
@@ -247,10 +258,6 @@ class GameLogicManager(Entity):
 					dir = Vector(15, 0)
 				self.ball.physics.set_velocity(dir.x, dir.y)
 				self.round_running = True
-			self.winner = self.player_has_won()
-			if self.winner is not None:
-				thread_local.pong_game.game_complete()
-				print('we have a winner! send message to clients that game is over!')
 		#this check is to reset the round when the ball somehow escapes the play area
 		if self.ball.position.sub(Vector(CANVAS_WIDTH//2, CANVAS_HEIGHT//2)).sqr_length() > (CANVAS_WIDTH*1.5)**2:
 			print('ball escaped!???!')
@@ -320,6 +327,7 @@ class PongGame:
 
 	def game_complete(self):
 		self.stop_thread = True
+		self.event_loop.stop()
 		#save stuff into database here?!?!
 		pass
 
