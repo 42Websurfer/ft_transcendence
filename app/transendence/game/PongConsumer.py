@@ -10,7 +10,7 @@ redis = redis.Redis(host='redis', port=6379, db=0)
 class MyConsumer(AsyncWebsocketConsumer):
 	
 	async def connect(self):
-		self.player_c = None;
+		self.player_c = None
 		User = get_user_model()
 		self.group_name = self.scope['url_route']['kwargs']['group_name']
 		self.user = self.scope["user"]
@@ -93,13 +93,14 @@ class MyConsumer(AsyncWebsocketConsumer):
 	"""
 	async def move_entity(self, event):
 		# print('move_entity event sent:', event, self.player_c.id)
-		await self.send(text_data=json.dumps({
-			'type': 'updatePos',
-			'id': event.get('id'),
-			'transform': event.get('transform'),
-		}))
-		# await self.send(text_data=str(2000))
-		# print('move_entity event processed')
+		# await self.send(text_data=json.dumps({
+		# 	'type': 'updatePos',
+		# 	'id': event.get('id'),
+		# 	'transform': event.get('transform'),
+		# }))
+
+		transform = event.get('transform')
+		await self.send(text_data=f"{event.get('id')};{transform['position']['x']};{transform['position']['y']};{transform['rotation']}")
 
 	"""
 	This is to set the pos aka so for ball reset
