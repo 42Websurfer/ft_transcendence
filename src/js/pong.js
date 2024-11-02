@@ -421,8 +421,7 @@ function setupSocketHandlers(socket){
 	socket.onmessage = (event) => {
 		if (event.data[0] !== '{') {
 			const data = event.data.split(';');
-			console.log(data);
-			manager.setEntityPosition(data[0], {position: {x: data[1], y: data[2]}, rotation: data[3]});
+			manager.moveEntity(data[0], {position: {x: data[1], y: data[2]}, rotation: data[3]});
 			return;
 		}
 		const data = JSON.parse(event.data);
