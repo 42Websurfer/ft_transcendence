@@ -203,17 +203,12 @@ class GameLogicManager(Entity):
 						other.last_hit.increase_score()
 					elif other.second_last_hit is not None:
 						other.second_last_hit.increase_score()
-					else:
-						print("WHAT NOW? THIS IS AN INVALID GOAL AS THE BALL WAS LAUNCHED FROM CENTER")
 					self.reset_ball()
+				else:
+					print("WHAT NOW? THIS IS AN INVALID GOAL AS THE BALL WAS LAUNCHED FROM CENTER")
 		return goal_function
 
 	def reset_ball(self):
-		self.winner = self.player_has_won()
-		if self.winner is not None:
-			thread_local.pong_game.game_complete()
-			print('we have a winner! send message to clients that game is over!')
-			return
 		self.ball.physics.set_velocity(0,0)
 		self.ball.set_pos(CANVAS_WIDTH // 2, CANVAS_HEIGHT // 2)
 		asyncio.run_coroutine_threadsafe(thread_local.host.channel_layer.group_send(
@@ -224,6 +219,17 @@ class GameLogicManager(Entity):
 				'transform': self.ball.serialize()
 			}
 		), thread_local.event_loop)
+		self.winner = self.player_has_won()
+		if self.winner is not None:
+			asyncio.run_coroutine_threadsafe(thread_local.host.channel_layer.group_send(
+				thread_local.host.group_name,
+				{
+					'type': 'game_over',
+				}
+			), thread_local.event_loop)
+			thread_local.pong_game.game_complete()
+			print('we have a winner! send message to clients that game is over!')
+			return
 		asyncio.run_coroutine_threadsafe(thread_local.host.channel_layer.group_send(
 			thread_local.host.group_name,
 			{
@@ -251,7 +257,6 @@ class GameLogicManager(Entity):
 			return
 		if not self.round_running:
 			if time.time() - self.counter >= 3.0:
-				print('we launch ball again')
 				dir = None
 				if self.ball.last_hit is not None:
 					dir = self.ball.last_hit.position.sub(self.ball.position)
@@ -263,7 +268,6 @@ class GameLogicManager(Entity):
 				self.round_running = True
 		#this check is to reset the round when the ball somehow escapes the play area
 		if self.ball.position.sub(Vector(CANVAS_WIDTH//2, CANVAS_HEIGHT//2)).sqr_length() > (CANVAS_WIDTH*1.5)**2:
-			print('ball escaped!???!')
 			self.reset_ball()
 
 
@@ -298,6 +302,7 @@ class PongGame:
 		self.world.addEntity(self.gameLogic)
 		self.event_loop = None
 		self.asyncio_thread = None
+		self.tasks_complete = None
 		self.game_thread = None
 
 
@@ -314,6 +319,8 @@ class PongGame:
 		self.game_thread = threading.Thread(target=self.game_loop)
 		self.game_thread.start()
 
+		self.tasks_complete = asyncio.Event(loop=self.event_loop)
+
 		# self.player1.player_c = self.gameLogic.sections[0].player
 		# self.player2.player_c = self.gameLogic.sections[1].player
 
@@ -326,7 +333,12 @@ class PongGame:
 	def stop(self):
 		print('stopping all threads of this game?')
 		self.stop_thread = True
-		self.event_loop.stop()
+
+		asyncio.run_coroutine_threadsafe(self.tasks_complete.wait(), self.event_loop).result()
+
+		self.event_loop.call_soon_threadsafe(self.event_loop.stop)
+		self.asyncio_thread.join()
+		print('asyncio stopped aswell')
 
 	def game_complete(self):
 		self.stop()
