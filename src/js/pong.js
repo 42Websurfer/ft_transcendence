@@ -447,6 +447,9 @@ function setupSocketHandlers(socket){
 			manager.updatePlayerScore(data.id, data.score)
 		} else if (data.type === 'initPlayer') {
 			manager.addPlayer(data.ent_id, data.uid, data.uname);
+		} else if (data.type === 'disconnected') {
+			let player = manager.players[data.id];
+			displayDisconnect(player.uname);
 		} else if (data.type === 'drawDot'){
 			ctx.fillStyle = 'red';
 			ctx.fillRect(data.x, data.y, 5, 5);
@@ -487,6 +490,8 @@ function starRound() {
 	console.log('start the countdown!');
 	countdown = 3
 	let countdownDisplay = document.getElementById('countdownDisplay');
+	if (!countdownDisplay)
+		return;
 	countdownDisplay.textContent = countdown.toString();
 	countdownDisplay.style.display = 'block';
 	countdownInterval = setInterval(updateCountdown, 1000);
@@ -496,11 +501,18 @@ async function updateCountdown() {
 	
 	if (countdown > 1) {
 		countdown--;
-		document.getElementById('countdownDisplay').textContent = countdown.toString();
+		document.getElementById('countdownDisplay')?.textContent = countdown.toString();
 	} else {
 		clearInterval(countdownInterval);
-		document.getElementById('countdownDisplay').style.display = 'none';
+		document.getElementById('countdownDisplay')?.style.display = 'none';
 		
 		console.log('Game started!');
 	}
+}
+
+function displayDisconnect(name) {
+	clearInterval(countdownInterval);
+	let countdownDisplay = document.getElementById('countdownDisplay');
+	
+	countdownDisplay.innerText = `${name} disconnected!`;
 }
