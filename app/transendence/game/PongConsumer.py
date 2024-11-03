@@ -53,7 +53,8 @@ class MyConsumer(AsyncWebsocketConsumer):
 			self.group_name,
 			{
 				'type': 'disconnectedMsg',
-				'player': 'something?'
+				'id': self.player_c.id,
+				'uid': self.user.id
 			}
 		)
 		redis.srem(self.group_name, self.user.id)
@@ -132,7 +133,8 @@ class MyConsumer(AsyncWebsocketConsumer):
 	async def disconnectedMsg(self, event):
 		users_data = {
 			'type': 'disconnected',
-			'player': event.get('player')
+			'id': event.get('id'),
+			'uid': event.get('uid')
 		}
 		await self.send(text_data=json.dumps(users_data))
 	
