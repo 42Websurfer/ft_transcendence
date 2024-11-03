@@ -1,6 +1,8 @@
 import threading, time, asyncio
 from .GameSystem import *
 from functools import partial
+from tournament.models import GameStatsUser
+from tournament.utils import set_online_match
 
 # Constants
 PLAYER_MOVE_SPEED = 20
@@ -341,9 +343,16 @@ class PongGame:
 		print('asyncio stopped aswell')
 
 	def game_complete(self):
+		print('We have a winner! Stop game thread, and asyncio thread')
 		self.stop()
-		#save stuff into database here?!?!
-		pass
+		print('Start of DB save')
+		match_data = {}
+		match_data['home'] = GameStatsUser.objects.get(username=self.player1.user.username)
+		match_data['away'] = GameStatsUser.objects.get(username=self.player2.user.username)
+		match_data['home_score'] = self.player1.player_c.score
+		match_data['away_score'] = self.player2.player_c.score
+		set_online_match(match_data, 1)
+		print('Data successfully saved into DB!')
 
 	def game_loop(self):
 		thread_local.pong_game = self
