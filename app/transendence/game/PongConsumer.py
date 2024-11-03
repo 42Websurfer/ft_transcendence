@@ -14,10 +14,7 @@ class MyConsumer(AsyncWebsocketConsumer):
 		User = get_user_model()
 		self.group_name = self.scope['url_route']['kwargs']['group_name']
 		self.user = self.scope["user"]
-		try: 
-			user = await sync_to_async(User.objects.get)(id=self.user.id)
-		except User.DoesNotExist:
-			print('User does not exist')
+		
 		print(f"ANZAHL GROUP: {redis.scard(self.group_name)}")
 
 		await self.channel_layer.group_add(
