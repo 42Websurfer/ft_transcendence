@@ -357,7 +357,6 @@ class RemoteHandler extends Entity{
 		let i = 0;
 		for (const entid in this.players) {
 			const player = this.players[entid];
-			console.log(player);
 			let scoreText = document.getElementById(`player${i+1}_score`);
 			let scoreName = document.getElementById(`player${i+1}_name`);
 			scoreText.innerText = this.entities[entid].score;
@@ -401,6 +400,7 @@ function selectGamemode(groupName){
 		manager = new PongLocalManager();
 	} else {
 		socket = new WebSocket(`ws://${window.location.host}/ws/pong/${groupName}/`);
+		setupCloseWebsocket(socket);
 		window.addEventListener('keypress', sendMovementInput);
 		window.addEventListener('keyup', sendMovementInput);
 		manager = new RemoteHandler();
@@ -462,6 +462,20 @@ function setupSocketHandlers(socket){
 		world.systems = [];
 		showSection('welcome');
 	}
+}
+
+function setupCloseWebsocket(socket) {
+	const logoutButton = document.getElementById('logoutButton');
+	const homeButton = document.getElementById('webpong-button');
+
+	const closeSocket = () => {
+		socket.close(1000);
+		homeButton.removeEventListener('click', closeSocket);
+		logoutButton.removeEventListener('click', closeSocket);
+	}
+
+	homeButton.addEventListener('click', closeSocket)
+	logoutButton.addEventListener('click', closeSocket);
 }
 
 
