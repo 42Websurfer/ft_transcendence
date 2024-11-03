@@ -518,4 +518,5 @@ function displayDisconnect(name) {
 	let countdownDisplay = document.getElementById('countdownDisplay');
 	
 	countdownDisplay.innerText = `${name} disconnected!`;
+	countdownDisplay.style.display = 'block';
 }

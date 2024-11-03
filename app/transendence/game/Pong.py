@@ -416,5 +416,5 @@ class GamesHandler:
 			self.players.remove(consumer)
 		else:
 			print('no consumers in this lobby?')
-		if self.game is not None and self.players.__len__() == 0:
+		if self.game is not None and self.players.__len__() <= 1:
 			self.game.stop()
