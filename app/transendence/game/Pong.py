@@ -282,7 +282,6 @@ class PongGame:
 		self.world.addEntity(self.gameLogic)
 		self.event_loop = None
 		self.asyncio_thread = None
-		self.tasks_complete = None
 		self.game_thread = None
 
 
@@ -293,16 +292,11 @@ class PongGame:
 		self.gameLogic.buildDynamicField(self.world, 2)
 
 		self.event_loop = asyncio.new_event_loop()
-		self.asyncio_thread = threading.Thread(target=self.thread_main)
+		self.asyncio_thread = threading.Thread(target=self.asyncio_tasks_thread)
 		self.asyncio_thread.start()
 
 		self.game_thread = threading.Thread(target=self.game_loop)
 		self.game_thread.start()
-
-		self.tasks_complete = asyncio.Event(loop=self.event_loop)
-
-		# self.player1.player_c = self.gameLogic.sections[0].player
-		# self.player2.player_c = self.gameLogic.sections[1].player
 
 		asyncio.run_coroutine_threadsafe(self.player1.assign_player(self.gameLogic.sections[0].player), self.event_loop)
 		asyncio.run_coroutine_threadsafe(self.player2.assign_player(self.gameLogic.sections[1].player), self.event_loop)
@@ -311,14 +305,8 @@ class PongGame:
 		asyncio.run_coroutine_threadsafe(getCurrentState(self.world, self.player2), self.event_loop)
 
 	def stop(self):
-		print('stopping all threads of this game?')
 		self.stop_thread = True
-
-		asyncio.run_coroutine_threadsafe(self.tasks_complete.wait(), self.event_loop).result()
-
-		self.event_loop.call_soon_threadsafe(self.event_loop.stop)
-		self.asyncio_thread.join()
-		print('asyncio stopped aswell')
+		print(f'stop_thread set to {self.stop_thread}')
 
 	def game_complete(self):
 		print('We have a winner! Stop game thread, and asyncio thread')
@@ -348,8 +336,10 @@ class PongGame:
 				iter = 0
 			iter += 1
 		print('game loop stopped of group', self.player1.group_name)
+		self.event_loop.call_soon_threadsafe(self.event_loop.stop)
+		print('asyncio event_loop ordered to stop')
 
-	def thread_main(self):
+	def asyncio_tasks_thread(self):
 		asyncio.set_event_loop(self.event_loop)
 		self.event_loop.run_forever()
 		print('asyncio event_loop stopped')
