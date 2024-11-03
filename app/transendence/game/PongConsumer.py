@@ -93,13 +93,6 @@ class MyConsumer(AsyncWebsocketConsumer):
 	This is to indicate an entity moved, client side will smooth out rough movements
 	"""
 	async def move_entity(self, event):
-		# print('move_entity event sent:', event, self.player_c.id)
-		# await self.send(text_data=json.dumps({
-		# 	'type': 'updatePos',
-		# 	'id': event.get('id'),
-		# 	'transform': event.get('transform'),
-		# }))
-
 		transform = event.get('transform')
 		await self.send(text_data=f"{event.get('id')};{transform['position']['x']};{transform['position']['y']};{transform['rotation']}")
 
