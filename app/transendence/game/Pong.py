@@ -40,17 +40,9 @@ class Ball(Entity):
 	def move(self, x_add, y_add):
 		new_pos = Vector(self.position.x + x_add, self.position.y + y_add)
 		if self.position.x != new_pos.x or self.position.y != new_pos.y:
-			asyncio.run_coroutine_threadsafe(thread_local.host.channel_layer.group_send(
-				thread_local.host.group_name,
-				{
-					'type': 'move_entity',
-					'id': self.id,
-					'transform': self.serialize()
-				}
-				),
-				thread_local.event_loop)
-		self.position = new_pos
-
+			self.position = new_pos
+			thread_local.pong_game.send_entity_move(self)
+		
 class Player(Entity):
 	def __init__(self, x, y, height=250):
 		super().__init__(x, y)
@@ -86,15 +78,7 @@ class Player(Entity):
 		if self.position.x != new_pos.x or self.position.y != new_pos.y:
 			self.position = new_pos
 			#send new position to everyone
-			asyncio.run_coroutine_threadsafe(thread_local.host.channel_layer.group_send(
-				thread_local.host.group_name,
-				{
-					'type': 'move_entity',
-					'id': self.id,
-					'transform': self.serialize()
-				}
-				),
-				thread_local.event_loop)
+			thread_local.pong_game.send_entity_move(self)
 			
 	def increase_score(self):
 		print('Player', self.id, 'Scored')
@@ -213,14 +197,9 @@ class GameLogicManager(Entity):
 	def reset_ball(self):
 		self.ball.physics.set_velocity(0,0)
 		self.ball.set_pos(CANVAS_WIDTH // 2, CANVAS_HEIGHT // 2)
-		asyncio.run_coroutine_threadsafe(thread_local.host.channel_layer.group_send(
-			thread_local.host.group_name,
-			{
-				'type': 'set_entity_pos',
-				'id': self.ball.id,
-				'transform': self.ball.serialize()
-			}
-		), thread_local.event_loop)
+
+		thread_local.pong_game.send_entity_set_pos(self.ball)
+		
 		self.winner = self.player_has_won()
 		if self.winner is not None:
 			asyncio.run_coroutine_threadsafe(thread_local.host.channel_layer.group_send(
@@ -230,7 +209,6 @@ class GameLogicManager(Entity):
 				}
 			), thread_local.event_loop)
 			thread_local.pong_game.game_complete()
-			print('we have a winner! send message to clients that game is over!')
 			return
 		asyncio.run_coroutine_threadsafe(thread_local.host.channel_layer.group_send(
 			thread_local.host.group_name,
@@ -374,13 +352,35 @@ class PongGame:
 	def thread_main(self):
 		asyncio.set_event_loop(self.event_loop)
 		self.event_loop.run_forever()
+		print('asyncio event_loop stopped')
 
-
+	"""
+	Some big and commonly used sends defined here to make code more readable
+	"""
+	def send_entity_move(self, entity):
+		asyncio.run_coroutine_threadsafe(self.player1.channel_layer.group_send(
+			self.player1.group_name,
+			{
+				'type': 'move_entity',
+				'id': entity.id,
+				'transform': entity.serialize()
+			}
+			),
+			self.event_loop)
+		
+	def send_entity_set_pos(self, entity):
+		asyncio.run_coroutine_threadsafe(self.player1.channel_layer.group_send(
+			self.player1.group_name,
+			{
+				'type': 'set_entity_pos',
+				'id': entity.id,
+				'transform': entity.serialize()
+			}
+		), self.event_loop)
 
 
 class GamesHandler:
 	
-	# Statics?
 	game_sessions = {}
 
 	def __init__(self, group_name):
