@@ -499,12 +499,15 @@ function starRound() {
 
 async function updateCountdown() {
 	
+	let countdownDisplay = document.getElementById('countdownDisplay');
+	if (!countdownDisplay)
+		return ;
 	if (countdown > 1) {
 		countdown--;
-		document.getElementById('countdownDisplay')?.textContent = countdown.toString();
+		countdownDisplay.textContent = countdown.toString();
 	} else {
 		clearInterval(countdownInterval);
-		document.getElementById('countdownDisplay')?.style.display = 'none';
+		countdownDisplay.style.display = 'none';
 		
 		console.log('Game started!');
 	}
