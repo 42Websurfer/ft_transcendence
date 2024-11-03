@@ -459,7 +459,6 @@ function setupSocketHandlers(socket){
 	socket.onclose = () => {
 		clearInterval(intervalId);
 		world.entities = [];
-		world.systems = [];
 		showSection('welcome');
 	}
 }
