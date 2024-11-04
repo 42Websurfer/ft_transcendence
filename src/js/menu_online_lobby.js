@@ -65,7 +65,7 @@ export function runWebsocket(socket) {
     
     socket.onclose = function(event) {
         console.log('WebSocket connection closed');
-
+        g_socket = undefined;
         const lobbyClosedModal = document.getElementById('lobbyClosedModal');
         if (!lobbyClosedModal)
             return;
