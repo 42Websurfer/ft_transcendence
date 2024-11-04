@@ -170,9 +170,15 @@ class OnlineMatch(AsyncWebsocketConsumer):
 			lobby_data_json = redis.get(self.match_name)
 			if not lobby_data_json:
 				return 
-			lobby_data = json.loads(lobby_data_json)
-			if (lobby_data.get('admin_id') is self.user.id):
-				await self.close()
+			lobby_data = json.loads(lobby_data_json)		
+			if (lobby_data.get('admin_id') == self.user.id):
+				await self.channel_layer.group_send(
+					self.match_name,
+					{
+						'type': 'close_connection',
+					}
+				)
+				self.close()
 				redis.delete(self.match_name)
 			else: 
 				lobby_data['member_id'] = -1
@@ -215,4 +221,7 @@ class OnlineMatch(AsyncWebsocketConsumer):
 			'type': 'start_match',
 			'match_id': self.match_name + '_loop',
 		}
-		await self.send(json.dumps(data))					
+		await self.send(json.dumps(data))
+	
+	async def close_connection(self, event):
+		await self.close()
