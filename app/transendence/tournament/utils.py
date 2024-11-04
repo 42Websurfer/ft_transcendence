@@ -146,10 +146,10 @@ def set_online_match(data, lobby_id):
 		away = data.get('away'),
 		home_score = data.get('home_score'),
 		away_score = data.get('away_score'),
-		modus = 'test'
+		modus = 'test' #vllt noch setzen welcher type!
 	)
 	match.save()
-
+	update_online_match_socket(data, lobby_id)
 # def check_round_completion(lobby_id, roundm machtes):
 #     tournament_json = redis.get(tournament_string(lobby_id))
 #     if (not tournament_json):
