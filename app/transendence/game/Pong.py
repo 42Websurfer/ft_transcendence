@@ -317,8 +317,9 @@ class PongGame:
 		match_data['away'] = GameStatsUser.objects.get(username=self.player2.user.username)
 		match_data['home_score'] = self.player1.player_c.score
 		match_data['away_score'] = self.player2.player_c.score
-		set_online_match(match_data, 1)
+		set_online_match(match_data, self.player1.lobby_id)
 		print('Data successfully saved into DB!')
+		
 
 	def game_loop(self):
 		thread_local.pong_game = self

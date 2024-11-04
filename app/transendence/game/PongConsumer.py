@@ -16,6 +16,10 @@ class MyConsumer(AsyncWebsocketConsumer):
 		self.user = self.scope["user"]
 		
 		print(f"ANZAHL GROUP: {redis.scard(self.group_name)}")
+		
+		self.lobby_id = self.group_name.split('_')[1]
+
+		print(self.lobby_id)
 
 		await self.channel_layer.group_add(
 			self.group_name,
