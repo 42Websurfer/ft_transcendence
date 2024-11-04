@@ -80,10 +80,12 @@ function displayForm(form)
     if (formDiv)
         formDiv.innerHTML = '';
 
-    for (let index = 0; index < form.length && index < 6; index++)
+    console.log(form.length);
+    for (let index = form.length - 7 > 0 ? form.length - 7 : 0; index < form.length; index++)
         addFormItem(formDiv, form[index]);
-
-    addFormItem(formDiv, 'next');
+    for (let i = form.length; i < 7; i++) {
+        addFormItem(formDiv, 'next');
+    }
 }
 
 function addMatchItem(list, player_home, player_away, score, date, result) {
