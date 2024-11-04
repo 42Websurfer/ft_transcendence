@@ -154,6 +154,12 @@ class OnlineMatch(AsyncWebsocketConsumer):
 					'type': 'send_online_lobby_user',
 				}
 			)
+			await self.channel_layer.group_send(
+				self.match_name,
+				{
+					'type': 'send_online_match_list',
+				}
+			)
 
 	async def disconnect(self, close_code):
 		if (self.user.is_authenticated):
