@@ -55,6 +55,25 @@ def join_lobby(request, lobby_id):
 	else: 
 		return(JsonResponse({'type': 'error', 'message': 'Lobby does not exist.'}))
 
+async def get_online_lobby_data(request, lobby_id):
+	online_match_json = redis.get(lobby_id)
+	if (not online_match_json):
+		return (JsonResponse({'type': 'error', 'message': 'No data in redis.'}))
+	channel_layer = get_channel_layer()
+	await channel_layer.group_send(
+		match_lobby_string(lobby_id),
+		{
+			'type': 'send_online_match_list',
+		}
+	)
+	await channel_layer.group_send(
+		match_lobby_string(lobby_id),	
+		{
+			'type': 'send_online_lobby_user',
+		}
+	)
+	return (JsonResponse({'type': 'success'}))
+
 async def start_group_tournament(request, lobby_id):
 	results_json = redis.get(lobby_id)
 	if (not results_json):
@@ -228,6 +247,7 @@ def get_match_data(user_game_stats):
 
 def get_dashboard_data(request):
 	user = request.user
+	logger.debug(f"Username for dashboard: {user.username}")
 	try:
 		user_game_stats = GameStatsUser.objects.get(username=user.username)
 	except ObjectDoesNotExist:

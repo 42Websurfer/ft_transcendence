@@ -14,5 +14,6 @@ urlpatterns = [
     path('test_set_online_match/', views.test_set_online_match, name='test_set_online_match'),
     path('start_game/<str:lobby_id>/', views.start_game_loop, name='start_game_loop'),
     path('get_dashboard/', views.get_dashboard_data, name='get_dashboard'),
+    path('get_online_lobby_data/', views.get_online_lobby_data, name='get_online_lobby_data'),
 
 ]
