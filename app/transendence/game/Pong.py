@@ -3,6 +3,7 @@ from .GameSystem import *
 from functools import partial
 from tournament.models import GameStatsUser
 from tournament.utils import set_online_match
+from asgiref.sync import async_to_sync
 
 # Constants
 PLAYER_MOVE_SPEED = 20
@@ -319,6 +320,8 @@ class PongGame:
 		match_data['away_score'] = self.player2.player_c.score
 		set_online_match(match_data, self.player1.lobby_id)
 		print('Data successfully saved into DB!')
+		(async_to_sync)(self.player1.close)()
+		(async_to_sync)(self.player2.close)()
 		
 
 	def game_loop(self):
@@ -381,41 +384,54 @@ class GamesHandler:
 		self.game = None
 
 	@staticmethod
-	def add_consumer_to_game(consumer, group_name):
+	async def add_consumer_to_game(consumer, group_name):
 		if group_name in GamesHandler.game_sessions:
 			print('Group exists in handler, we push the player')
-			GamesHandler.game_sessions[group_name].add_consumer(consumer)
+			await GamesHandler.game_sessions[group_name].add_consumer(consumer)
 			return
 		print('First player of group we create a new GamesHandler')
 		new_handler = GamesHandler(group_name=group_name)
-		new_handler.add_consumer(consumer)
+		await new_handler.add_consumer(consumer)
 		GamesHandler.game_sessions[group_name] = new_handler
 
 	@staticmethod
-	def disconnect_consumer_from_game(consumer, group_name):
+	async def disconnect_consumer_from_game(consumer, group_name):
 		if group_name in GamesHandler.game_sessions:
 			print('Group exists in handler, we remove the player')
-			GamesHandler.game_sessions[group_name].remove_consumer(consumer)
+			await GamesHandler.game_sessions[group_name].remove_consumer(consumer)
 			if GamesHandler.game_sessions[group_name].players.__len__() == 0:
 				GamesHandler.game_sessions.pop(group_name)
 		print('Number of handlers:', len(GamesHandler.game_sessions))
 
-	def add_consumer(self, consumer):
+	@staticmethod
+	def game_player_count(group_name):
+		if group_name in GamesHandler.game_sessions:
+			return len(GamesHandler.game_sessions[group_name].players)
+		return 0
+
+	async def add_consumer(self, consumer):
 		print('GamesHandler.add_consumer() called')
 		if self.players.__len__() < 2:
 			self.players.append(consumer)
 		else:
 			print('too many players!!! disconnect consumer')
+			await consumer.close()
+			return
 		if self.players.__len__() == 2:
 			print('init PongGame class!')
 			self.game = PongGame(self.players[0], self.players[1])
 			self.game.start_game()
 	
-	def remove_consumer(self, consumer):
+	async def remove_consumer(self, consumer):
 		print('GamesHandler.remove_consumer() called')
 		if self.players.__len__() >= 1:
 			self.players.remove(consumer)
 		else:
 			print('no consumers in this lobby?')
 		if self.game is not None and self.players.__len__() <= 1:
+			print('Stopping Game!')
 			self.game.stop()
+			for player in self.players:
+				print('Closing consumer!!')
+				await player.disconnectedMsg({'id': consumer.player_c.id, 'uid': consumer.user.id})
+				await player.close()

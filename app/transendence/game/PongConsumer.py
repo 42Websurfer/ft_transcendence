@@ -27,7 +27,7 @@ class MyConsumer(AsyncWebsocketConsumer):
 		)
 		await self.accept()
 		redis.sadd(self.group_name, self.user.id)
-		GamesHandler.add_consumer_to_game(self, self.group_name)
+		await GamesHandler.add_consumer_to_game(self, self.group_name)
 
 	async def assign_player(self, pong_player):
 		print('consumer gets PongPlayer assigned')
@@ -45,20 +45,14 @@ class MyConsumer(AsyncWebsocketConsumer):
 
 
 	async def disconnect(self, close_code):
-		GamesHandler.disconnect_consumer_from_game(self, self.group_name)
+		print('disconnected() called')
 		await self.channel_layer.group_discard(
 			self.group_name,
 			self.channel_name
 		)
-		await self.channel_layer.group_send(
-			self.group_name,
-			{
-				'type': 'disconnectedMsg',
-				'id': self.player_c.id,
-				'uid': self.user.id
-			}
-		)
 		redis.srem(self.group_name, self.user.id)
+		await GamesHandler.disconnect_consumer_from_game(self, self.group_name)
+
 
 	async def receive(self, text_data):
 		text_data_json = json.loads(text_data)
