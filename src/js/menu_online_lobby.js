@@ -97,7 +97,6 @@ function displayMatches(matches)
 
         addMatchItem(historicMatchesList, player_home, player_away, score, status);
     }
-    addMatchItem(historicMatchesList, "nsassenb", "fwechsle", "6:0", "running");
 }
 
 function addMatchItem(historicMatchesList, player_home, player_away, score, status) {
@@ -144,6 +143,8 @@ function closeWebsocket(socket) {
     homeButton.addEventListener('click', () => {socket.close(1000)})
     logoutButton.addEventListener('click', () => {socket.close(1000)});
 }
+
+let g_socket;
 
 export function renderMenuOnlineLobby(lobbyId) {
 
@@ -233,10 +234,21 @@ export function renderMenuOnlineLobby(lobbyId) {
 
     </div>
     `;
-
-    const socket = new WebSocket(`ws://${window.location.host}/ws/match/${lobbyId}/`);
-    runWebsocket(socket);
-    closeWebsocket(socket);
+    if (!g_socket) {
+        g_socket = new WebSocket(`ws://${window.location.host}/ws/match/${lobbyId}/`);
+        runWebsocket(g_socket);
+        closeWebsocket(g_socket);
+    } else {
+        fetch(`/tm/get_online_lobby_data/${lobbyId}/`, {
+            method: 'GET',
+            credentials: 'include'
+        }).then((response) => response.json())
+        .then((data) => {
+            if (data.type === 'error') {
+                console.log(data.message);
+            }
+        }).catch((error) => console.log("Error:", error));
+    }
 
     function copyToClipboard() {
         var copyText = document.getElementById("lobbyId");
@@ -304,19 +316,6 @@ export function renderMenuOnlineLobby(lobbyId) {
     closeLobbyClosedModalButton.addEventListener('click', () => {
         lobbyClosedModal.style.display = 'none';
     });
-
-    async function showHistoricMatches() {
-        try {
-            const response = await fetch(`/tm/start_tournament/${lobbyId}/`, {
-                method: 'GET',
-                credentials: 'include'
-            });
-            return await response.json();
-        } catch (error) {
-            return { error: 'Failed to tournament create request.' };
-        }
-
-    };
 
     const matchStartButton = document.getElementById('matchStartButton');
 
