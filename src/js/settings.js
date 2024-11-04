@@ -41,8 +41,8 @@ export async function renderSettings() {
 					<input type="file" name="avatar" class="form-control" placeholder="Upload avatar">
 					<label for="floatingInput">Upload avatar</label>
 				</div>	
-				<div id="settingsMessage" class="register-message"></div>
 				<button class="signin-button btn btn-primary w-100 py-2" type="submit">Update</button>	
+				<div id="settingsMessage" class="register-message"></div>
 			</form>
 		</div>
 		<div id="settingsLoader" class="loader"></div> 	

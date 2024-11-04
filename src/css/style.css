@@ -1278,9 +1278,6 @@ body {
 }
 
 .register-message {
-    position: absolute;
-    top: 32.8em;
-    left: 34em;
     font-size: 1.4em;
     color: #ff0000;
     text-align: left;
