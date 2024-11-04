@@ -217,8 +217,8 @@ function displayAvatar(avatar_url) {
 
 function displayDashboardData(data)
 {
-    displayGamesChart([data.wins, data.losses]);
-    displayGoalsChart([data.goals_for, data.goals_against]);
+    displayGamesChart([data.losses, data.wins]);
+    displayGoalsChart([data.goals_against, data.goals_for]);
     displayGeneralInformation(data.username, data.wins + data.losses, data.tournaments_played, data.tournament_wins, data.winstreak, data.registered);
     displayForm(data.form);
     displayMatches(data.matches, data.username);
