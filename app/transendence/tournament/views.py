@@ -56,7 +56,7 @@ def join_lobby(request, lobby_id):
 		return(JsonResponse({'type': 'error', 'message': 'Lobby does not exist.'}))
 
 async def get_online_lobby_data(request, lobby_id):
-	online_match_json = redis.get(lobby_id)
+	online_match_json = redis.get(match_lobby_string(lobby_id))
 	if (not online_match_json):
 		return (JsonResponse({'type': 'error', 'message': 'No data in redis.'}))
 	channel_layer = get_channel_layer()
