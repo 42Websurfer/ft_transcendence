@@ -424,7 +424,7 @@ class GamesHandler:
 	
 	async def remove_consumer(self, consumer):
 		print('GamesHandler.remove_consumer() called')
-		if self.players.__len__() >= 1:
+		if self.players.__len__() >= 1 and consumer in self.players:
 			self.players.remove(consumer)
 		else:
 			print('no consumers in this lobby?')
