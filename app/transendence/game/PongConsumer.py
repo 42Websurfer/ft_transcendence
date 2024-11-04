@@ -5,28 +5,28 @@ import redis
 from asgiref.sync import sync_to_async
 from django.contrib.auth import get_user_model
 from .Pong import *
+from tournament.utils import match_lobby_string
 
 redis = redis.Redis(host='redis', port=6379, db=0)
 class MyConsumer(AsyncWebsocketConsumer):
 	
 	async def connect(self):
 		self.player_c = None
-		User = get_user_model()
+		# User = get_user_model()
 		self.group_name = self.scope['url_route']['kwargs']['group_name']
 		self.user = self.scope["user"]
 		
-		print(f"ANZAHL GROUP: {redis.scard(self.group_name)}")
-		
-		self.lobby_id = self.group_name.split('_')[1]
-
-		print(self.lobby_id)
+		split = self.group_name.split('_')
+		self.lobby_id = split[1] if len(split) > 1 else None
+		if self.lobby_id is None or not redis.exists(match_lobby_string(self.lobby_id)):
+			await self.close()
+			return
 
 		await self.channel_layer.group_add(
 			self.group_name,
 			self.channel_name
 		)
 		await self.accept()
-		redis.sadd(self.group_name, self.user.id)
 		await GamesHandler.add_consumer_to_game(self, self.group_name)
 
 	async def assign_player(self, pong_player):
@@ -50,7 +50,6 @@ class MyConsumer(AsyncWebsocketConsumer):
 			self.group_name,
 			self.channel_name
 		)
-		redis.srem(self.group_name, self.user.id)
 		await GamesHandler.disconnect_consumer_from_game(self, self.group_name)
 
 

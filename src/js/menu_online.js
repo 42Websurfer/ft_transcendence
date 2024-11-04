@@ -38,7 +38,7 @@ export function renderMenuOnline() {
     };
 
     const onlineLobbyInput = document.getElementById('onlineLobbyId');
-    const joinMessage = document.getElementById('joinMessage');
+    
     onlineLobbyInput.addEventListener('keydown', async (event) => {
         if (event.key === 'Enter') {
             const lobbyId = onlineLobbyInput.value.trim();
@@ -49,11 +49,7 @@ export function renderMenuOnline() {
                     showSection('menu_online_lobby', lobbyId);
                 else
                 {
-                    joinMessage.textContent = response.message;
-                    joinMessage.style.color = 'red';
-                    joinMessage.style.animation = 'none';
-                    joinMessage.offsetHeight;
-                    joinMessage.style.animation = 'wiggle 0.5s ease-in-out';
+                    displayErrorMessage(response.message);
                 }
             }
         }
@@ -72,9 +68,24 @@ export function renderMenuOnline() {
 
     }
 
+    function displayErrorMessage(message) {
+        const joinMessage = document.getElementById('joinMessage');
+        if (!joinMessage)
+            return;
+        joinMessage.textContent = message;
+        joinMessage.style.color = 'red';
+        joinMessage.style.animation = 'none';
+        joinMessage.offsetHeight;
+        joinMessage.style.animation = 'wiggle 0.5s ease-in-out';
+    }
+
     const createLobbyButton = document.getElementById('onlineItemLobby');
     createLobbyButton.addEventListener('click', async () => {
         const response = await createOnlineLobby();
+        if (response?.type === 'error') {
+            displayErrorMessage(response.message);
+            return;
+        }
         showSection('menu_online_lobby', response.lobby.id);
     });
 

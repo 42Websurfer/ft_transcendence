@@ -24,7 +24,14 @@ def lobby_name_generator():
 
 def create_lobby(request):
 	user = request.user
+	if redis.sismember('user_lobbies', user.id):
+		return JsonResponse({
+			'type': 'error',
+			'message': 'You can\'t create multiple lobbies'
+		})
 	lobby_id = lobby_name_generator()
+	redis.sadd('user_lobbies', user.id)
+	redis.set(match_lobby_string(lobby_id), "")
 	return JsonResponse({
 		'lobby': {
 			'id': lobby_id,

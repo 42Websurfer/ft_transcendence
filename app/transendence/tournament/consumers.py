@@ -130,23 +130,28 @@ class OnlineMatch(AsyncWebsocketConsumer):
 		self.match_name = match_lobby_string(self.scope['url_route']['kwargs']['match_name'])
 		self.lobby_id = self.scope['url_route']['kwargs']['match_name']
 		if (self.user.is_authenticated):
+			User = get_user_model()
+			user = await sync_to_async(User.objects.get)(id=self.user.id)
+			match_data = redis.get(self.match_name)
+			if (redis.exists(self.match_name) and match_data):
+				redis.sadd('user_lobbies', user.id)
+				lobby_data = json.loads(match_data)
+				if (lobby_data.get('member_id') == -1):
+					lobby_data['member_id'] = user.id
+					lobby_data['member_username'] = user.username
+			elif redis.exists(self.match_name):
+				lobby_data = {'admin_id': user.id, 'admin_username': user.username, 'member_id': -1,  'member_username': '', 'matches': []}
+			else:
+				print('INVALID LOBBY ALARM!')
+				await self.close()
+				return
+			
 			await self.channel_layer.group_add(
 				self.match_name, 
 				self.channel_name
 			)
 			await self.accept()
-			User = get_user_model()
-			user = await sync_to_async(User.objects.get)(id=self.user.id)
-			if (redis.exists(self.match_name)):
-				lobby_data_json = redis.get(self.match_name)
-				if not lobby_data_json:
-					return
-				lobby_data = json.loads(lobby_data_json)
-				if (lobby_data.get('member_id') == -1):
-					lobby_data['member_id'] = user.id
-					lobby_data['member_username'] = user.username
-			else:
-				lobby_data = {'admin_id': user.id, 'admin_username': user.username, 'member_id': -1,  'member_username': '', 'matches': []}
+			
 			redis.set(self.match_name, json.dumps(lobby_data))
 			await self.channel_layer.group_send(
 				self.match_name,
@@ -167,6 +172,7 @@ class OnlineMatch(AsyncWebsocketConsumer):
 				self.match_name,
 				self.channel_name
 			)
+			redis.srem('user_lobbies', self.user.id)
 			lobby_data_json = redis.get(self.match_name)
 			if not lobby_data_json:
 				return 
@@ -224,4 +230,6 @@ class OnlineMatch(AsyncWebsocketConsumer):
 		await self.send(json.dumps(data))
 	
 	async def close_connection(self, event):
+		redis.srem('online_lobbies', self.user.id)
+		print('USER ID:', self.user.id)
 		await self.close()
