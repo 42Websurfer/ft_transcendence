@@ -359,8 +359,10 @@ class RemoteHandler extends Entity{
 			const player = this.players[entid];
 			let scoreText = document.getElementById(`player${i+1}_score`);
 			let scoreName = document.getElementById(`player${i+1}_name`);
-			scoreText.innerText = this.entities[entid].score;
-			scoreName.innerText = player.uname;
+			if (scoreText)
+				scoreText.innerText = this.entities[entid].score;
+			if (scoreName)
+				scoreName.innerText = player.uname;
 			i++;
 		}
 	}
@@ -375,7 +377,7 @@ let world = new World();
 ctx.fillStyle = '#d8d3d3';
 world.addSystem(new RenderSystem());
 
-let intervalId = 0;
+let intervalId;
 
 let manager = undefined;
 let socket = undefined;
@@ -393,12 +395,15 @@ function sendMovementInput(event) {
 	} 
 }
 
+let lobbyId;
+
 function selectGamemode(groupName){
 	if (!groupName){
 		world.addSystem(new CollisionSystem());
 		world.addSystem(new MovementSystem());
 		manager = new PongLocalManager();
 	} else {
+		lobbyId = groupName.split('_')[1];
 		socket = new WebSocket(`ws://${window.location.host}/ws/pong/${groupName}/`);
 		setupCloseWebsocket(socket);
 		window.addEventListener('keypress', sendMovementInput);
@@ -450,6 +455,8 @@ function setupSocketHandlers(socket){
 		} else if (data.type === 'disconnected') {
 			let player = manager.players[data.id];
 			displayDisconnect(player.uname);
+		} else if (data.type === 'gameOver') {
+			socket.close();
 		} else if (data.type === 'drawDot'){
 			ctx.fillStyle = 'red';
 			ctx.fillRect(data.x, data.y, 5, 5);
@@ -460,10 +467,15 @@ function setupSocketHandlers(socket){
 	}
 	
 	socket.onclose = () => {
-		clearInterval(intervalId);
-		world.entities = [];
-		showSection('welcome');
+		console.log('GAME SOCKET CLOSED!');
+		endGame();
 	}
+}
+
+function endGame() {
+	clearInterval(intervalId);
+	world.entities = [];
+	showSection('menu_online_lobby', lobbyId);
 }
 
 function setupCloseWebsocket(socket) {
@@ -471,7 +483,7 @@ function setupCloseWebsocket(socket) {
 	const homeButton = document.getElementById('webpong-button');
 
 	const closeSocket = () => {
-		socket.close(1000);
+		socket.close();
 		homeButton.removeEventListener('click', closeSocket);
 		logoutButton.removeEventListener('click', closeSocket);
 	}
@@ -517,6 +529,6 @@ function displayDisconnect(name) {
 	clearInterval(countdownInterval);
 	let countdownDisplay = document.getElementById('countdownDisplay');
 	
-	countdownDisplay.innerText = `${name} disconnected!`;
+	countdownDisplay.innerHTML = `<p>${name} disconnected!</p>`;
 	countdownDisplay.style.display = 'block';
 }
