@@ -72,8 +72,6 @@ async function handleUsernameFormSubmit(session_data)
         {
 
             registerMessage.textContent = '';
-            const buttons = document.querySelectorAll('button');
-            buttons.forEach(button => button.disabled = true);
     
             const registerLoader = document.getElementById('registerLoader');
             registerLoader.style.display = 'block';

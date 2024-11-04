@@ -207,8 +207,6 @@ async function handleFormSubmit(event) {
 	if (result.type === 'success')
 	{
 		registerMessage.textContent = '';
-		const buttons = document.querySelectorAll('button');
-		buttons.forEach(button => button.disabled = true);
 
         console.log("SUPIDUPI!!!");
 

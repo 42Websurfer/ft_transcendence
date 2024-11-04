@@ -105,8 +105,6 @@ async function handleSettingsFormSubmit(event) {
 	if (result.type === 'success')
 	{
 		settingsMessage.textContent = '';
-		const buttons = document.querySelectorAll('button');
-		buttons.forEach(button => button.disabled = true);
 
 		const settingsLoader = document.getElementById('settingsLoader');
 		settingsLoader.style.display = 'block';
