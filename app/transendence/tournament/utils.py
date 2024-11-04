@@ -2,7 +2,7 @@ import redis
 import json
 import logging
 from channels.layers import get_channel_layer
-from asgiref.sync import sync_to_async
+from asgiref.sync import sync_to_async, async_to_sync
 from django.core.exceptions import ObjectDoesNotExist
 from .models import OnlineMatch, GameStatsUser, Tournament, TournamentResults 
 
@@ -149,7 +149,7 @@ def set_online_match(data, lobby_id):
 		modus = 'test' #vllt noch setzen welcher type!
 	)
 	match.save()
-	update_online_match_socket(data, lobby_id)
+	(async_to_sync)(update_online_match_socket)(data, lobby_id)
 # def check_round_completion(lobby_id, roundm machtes):
 #     tournament_json = redis.get(tournament_string(lobby_id))
 #     if (not tournament_json):
