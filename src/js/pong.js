@@ -455,8 +455,10 @@ function setupSocketHandlers(socket){
 		} else if (data.type === 'disconnected') {
 			let player = manager.players[data.id];
 			displayDisconnect(player.uname);
+			endGame();
 		} else if (data.type === 'gameOver') {
-			socket.close();
+			// socket.close();
+			endGame();
 		} else if (data.type === 'drawDot'){
 			ctx.fillStyle = 'red';
 			ctx.fillRect(data.x, data.y, 5, 5);
@@ -468,14 +470,15 @@ function setupSocketHandlers(socket){
 	
 	socket.onclose = () => {
 		console.log('GAME SOCKET CLOSED!');
-		endGame();
+		clearInterval(intervalId);
+		world.entities = [];
 	}
 }
 
 function endGame() {
 	clearInterval(intervalId);
 	world.entities = [];
-	showSection('menu_online_lobby', lobbyId);
+	setTimeout(() => showSection('menu_online_lobby', lobbyId), 2000);
 }
 
 function setupCloseWebsocket(socket) {
