@@ -262,6 +262,16 @@ async def set_match_data(lobby_id, match_id, score_home, score_away, status):
 		await (sync_to_async)(safe_tournament_data)(lobby_id)
 	return True
 
+def get_current_round(matches):
+	round = -1
+	start = -1
+	for index, match in enumerate(matches): 
+		if match['status'] == 'pending':
+			round = match['round']
+			start = index
+			break
+	return round, start
+
 def reset_match(lobby_id, match):
 	home = match['home']
 	away = match['away']
