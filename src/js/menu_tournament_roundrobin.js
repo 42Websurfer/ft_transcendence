@@ -2,15 +2,15 @@ import { getCookie, displayMessages, fetch_get } from './utils.js';
 import { selectedListItem, setSelectedListItem, handleFriendRequest, showSection } from './index.js';
 import { renderPong } from './pong.js';
 
-export function runWebsocket(socket) {
+export function runWebsocket() {
 
     let admin = false;
 
-    socket.onopen = function() {
+    g_socket.onopen = function() {
         console.log("Connected to Websocket of a Tournament")
     };
 
-    socket.onmessage = function(event) {
+    g_socket.onmessage = function(event) {
         try {
             const data = JSON.parse(event.data);
             if (data.type === 'send_tournament_users')
@@ -26,7 +26,7 @@ export function runWebsocket(socket) {
                 for (let index = 0; index < results.length; index++) {
                     const user = results[index];
                     console.log(data);
-                    console.log('User_id from from socket: ' + data.user_id);
+                    console.log('User_id from from g_socket: ' + data.user_id);
                     console.log('User_id from from reults: ' + user.user_id);
                     console.log('Status: ' + user.role);
 
@@ -87,7 +87,7 @@ export function runWebsocket(socket) {
         }
     };
     
-    socket.onclose = function(event) {
+    g_socket.onclose = function(event) {
         console.log('WebSocket connection closed');
     };
 
@@ -193,12 +193,14 @@ function addMatchItem(tournamentMatchesList, player_home, player_away, score, st
     tournamentMatchesList.appendChild(li);
 }
 
-function closeWebsocket(socket) {
+function closeWebsocket() {
     const logoutButton = document.getElementById('logoutButton');
     const homeButton = document.getElementById('webpong-button');
-    homeButton.addEventListener('click', () => {socket.close(1000)})
-    logoutButton.addEventListener('click', () => {socket.close(1000)});
+    homeButton.addEventListener('click', () => {g_socket.close(1000)})
+    logoutButton.addEventListener('click', () => {g_socket.close(1000)});
 }
+
+let g_socket;
 
 export function renderMenuTournamentRoundRobin(lobbyId) {
 
@@ -306,10 +308,25 @@ export function renderMenuTournamentRoundRobin(lobbyId) {
 
     </div>
     `;
-
-    const socket = new WebSocket(`ws://${window.location.host}/ws/tm/${lobbyId}/`);
-    runWebsocket(socket);
-    closeWebsocket(socket);
+    if (!g_socket)
+    {
+            g_socket = new WebSocket(`ws://${window.location.host}/ws/tm/${lobbyId}/`);
+            runWebsocket(g_socket);
+            closeWebsocket(g_socket);
+    }
+    else {
+        const startTournamentButton = document.getElementById('tournamentStartButton');
+        startTournamentButton.style.display = 'none';
+        fetch(`/tm/get_tournament_lobby_data/${lobbyId}/`, {
+            method: 'GET',
+            credentials: 'include'
+        }).then((response) => response.json())
+        .then((data) => {
+            if (data.type === 'error') {
+                console.log(data.message);
+            }
+        }).catch((error) => console.log("Error:", error));
+    }
 
     function copyToClipboard() {
         var copyText = document.getElementById("lobbyId");
