@@ -59,7 +59,7 @@ export function renderMenuTournament() {
 
     async function createTournamentLobby() {
         try {
-            const response = await fetch(`/tm/create/`, {
+            const response = await fetch(`/tm/create/tournament`, {
                 method: 'GET',
                 credentials: 'include'
             });            

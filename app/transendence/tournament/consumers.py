@@ -2,6 +2,7 @@ import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from django.contrib.auth import get_user_model
 from asgiref.sync import sync_to_async
+from .models import Tournament as TournamentModel
 import redis
 from .utils import create_user_structure, tournament_string, update_matches_disconnect, match_lobby_string
 
@@ -21,25 +22,29 @@ class Tournament(AsyncWebsocketConsumer):
 					if user['user_id'] == self.user.id:
 						left_user = True
 		if (self.user.is_authenticated):
+			User = get_user_model()
+			user = await sync_to_async(User.objects.get)(id=self.user.id)		
+			if (not left_user):
+				tournament_data = redis.get(self.group_name)
+				if redis.exists(self.group_name) and tournament_data:
+					redis.sadd('user_lobbies', self.user.id) # frage?
+					results = json.loads(tournament_data)
+					results.append(create_user_structure(self.user.id, 'member', user.username))
+					redis.set(self.group_name, json.dumps(results))
+				elif redis.exists(self.group_name):
+					results = [] 
+					results.append(create_user_structure(self.user.id, 'admin', user.username))
+					redis.set(self.group_name, json.dumps(results))
+				else:
+					print('TOURNAMENT INVALID LOBBY ID ALARM!')
+					await self.close()
+					return
+			
 			await self.channel_layer.group_add(
 				self.group_name,
 				self.channel_name
 			)
 			await self.accept()
-			User = get_user_model()
-			user = await sync_to_async(User.objects.get)(id=self.user.id)		
-			if (not left_user):
-				if redis.exists(self.group_name):
-					results_json = redis.get(self.group_name)
-					if not results_json:
-						return
-					results = json.loads(results_json)
-					results.append(create_user_structure(self.user.id, 'member', user.username))
-					redis.set(self.group_name, json.dumps(results))
-				else:
-					results = [] 
-					results.append(create_user_structure(self.user.id, 'admin', user.username))
-					redis.set(self.group_name, json.dumps(results))
 				
 			await self.channel_layer.group_send(
 				self.group_name,
@@ -61,25 +66,33 @@ class Tournament(AsyncWebsocketConsumer):
 			results = json.loads(results_json)			
 			new_results = []
 			admin_disconnected = False
+			all_disconnected = True
 
 			for result in results:
 				if result['user_id'] == self.user.id:
+					result['status'] = 'disconnected'
 					if result['role'] == 'admin':
 						admin_disconnected = True
 				else:
+					if result['status'] != 'disconnected':
+						all_disconnected = False
 					new_results.append(result)
-
+			
+			redis.srem('user_lobbies', self.user.id) # frage?
 			if (admin_disconnected and new_results):
 				new_results[0]['role'] = 'admin'
 			tournament_started = redis.exists(tournament_string(self.group_name))
 			if new_results and not tournament_started: 
 				redis.set(self.group_name, json.dumps(new_results))
-			elif not new_results:
+			elif not new_results or all_disconnected:
 				redis.delete(self.group_name)
 				redis.delete(tournament_string(self.group_name))
 				return
 			if (tournament_started):
-				await update_matches_disconnect(self.user.id, self.group_name)
+				redis.set(self.group_name, json.dumps(results))
+				if not (sync_to_async)(TournamentModel.objects.filter(tournament_id=self.group_name).exists)():
+					await update_matches_disconnect(self.user.id, self.group_name)
+					
 			#update all games again the disconnected user!
 			await self.channel_layer.group_send(
 				self.group_name,

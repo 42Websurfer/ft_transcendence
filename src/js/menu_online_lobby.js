@@ -143,9 +143,16 @@ function addMatchItem(historicMatchesList, player_home, player_away, score, stat
 
 function closeWebsocket(socket) {
     const logoutButton = document.getElementById('logoutButton');
-    const homeButton = document.getElementById('webpong-button');
-    homeButton.addEventListener('click', () => {socket.close(1000)})
-    logoutButton.addEventListener('click', () => {socket.close(1000)});
+	const homeButton = document.getElementById('webpong-button');
+
+	const closeSocket = () => {
+		socket.close();
+		homeButton.removeEventListener('click', closeSocket);
+		logoutButton.removeEventListener('click', closeSocket);
+	}
+
+	homeButton.addEventListener('click', closeSocket)
+	logoutButton.addEventListener('click', closeSocket);
 }
 
 let g_socket;

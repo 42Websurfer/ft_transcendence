@@ -22,7 +22,7 @@ def lobby_name_generator():
 	return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(4))
 
 
-def create_lobby(request):
+def create_lobby(request, match_type):
 	user = request.user
 	if redis.sismember('user_lobbies', user.id):
 		return JsonResponse({
@@ -30,8 +30,16 @@ def create_lobby(request):
 			'message': 'You can\'t create multiple lobbies'
 		})
 	lobby_id = lobby_name_generator()
+	if match_type == 'match':
+		redis.set(match_lobby_string(lobby_id), "")
+	elif match_type == 'tournament':
+		redis.set(lobby_id, "")
+	else:
+		return JsonResponse({
+			'type': 'error',
+			'message': 'Key "match_type" missing in request!'
+		})
 	redis.sadd('user_lobbies', user.id)
-	redis.set(match_lobby_string(lobby_id), "")
 	return JsonResponse({
 		'lobby': {
 			'id': lobby_id,

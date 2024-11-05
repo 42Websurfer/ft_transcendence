@@ -21,14 +21,14 @@ def round_completed(matches, round):
 	logger.debug(f"Current round = {round}")
 	for index, match in enumerate(matches):
 		logger.debug(f"Current round: {round} | Loop match_round = {match['round']} | loop match_status = {match['status']}")
+		if index == len(matches) - 1:
+			return True, True
 		if match['round'] > round:
 			return True, False
 		elif match['status'] == 'pending':
 			return False, False
 		elif match['status'] == 'freegame' or match['status'] == 'disconnected':
 			continue
-		if index == len(matches) - 1:
-			return True, True
 	return True, True
 
 def create_user_structure(user_id, role, username):
@@ -44,6 +44,7 @@ def create_user_structure(user_id, role, username):
 		'points': 0,
 		'role': role,
 		'player': username,
+		'status': 'connected'
 	}
 	return user_data
 
@@ -166,7 +167,7 @@ def safe_tournament_data(lobby_id):
 	if not results_json:
 		return
 	results = json.loads(results_json)
-	tournament = Tournament(tournament_id = lobby_id)
+	tournament = Tournament(tournament_id=lobby_id)
 	tournament.save()
 	logger.debug(f"Lets see the result: \n {results}")
 	for result in results: 
@@ -266,10 +267,13 @@ def get_current_round(matches):
 	round = -1
 	start = -1
 	for index, match in enumerate(matches): 
+		logger.debug(match['status'])
 		if match['status'] == 'pending':
 			round = match['round']
 			start = index
 			break
+		if index == len(matches) - 1:
+			round = match['round'] + 1
 	return round, start
 
 def reset_match(lobby_id, match):

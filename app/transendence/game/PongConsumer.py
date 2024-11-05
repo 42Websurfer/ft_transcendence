@@ -5,7 +5,7 @@ import redis
 from asgiref.sync import sync_to_async
 from django.contrib.auth import get_user_model
 from .Pong import *
-from tournament.utils import match_lobby_string
+from tournament.utils import match_lobby_string, tournament_string
 
 redis = redis.Redis(host='redis', port=6379, db=0)
 class MyConsumer(AsyncWebsocketConsumer):
@@ -20,9 +20,20 @@ class MyConsumer(AsyncWebsocketConsumer):
 		self.match_type = split[0] if len(split) > 0 else None
 		self.lobby_id = split[1] if len(split) > 1 else None
 		self.match_id = int(split[-1]) if len(split) > 3 else -1
-		if self.lobby_id is None or not redis.exists(match_lobby_string(self.lobby_id)):
-			await self.close()
-			return
+		
+		if self.match_type == 'tournament':
+			data = redis.get(tournament_string(self.lobby_id))
+			if not data:
+				await self.close()
+				return
+			json_data = json.loads(data)
+			if self.match_id < 1 or len(json_data['matches']) < self.match_id or json_data['matches'][self.match_id - 1]['status'] != 'pending':
+				await self.close()
+				return
+		elif self.match_type == 'match':
+			if self.lobby_id is None or not redis.exists(match_lobby_string(self.lobby_id)):
+				await self.close()
+				return
 
 		await self.channel_layer.group_add(
 			self.group_name,

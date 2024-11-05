@@ -57,7 +57,7 @@ export function renderMenuOnline() {
 
     async function createOnlineLobby() {
         try {
-            const response = await fetch(`/tm/create/`, {
+            const response = await fetch(`/tm/create/match`, {
                 method: 'GET',
                 credentials: 'include'
             });            

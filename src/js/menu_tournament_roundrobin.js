@@ -69,6 +69,7 @@ export function runWebsocket() {
                     console.log('Round completed');
                     const roundStartButton = document.getElementById('roundStartButton');
                     if (roundStartButton)
+                        roundStartButton.style.display = 'block'
                         roundStartButton.disabled = false;
                 }
             }
@@ -89,6 +90,7 @@ export function runWebsocket() {
     
     g_socket.onclose = function(event) {
         console.log('WebSocket connection closed');
+        g_socket = undefined;
     };
 
 }
@@ -195,9 +197,16 @@ function addMatchItem(tournamentMatchesList, player_home, player_away, score, st
 
 function closeWebsocket() {
     const logoutButton = document.getElementById('logoutButton');
-    const homeButton = document.getElementById('webpong-button');
-    homeButton.addEventListener('click', () => {g_socket.close(1000)})
-    logoutButton.addEventListener('click', () => {g_socket.close(1000)});
+	const homeButton = document.getElementById('webpong-button');
+
+	const closeSocket = () => {
+		g_socket.close();
+		homeButton.removeEventListener('click', closeSocket);
+		logoutButton.removeEventListener('click', closeSocket);
+	}
+
+	homeButton.addEventListener('click', closeSocket)
+	logoutButton.addEventListener('click', closeSocket);
 }
 
 let g_socket;
@@ -413,6 +422,7 @@ export function renderMenuTournamentRoundRobin(lobbyId) {
 
     roundStartButton.addEventListener('click', async() => {
         roundStartButton.disabled = true;
+        roundStartButton.style.display = 'none'
         startGame();
     });
 

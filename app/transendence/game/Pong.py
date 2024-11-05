@@ -324,10 +324,7 @@ class PongGame:
 		elif self.player1.match_type == 'tournament':
 			print('Start save tournament data!')
 			(async_to_sync)(set_match_data)(self.player1.lobby_id, self.player1.match_id, self.player1.player_c.score, self.player2.player_c.score, 'finished')
-			print('Tournament data saved!')
-		(async_to_sync)(self.player1.close)()
-		(async_to_sync)(self.player2.close)()
-		
+			print('Tournament data saved!')		
 
 	def game_loop(self):
 		thread_local.pong_game = self
@@ -347,6 +344,8 @@ class PongGame:
 		print('game loop stopped of group', self.player1.group_name)
 		self.event_loop.call_soon_threadsafe(self.event_loop.stop)
 		print('asyncio event_loop ordered to stop')
+		(async_to_sync)(self.player1.close)()
+		(async_to_sync)(self.player2.close)()
 
 	def asyncio_tasks_thread(self):
 		asyncio.set_event_loop(self.event_loop)
