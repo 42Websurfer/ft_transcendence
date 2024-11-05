@@ -396,6 +396,7 @@ function sendMovementInput(event) {
 }
 
 let lobbyId;
+let matchType;
 
 function selectGamemode(groupName){
 	if (!groupName){
@@ -403,7 +404,9 @@ function selectGamemode(groupName){
 		world.addSystem(new MovementSystem());
 		manager = new PongLocalManager();
 	} else {
-		lobbyId = groupName.split('_')[1];
+		let split = groupName.split('_');
+		matchType = split.length > 0 ? split[0] : undefined;
+		lobbyId = split.length > 1 ? split[1] : undefined;
 		socket = new WebSocket(`ws://${window.location.host}/ws/pong/${groupName}/`);
 		setupCloseWebsocket(socket);
 		window.addEventListener('keypress', sendMovementInput);
@@ -478,7 +481,13 @@ function setupSocketHandlers(socket){
 function endGame() {
 	clearInterval(intervalId);
 	world.entities = [];
-	setTimeout(() => showSection('menu_online_lobby', lobbyId), 2000);
+	if (matchType === 'match') {
+		setTimeout(() => showSection('menu_online_lobby', lobbyId), 2000);
+	} else if (matchType === 'tournament') {
+		setTimeout(() => showSection('menu_tournament_roundrobin', lobbyId), 2000);
+	} else {
+		setTimeout(() => showSection('menu'), 2000);
+	}
 }
 
 function setupCloseWebsocket(socket) {

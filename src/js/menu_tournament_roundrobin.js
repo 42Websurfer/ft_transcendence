@@ -78,7 +78,7 @@ export function runWebsocket(socket) {
             {
                 console.log('START GAME ID = ', data.match_id)
                 if (data.match_id)
-                    renderPong(response.match_id)
+                    renderPong(data.match_id)
             }
 
         }
