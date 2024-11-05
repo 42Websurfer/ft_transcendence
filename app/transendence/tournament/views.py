@@ -86,7 +86,7 @@ async def get_tournament_lobby_data(request, lobby_id):
 	if tournament is None:
 		return JsonResponse({'type': 'error', 'message': 'Tournament not found.'})
 	tournament_dic = json.loads(tournament)
-	round = get_current_round(tournament_dic['matches'])
+	round, start = get_current_round(tournament_dic['matches'])
 	channel_layer = get_channel_layer()
 	await channel_layer.group_send(
 		lobby_id,
@@ -94,6 +94,13 @@ async def get_tournament_lobby_data(request, lobby_id):
 			'type': 'match_list',
 		}
 	)
+	await channel_layer.group_send(
+		lobby_id,
+		{
+			'type': 'send_tournament_users',
+		}
+	)
+	round -= 1
 	if round == -1:
 		round = 0
 	status, tournament_finished = round_completed(tournament_dic['matches'], round)
