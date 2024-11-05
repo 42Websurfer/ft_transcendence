@@ -6,7 +6,7 @@ import json
 import requests
 import sys
 import logging
-from .utils import get_longest_winstreak, update_online_match_socket, set_online_match, tournament_string, round_completed, update_tournament_group, set_match_data, match_lobby_string
+from .utils import get_current_round, get_longest_winstreak, update_online_match_socket, set_online_match, tournament_string, round_completed, update_tournament_group, set_match_data, match_lobby_string
 from django.views.decorators.csrf import csrf_exempt
 from channels.layers import get_channel_layer
 from asgiref.sync import sync_to_async
@@ -81,6 +81,41 @@ async def get_online_lobby_data(request, lobby_id):
 	)
 	return (JsonResponse({'type': 'success'}))
 
+async def get_tournament_lobby_data(request, lobby_id):
+	tournament = redis.get(tournament_string(lobby_id))
+	if tournament is None:
+		return JsonResponse({'type': 'error', 'message': 'Tournament not found.'})
+	tournament_dic = json.loads(tournament)
+	round = get_current_round(tournament_dic['matches'])
+	channel_layer = get_channel_layer()
+	await channel_layer.group_send(
+		lobby_id,
+		{
+			'type': 'match_list',
+		}
+	)
+	if round == -1:
+		round = 0
+	status, tournament_finished = round_completed(tournament_dic['matches'], round)
+	if status and not tournament_finished:
+		logger.debug(f"Round completed")
+		await channel_layer.group_send(
+			lobby_id,
+			{
+				'type': 'send_round_completed'
+			}
+		)
+	elif status and tournament_finished:
+		logger.debug(f"Tournament completed") 
+		await channel_layer.group_send(
+			lobby_id,
+			{
+				'type': 'send_tournament_finished',
+			}
+		)
+	return JsonResponse({'type': 'success'})
+
+
 async def start_tournament_round(request, lobby_id):
 	tournament_matches_json = redis.get(tournament_string(lobby_id))
 	if not tournament_matches_json:
@@ -88,13 +123,7 @@ async def start_tournament_round(request, lobby_id):
 	tournament_matches = json.loads(tournament_matches_json)
 	matches = tournament_matches['matches']
 	#find current round which should be started
-	round = -1
-	start = -1
-	for index, match in enumerate(matches): 
-		if match['status'] == 'pending':
-			round = match['round']
-			start = index
-			break
+	round, start = get_current_round(matches)
 	logger.debug(f"We found the match in round: {round}")
 	if round != -1 or start != -1:
 		channel_layer = get_channel_layer()
