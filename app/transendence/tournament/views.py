@@ -81,6 +81,42 @@ async def get_online_lobby_data(request, lobby_id):
 	)
 	return (JsonResponse({'type': 'success'}))
 
+async def start_tournament_round(request, lobby_id):
+	tournament_matches_json = redis.get(tournament_string(lobby_id))
+	if not tournament_matches_json:
+		return (JsonResponse({'type': 'error', 'message': 'Tournament not found'}))
+	tournament_matches = json.loads(tournament_matches_json)
+	matches = tournament_matches['matches']
+	#find current round which should be started
+	round = -1
+	start = -1
+	for index, match in enumerate(matches): 
+		if match['status'] == 'pending':
+			round = match['round']
+			start = index
+			break
+	logger.debug(f"We found the match in round: {round}")
+	if round != -1 or start != -1:
+		channel_layer = get_channel_layer()
+		for match in matches[start:]:
+			if match['round'] > round:
+				break
+			if match['status'] == 'pending':
+				logger.debug(f"We are sending match_id = {match['match_id']}")
+				await channel_layer.group_send(
+					lobby_id,
+					{
+						'type': 'start_tournament_match',
+						'match_id': 'tournament_' + lobby_id + '_loop_' + str(match['match_id']),
+						'user1': match['home'],
+						'user2': match['away'],
+					}
+				)
+	else: 
+		return JsonResponse({'type': 'error', 'message': 'No round founded'})
+	return JsonResponse({'type': 'success'})
+	#send the match data from current round! with setting user1 and user2 and match_id
+
 async def start_group_tournament(request, lobby_id):
 	results_json = redis.get(lobby_id)
 	if (not results_json):
@@ -147,24 +183,6 @@ async def set_tournament_match(request):
 	else:
 		return (JsonResponse({'type': 'error'}))
 
-
-async def test_set_online_match(request):
-	data = json.loads(request.body)
-
-	home_username = data.get('player1')
-	away_username = data.get('player2')
-	lobby_id = data.get('lobby_id')
-	home = await sync_to_async(GameStatsUser.objects.get)(username=home_username)
-	away = await sync_to_async(GameStatsUser.objects.get)(username=away_username)
-	match = {}
-	match['home'] = home
-	match['away'] = away
-	match['home_score'] = data.get('score_player1')
-	match['away_score'] = data.get('score_player2')
-	await sync_to_async(set_online_match)(match, lobby_id)
-	await update_online_match_socket(match, lobby_id)
-	return (JsonResponse({'type': 'success'}))
-		
 async def start_game_loop(request, lobby_id):
 	channel_layer = get_channel_layer()	
 	await channel_layer.group_send(
