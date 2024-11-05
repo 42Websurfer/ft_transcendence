@@ -41,7 +41,6 @@ export function renderMenuTournament() {
     };
 
     const tournamentLobbyInput = document.getElementById('tournamentLobbyId');
-    const joinMessage = document.getElementById('joinMessage');
     tournamentLobbyInput.addEventListener('keydown', async (event) => {
         if (event.key === 'Enter') {
             const lobbyId = tournamentLobbyInput.value.trim();
@@ -52,11 +51,7 @@ export function renderMenuTournament() {
                     showSection('menu_tournament_roundrobin', lobbyId);
                 else
                 {
-                    joinMessage.textContent = response.message;
-                    joinMessage.style.color = 'red';
-                    joinMessage.style.animation = 'none';
-                    joinMessage.offsetHeight;
-                    joinMessage.style.animation = 'wiggle 0.5s ease-in-out';
+                    displayErrorMessage(response.message)
                 }
             }
         }
@@ -75,10 +70,24 @@ export function renderMenuTournament() {
 
     }
 
+    function displayErrorMessage(message)
+    {
+        const joinMessage = document.getElementById('joinMessage');
+        joinMessage.textContent = message;
+        joinMessage.style.color = 'red';
+        joinMessage.style.animation = 'none';
+        joinMessage.offsetHeight;
+        joinMessage.style.animation = 'wiggle 0.5s ease-in-out';
+
+    }
+
     const tournamentRRButton = document.getElementById('tournamentItemRR');
     tournamentRRButton.addEventListener('click', async () => {
         const response = await createTournamentLobby();
-        showSection('menu_tournament_roundrobin', response.lobby.id);
+        if (response.type === 'error')
+            displayErrorMessage(response.message)
+        else
+            showSection('menu_tournament_roundrobin', response.lobby.id);
     });
 
 }

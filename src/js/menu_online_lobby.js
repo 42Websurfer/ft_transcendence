@@ -27,12 +27,16 @@ export function runWebsocket(socket) {
 
                 matchPlayers.appendChild(li);
 
-                const startMatchButton = document.getElementById('matchStartButton');
+                const startMatchButton = document.getElementById('startOnlineMatch');
 
                 if (data.member_id != -1)
                 {
                     const li = document.createElement('li');
-                    startMatchButton.style.display = 'block';
+                    console.log('user_id: ', data.user_id);
+                    console.log('admin_id: ', data.admin_id);
+                    
+                    if (data.user_id == data.admin_id)
+                        startMatchButton.style.display = 'block';
                     li.className = 'friends-add-list-user';
                     li.innerHTML = `<span class="list-item-content">${data.member_username}</span>`;
     
@@ -201,7 +205,7 @@ export function renderMenuOnlineLobby(lobbyId) {
                         </div>
                     </div>
                     <button id="controlsButton"><span class="button-text">Controls</span></button>
-                    <button id="matchStartButton" class="start-match-button"><span id="matchStartButtonSpan">Start match</span></button>
+                    <button id="startOnlineMatch" class="start-match-button"><span id="matchStartButtonSpan">Start match</span></button>
                     <div id="copyMessage" class="copy-message">Copied to clipboard!</div>  
                 </div>  
             </div>
@@ -317,7 +321,7 @@ export function renderMenuOnlineLobby(lobbyId) {
         lobbyClosedModal.style.display = 'none';
     });
 
-    const matchStartButton = document.getElementById('matchStartButton');
+    const matchStartButton = document.getElementById('startOnlineMatch');
 
     matchStartButton.addEventListener('click', async() => {
         try {

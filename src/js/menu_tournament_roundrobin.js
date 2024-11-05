@@ -1,5 +1,6 @@
-import { getCookie, displayMessages } from './utils.js';
+import { getCookie, displayMessages, fetch_get } from './utils.js';
 import { selectedListItem, setSelectedListItem, handleFriendRequest, showSection } from './index.js';
+import { renderPong } from './pong.js';
 
 export function runWebsocket(socket) {
 
@@ -73,7 +74,12 @@ export function runWebsocket(socket) {
             }
             else if (data.type === 'tournament_finished')
                 console.log('Tournament finished');
-
+            else if (data.type === 'start_tournament_match')
+            {
+                console.log('START GAME ID = ', data.match_id)
+                if (data.match_id)
+                    renderPong(response.match_id)
+            }
 
         }
         catch (error) {
@@ -406,6 +412,11 @@ export function renderMenuTournamentRoundRobin(lobbyId) {
         document.getElementById('countdownDisplay').style.display = 'block';
 
         countdownInterval = setInterval(updateCountdown, 1000);
+        const response = fetch_get(`/tm/start_tournament_round/${lobbyId}`)
+        if (response.type === 'error')
+            console.log(response.message)
+        else 
+            console.log("Start round was successfull!! ");
     }
 
     async function updateCountdown() {
