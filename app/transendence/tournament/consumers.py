@@ -112,6 +112,18 @@ class Tournament(AsyncWebsocketConsumer):
 		}
 		await self.send(text_data=json.dumps(data))
 	
+	async def start_tournament_match(self, event):
+		print('self.user.id = ', self.user.id)
+		print('user1 = ', event['user1'])
+		print('user2 = ', event['user2'])
+
+		if self.user.id == event['user1'] or self.user.id == event['user2']:
+			data = {
+				'type': 'start_tournament_match',
+				'match_id': event['match_id'],
+			}
+			await self.send(text_data=json.dumps(data))
+
 	async def send_round_completed(self, event):
 		data = {
 			'type': 'round_completed',
@@ -205,6 +217,7 @@ class OnlineMatch(AsyncWebsocketConsumer):
 		lobby_data = json.loads(lobby_data_json)
 		data = {
 			'type': 'send_online_users',
+			'user_id': self.user.id,
 			'admin_id': lobby_data.get('admin_id'),
 			'admin_username': lobby_data.get('admin_username'),
 			'member_id': lobby_data.get('member_id'),
@@ -229,6 +242,8 @@ class OnlineMatch(AsyncWebsocketConsumer):
 		}
 		await self.send(json.dumps(data))
 	
+
+
 	async def close_connection(self, event):
 		redis.srem('online_lobbies', self.user.id)
 		print('USER ID:', self.user.id)
