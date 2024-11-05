@@ -17,7 +17,9 @@ class MyConsumer(AsyncWebsocketConsumer):
 		self.user = self.scope["user"]
 		
 		split = self.group_name.split('_')
+		self.match_type = split[0] if len(split) > 0 else None
 		self.lobby_id = split[1] if len(split) > 1 else None
+		self.match_id = int(split[-1]) if len(split) > 3 else -1
 		if self.lobby_id is None or not redis.exists(match_lobby_string(self.lobby_id)):
 			await self.close()
 			return

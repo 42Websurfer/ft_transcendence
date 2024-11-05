@@ -2,7 +2,7 @@ import threading, time, asyncio
 from .GameSystem import *
 from functools import partial
 from tournament.models import GameStatsUser
-from tournament.utils import set_online_match
+from tournament.utils import set_online_match, set_match_data
 from asgiref.sync import async_to_sync
 
 # Constants
@@ -313,13 +313,18 @@ class PongGame:
 		print('We have a winner! Stop game thread, and asyncio thread')
 		self.stop()
 		print('Start of DB save')
-		match_data = {}
-		match_data['home'] = GameStatsUser.objects.get(username=self.player1.user.username)
-		match_data['away'] = GameStatsUser.objects.get(username=self.player2.user.username)
-		match_data['home_score'] = self.player1.player_c.score
-		match_data['away_score'] = self.player2.player_c.score
-		set_online_match(match_data, self.player1.lobby_id)
-		print('Data successfully saved into DB!')
+		if self.player1.match_type == 'match':
+			match_data = {}
+			match_data['home'] = GameStatsUser.objects.get(username=self.player1.user.username)
+			match_data['away'] = GameStatsUser.objects.get(username=self.player2.user.username)
+			match_data['home_score'] = self.player1.player_c.score
+			match_data['away_score'] = self.player2.player_c.score
+			set_online_match(match_data, self.player1.lobby_id)
+			print('Data successfully saved into DB!')
+		elif self.player1.match_type == 'tournament':
+			print('Start save tournament data!')
+			(async_to_sync)(set_match_data)(self.player1.lobby_id, self.player1.match_id, self.player1.player_c.score, self.player2.player_c.score, 'finished')
+			print('Tournament data saved!')
 		(async_to_sync)(self.player1.close)()
 		(async_to_sync)(self.player2.close)()
 		
