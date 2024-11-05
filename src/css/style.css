@@ -1000,6 +1000,21 @@ body {
     color: white;
 }
 
+#startOnlineMatch {
+    display: none;
+    width: 11em;
+    background-color: rgba(245, 244, 244, 0.6);
+    border-radius: 8px;
+    border: 0.1em solid #000000;
+    font-size: 1.2em;
+    flex-direction: column;
+    text-shadow: 1px 1px 2px #000000;
+    text-align: center;
+    font-family: 'Press Start 2P';
+    padding: 0.6em;
+    color: white;
+}
+
 #tournamentStartButtonSpan:hover {
     color: #e6e4e7;
     text-shadow: 2px 2px 2px #000000;
