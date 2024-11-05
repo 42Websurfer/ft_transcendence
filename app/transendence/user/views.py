@@ -59,9 +59,9 @@ def user_login(request):
                         }
                     }, status=200)
                 else:
-                    return JsonResponse({'error': 'Invalid password.'}, status=400)
+                    return JsonResponse({'error': 'Incorrect username or password.'}, status=400)
             else:
-                return JsonResponse({'error': 'User does not exist.'}, status=400)
+                return JsonResponse({'error': 'Incorrect username or password.'}, status=400)
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON.'}, status=400)
     return JsonResponse({'error': 'Invalid request method.'}, status=405)
