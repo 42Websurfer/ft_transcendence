@@ -15,7 +15,7 @@ class GameStatsUser(models.Model):
     goals_for = models.IntegerField(default = 0)
 
     def save(self, *args, **kwargs):
-        if self.user:
+        if self.user and not self.username:
             self.username = self.user.username
         super().save(*args, **kwargs)
 

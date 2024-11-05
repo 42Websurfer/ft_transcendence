@@ -18,7 +18,7 @@ def update_gamestatsuser(sender, instance, **kwargs):
         try:
             old_user = User.objects.get(pk=instance.pk)
             if old_user.username != instance.username:
-                gamestatsuser = GameStatsUser.objects.get(user=instance)
+                gamestatsuser = GameStatsUser.objects.get(user=old_user)
                 gamestatsuser.username = instance.username
                 gamestatsuser.save()
         except User.DoesNotExist:
