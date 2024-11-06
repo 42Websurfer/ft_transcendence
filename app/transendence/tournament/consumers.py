@@ -93,7 +93,6 @@ class Tournament(AsyncWebsocketConsumer):
 				results = sort_group_tournament(results)
 				redis.set(self.group_name, json.dumps(results))
 				if not await (sync_to_async)(TournamentModel.objects.filter(tournament_id=self.group_name).exists)():
-					print("\n\nKOMMEN WIR HIER ZWEI MAL REIN?!\n\n")
 					await update_matches_disconnect(self.user.id, self.group_name)
 					
 			#update all games again the disconnected user!

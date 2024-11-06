@@ -173,52 +173,49 @@ def safe_tournament_data(lobby_id):
 	results = json.loads(results_json)
 	tournament = Tournament(tournament_id=lobby_id)
 	tournament.save()
-	logger.debug(f"Lets see the result: \n {results}")
 	for result in results: 
 		try:
 			user_Gamestats = GameStatsUser.objects.get(username=result['player'])
 		except ObjectDoesNotExist:
 			continue
-		if result['rank'] == 1:
-			user_Gamestats.tournament_wins += 1
-			user_Gamestats.save()
-		tournament_result = TournamentResults(
-			tournament_id = tournament,
-			rank = result['rank'],
-			games = result['games'],
-			won = result['won'],
-			lost = result['lost'],
-			goals_for = result['goals'],
-			goals_against = result['goals_against'],
-			diff = result['diff'],
-			points = result['points'],
-			user = user_Gamestats,
-		)
-		tournament_result.save()
+		if result['status'] != 'disconnected':
+			if result['rank'] == 1:
+				user_Gamestats.tournament_wins += 1
+				user_Gamestats.save()
+			tournament_result = TournamentResults(
+				tournament_id = tournament,
+				rank = result['rank'],
+				games = result['games'],
+				won = result['won'],
+				lost = result['lost'],
+				goals_for = result['goals'],
+				goals_against = result['goals_against'],
+				diff = result['diff'],
+				points = result['points'],
+				user = user_Gamestats,
+			)
+			tournament_result.save()
 		
 	tournament_json = redis.get(tournament_string(lobby_id))
 	if not tournament_json:
 		return
 	tournament = json.loads(tournament_json)
 	matches = tournament['matches']
-	logger.debug(f"Lets see the matches: \n {matches}")
 	for match in matches:
-		logger.debug (f"Gamestatsuser home = {match['player_home']}")
-		logger.debug (f"Gamestatsuser away = {match['player_away']}")
 		try:
 			home_user = GameStatsUser.objects.get(username=match['player_home'])
 			away_user = GameStatsUser.objects.get(username=match['player_away'])
 		except ObjectDoesNotExist:
 			continue
-
-		online_match = OnlineMatch(
-			home = home_user,
-			away = away_user,
-			home_score = match['score_home'],
-			away_score = match['score_away'],
-			modus = 'RoundRobin',
-		)
-		online_match.save()
+		if (match['status'] == 'finished'):
+			online_match = OnlineMatch(
+				home = home_user,
+				away = away_user,
+				home_score = match['score_home'],
+				away_score = match['score_away'],
+				modus = 'RoundRobin',
+			)
+			online_match.save()
 
 		#need to delete redis database!!. and set everything to finish!
 
