@@ -1,6 +1,5 @@
 import json
 import logging
-
 import redis
 import requests
 from django.shortcuts import get_object_or_404, redirect
@@ -11,7 +10,9 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Q
-
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.tokens import RefreshToken
 from user.utils import updateOnlineStatusChannel
 from tournament.models import GameStatsUser
 from .models import User, Friendship, UserProfile
@@ -22,59 +23,72 @@ logger = logging.getLogger(__name__)
 r = redis.Redis(host='redis', port=6379, db=0)
 User = get_user_model()
 
+@api_view(['GET'])
 def check_auth(request):
-    if request.user.is_authenticated:
-        return JsonResponse({
-            'authenticated': True,
-            'user': {
-                'id': request.user.id,
-                'username': request.user.username,
-                'email': request.user.email,
-                'first_name': request.user.first_name,
-                'last_name': request.user.last_name
-            }
-        })
-    else:
+    try: 
+        if request.user.is_authenticated:
+            logger.debug("user is authenticated")
+            return JsonResponse({
+                'authenticated': True,
+                'user': {
+                    'id': request.user.id,
+                    'username': request.user.username,
+                    'email': request.user.email,
+                    'first_name': request.user.first_name,
+                    'last_name': request.user.last_name
+                }
+            })
+        else:
+            logger.debug("user is not authenticated")
+            return JsonResponse({'authenticated': False})
+    except Exception as e:
         return JsonResponse({'authenticated': False})
+        
 
-@csrf_exempt
+@api_view(['POST'])
 def user_login(request):
-    if request.method == 'POST':
-        try: 
-            data = json.loads(request.body)
-            username = data.get('username')
-            password = data.get('password')
-            if User.objects.filter(username=username).exists():
-                user = authenticate(username=username, password=password)
-                if user is not None:
-                    login(request, user)
-                    return JsonResponse({
-                        'success': 'User logged in successfully.',
-                        'user': {
-                            'id': user.id,
-                            'username': user.username,
-                            'email': user.email,
-                            'first_name': user.first_name,
-                            'last_name': user.last_name
-                        }
-                    }, status=200)
-                else:
-                    return JsonResponse({'error': 'Incorrect username or password.'}, status=400)
+    try: 
+        data = json.loads(request.body)
+        username = data.get('username')
+        password = data.get('password')
+        if User.objects.filter(username=username).exists():
+            logger.debug("WO FAILST DU JUNGE")
+            user = authenticate(username=username, password=password)
+            logger.debug("WO FAILST DU JUNGE2")
+            if user is not None:
+                refresh = RefreshToken.for_user(user)
+                access_token = str(refresh.access_token)
+                logger.debug(f"{access_token}")
+                return JsonResponse({
+                    'success': 'User logged in successfully.',
+                    'user': {
+                        'id': user.id,
+                        'username': user.username,
+                        'email': user.email,
+                        'first_name': user.first_name,
+                        'last_name': user.last_name
+                    },
+                    'tokens': {
+                        'refresh': str(refresh),
+                        'access': access_token,
+                    }
+                }, status=200)
             else:
                 return JsonResponse({'error': 'Incorrect username or password.'}, status=400)
-        except json.JSONDecodeError:
-            return JsonResponse({'error': 'Invalid JSON.'}, status=400)
-    return JsonResponse({'error': 'Invalid request method.'}, status=405)
+        else:
+            return JsonResponse({'error': 'Incorrect username or password.'}, status=400)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON.'}, status=400)
 
-@login_required 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def user_logout(request):
-    if request.user.is_authenticated: 
-        logout(request)
+    logout(request)
     return JsonResponse({
         'success': 'User logged in successfully.'
     }, status=200)
 
-@csrf_exempt
+@api_view(['POST'])
 def register(request):
     if request.method == 'POST':
         try:
@@ -98,7 +112,7 @@ def register(request):
                 user_game_stats = GameStatsUser.objects.get(username=username)
                 user_game_stats.avatar = avatar
                 user_game_stats.save()
-            login(request, user)
+            refresh = RefreshToken.for_user(user)
             return JsonResponse({
                 'type': 'success',
                 'message': 'User registered successfully.',
@@ -108,12 +122,17 @@ def register(request):
                     'email': user.email,
                     'first_name': user.first_name,
                     'last_name': user.last_name
+                },
+                'tokens': {
+                    'refresh': str(refresh),
+                    'access': str(refresh.access_token),
                 }
             }, status=201)
         except json.JSONDecodeError:
                     return JsonResponse({'error': 'Invalid JSON.'}, status=400)
 
-@login_required
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def get_user_information(request):
     user = request.user
     return JsonResponse({
@@ -123,46 +142,47 @@ def get_user_information(request):
         'username': user.username
     })
 
-@login_required
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def update_user_information(request):
-    if request.method == 'POST':
-        try:
-            data = request.POST
-            email = data.get('email')
-            password = data.get('password')
-            firstname = data.get('firstname')
-            lastname = data.get('lastname')
-            username = data.get('username')
-            avatar = data = request.FILES.get('avatar')
-            user = User.objects.get(id=request.user.id)
-            logger.debug(f"Is 42? : {user.userprofile.is_third_party_user}")
-            if user.userprofile.is_third_party_user:
-                if user.email != email:
-                    return JsonResponse({'type': 'error', 'message': 'Third party user cannot change email'})
-            if username and user.username != username:
-                if User.objects.filter(username=username).exists():
-                    return JsonResponse({'type': 'error', 'message': 'This username already exists.'}, status=400)
-                user.username = username
-            
-            if email and user.email != email: 
-                if User.objects.filter(email=email).exists():
-                    return JsonResponse({'type': 'error', 'message': 'Email address already exists.'}, status=400)
-                user.email = email
-            if password:
-                user.set_password(password)
-            if firstname:
-                user.first_name = firstname
-            if lastname: 
-                user.last_name = lastname
-            if avatar:
-                user.gamestatsuser.avatar = avatar
-                user.gamestatsuser.save()
-            user.save()
-            return (JsonResponse({'type': 'success'}))
-        except User.DoesNotExist:  
-            return JsonResponse({'type': 'error', 'message': 'User does not exist.'})
+    try:
+        data = request.POST
+        email = data.get('email')
+        password = data.get('password')
+        firstname = data.get('firstname')
+        lastname = data.get('lastname')
+        username = data.get('username')
+        avatar = data = request.FILES.get('avatar')
+        user = User.objects.get(id=request.user.id)
+        logger.debug(f"Is 42? : {user.userprofile.is_third_party_user}")
+        if user.userprofile.is_third_party_user:
+            if user.email != email:
+                return JsonResponse({'type': 'error', 'message': 'Third party user cannot change email'})
+        if username and user.username != username:
+            if User.objects.filter(username=username).exists():
+                return JsonResponse({'type': 'error', 'message': 'This username already exists.'}, status=400)
+            user.username = username
+        
+        if email and user.email != email: 
+            if User.objects.filter(email=email).exists():
+                return JsonResponse({'type': 'error', 'message': 'Email address already exists.'}, status=400)
+            user.email = email
+        if password:
+            user.set_password(password)
+        if firstname:
+            user.first_name = firstname
+        if lastname: 
+            user.last_name = lastname
+        if avatar:
+            user.gamestatsuser.avatar = avatar
+            user.gamestatsuser.save()
+        user.save()
+        return (JsonResponse({'type': 'success'}))
+    except User.DoesNotExist:  
+        return JsonResponse({'type': 'error', 'message': 'User does not exist.'})
 
-@login_required
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def send_friend_request(request, username):
     user = request.user
     friend = get_object_or_404(User, username=username)
@@ -199,7 +219,8 @@ def send_friend_request(request, username):
         }, status=201)
 
 
-@login_required
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def accept_friend_request(request, username):
     user = request.user
     friend = get_object_or_404(User, username=username)
@@ -228,7 +249,8 @@ def accept_friend_request(request, username):
             'message': 'Friendship doesn\'t exist or you are not responsible'
         })
 
-@login_required
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def block_friend_request(request, username):
     user = request.user
     friend = get_object_or_404(User, username=username)
@@ -247,7 +269,8 @@ def block_friend_request(request, username):
             'message': 'Friendship doesn\'t exist.'
         })
 
-@login_required
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def remove_friendship(request, username):
     user = request.user
     friend = get_object_or_404(User, username=username)
@@ -266,7 +289,8 @@ def remove_friendship(request, username):
             'message': 'Friendship doesn\'t exist.'
         })
 
-@login_required
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def friend_requests(request):
     user = request.user
     friend_requests = Friendship.objects.filter(friend=user, status='pending')
@@ -282,7 +306,8 @@ def friend_requests(request):
     ]
     return JsonResponse({'requests': requests_data})
 
-@login_required
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def friend_list(request):
     user = request.user
     friend_requests = Friendship.objects.filter(friend=user, status='accepted')
@@ -298,7 +323,8 @@ def friend_list(request):
     ]
     return JsonResponse({'requests': requests_data})
 
-@login_required 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def get_all_online_users(request):
     online_users_ids = r.smembers("online_users")
 
@@ -316,7 +342,6 @@ def get_all_online_users(request):
     return JsonResponse({'online_users': user_data})
 
 def check_registration(request, session_data):
-    logger.debug(f"In check registration: {session_data.get('email')}")
     try:
         user = User.objects.get(email=session_data.get('email'))
         userprofile = UserProfile.objects.get(user=user)
@@ -324,8 +349,7 @@ def check_registration(request, session_data):
             logger.debug("Email already registered")
             return False
         if (user.username):
-            login(request, user)
-            return (True)
+            return (True, user)
     except User.DoesNotExist:
         return False
 
@@ -348,9 +372,16 @@ def register_api(request):
             userprofile = UserProfile.objects.get(user=user)
             userprofile.is_third_party_user = True
             userprofile.save()
-        logger.debug(f"aber jetzt sollte alles gespeichert sein!")
-        login(request, user)
-        return JsonResponse({'type': 'success'})
+        refresh = RefreshToken.for_user(user)
+        access = str(refresh.access_token)
+        return JsonResponse(
+            {
+                'type': 'success',
+                'tokens': {
+                    'refresh': str(refresh),
+                    'access': access,
+                }
+            })
     except json.JSONDecodeError as e:
         logger.error(f"JSON decode error: {e}")
         return JsonResponse({'type': 'error', 'message': 'Invalid JSON data'}, status=400)
@@ -369,9 +400,20 @@ def api_callback(request):
         user_info = get_user_info(access_token_response['access_token'])
         
         session_data = create_user_session(user_info)
-
-        if (check_registration(request, session_data)):
-            return JsonResponse({'type': 'success', 'data': session_data}, status=200)
+        isValid, user =check_registration(request, session_data)
+        logger.debug("HAS TO BE VALID! = ", isValid)
+        if (isValid):
+            refresh = RefreshToken.for_user(user)
+            access = str(refresh.access_token)
+            return JsonResponse(
+                {
+                    'type': 'success', 
+                    'data': session_data,
+                    'tokens': {
+                        'refresh': str(refresh),
+                        'access': access,
+                    },
+                }, status=200)
         else: 
             return JsonResponse({'type': 'registration', 'data': session_data})
     except Exception as e:
