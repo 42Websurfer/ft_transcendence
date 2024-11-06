@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-c9a)xn1l@!s9j8vr0p-j)q2$=$v-p=ia-77-55e7cgujt$l620
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '10.13.9.3', '10.14.7.4', '10.14.7.3', '10.14.1.9', '10.14.3.9']
 #hier können wir noch vllt eine domain uns anlegen im /etc/hosts
 
 # Application definition
@@ -38,7 +38,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'pong'
+    'user',
+    'game',
+    'tournament',
+    'channels'
 ]
 
 MIDDLEWARE = [
@@ -49,6 +52,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 ROOT_URLCONF = 'transendence.urls'
@@ -105,6 +109,14 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+PASSWORD_HASHERS = [
+    "django.contrib.auth.hashers.PBKDF2PasswordHasher",
+    "django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher",
+    "django.contrib.auth.hashers.Argon2PasswordHasher",
+    "django.contrib.auth.hashers.BCryptSHA256PasswordHasher",
+    "django.contrib.auth.hashers.ScryptPasswordHasher",
+]
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
@@ -121,9 +133,33 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
+STATIC_ROOT = BASE_DIR / 'assets'
+
 STATIC_URL = 'static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CSRF_TRUSTED_ORIGINS = ['http://localhost:8090']
+
+ASGI_APPLICATION = "transendence.asgi.application"
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('redis', 6379)],
+            "expiry": 10, #messages will be deleted after 10 sec
+        },
+    },
+}
+
+CLIENT_ID = 'u-s4t2ud-330f52eb5555dbbd02b4e50dcee66a4aa0cc7a20b5ae12c9a296a28fb3325425'
+CLIENT_SECRET = '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'
+REDIRECT_URI = 'http://localhost:8090/frontend/'
+
+MEDIA_ROOT = '/workspaces/media/'
+MEDIA_URL = '/media/'
+

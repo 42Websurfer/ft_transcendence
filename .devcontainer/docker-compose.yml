@@ -11,8 +11,8 @@ services:
     expose:
       - 8000
     labels:
-      - 'devcontainer.local_folder=/home/felix/Dokumente/ft_transendence'
-      - 'devcontainer.config_file=/home/felix/Dokumente/ft_transendence/.devcontainer/devcontainer.json'
+      - 'devcontainer.local_folder=/home/fheid/transcendence'
+      - 'devcontainer.config_file=/home/fheid/transcendence/.devcontainer/devcontainer.json'
   database:
     container_name: django_db
     image: postgres:latest
@@ -29,14 +29,42 @@ services:
     image: nginx
     volumes:
       - ./conf/nginx:/etc/nginx/conf.d
+      - ./../src:/var/www/html/frontend/
     networks:
       - trans_net
     expose:
       - 8090
     ports:
       - "8090:8090"
+  adminer: 
+    container_name: adminer
+    image: adminer
+    networks: 
+      - trans_net
+    ports: 
+      - "8080:8080"
+  redis:
+    container_name: redis
+    image: redis:alpine
+    volumes:
+      - redis_data:/data
+    expose:
+      - 6379
+    networks:
+     - trans_net
+  blockchain:
+    build: ./requirements/blockchain
+    container_name: blockchain
+    env_file: 
+      - ./.env
+    networks:
+      - trans_net
+    ports:
+      - "5000:5000"
+
 networks: 
   trans_net: 
     driver: bridge
 volumes:
   postgres_data:
+  redis_data:

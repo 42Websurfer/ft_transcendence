@@ -1,0 +1,1658 @@
+/*colors: 
+    blue: 018cc6
+    green: 89ba3d
+    yellow ffe900
+    orange f8761e
+    pink f53c8a
+    beige fdf1d9
+*/
+
+html {
+    user-select: none;
+}
+
+p {
+    margin: 0;
+}
+
+.container-fluid, .main-content {
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    height: 100%;
+}
+
+body {
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    /* animation: gradientAnimation 15s ease infinite, changeColor 10s linear infinite; */
+    /* background: #5c57ad; */
+    background-image: url(../img/aurora.jpg);
+    background-size: cover;
+}
+
+.header {
+    height: 6em;
+    background-color: #f0f0f0;
+    font-family: 'Press Start 2P';
+    text-shadow: 1px 1px 2px #000000;
+    color:#ffffff !important;
+    background: linear-gradient(to bottom, #8581c7,#4740a8 100%);
+    flex-direction: row;
+    display: flex;
+    align-items: center;
+    border-bottom: 0.06em solid #353333;
+    position: sticky;
+    top: 0;
+    width: 100%;
+}
+
+.header-col {
+    width: 33.333333%;
+}
+
+.header-logo {
+    margin-left: 0.5em;
+}
+
+.header-logo > img {
+    border: 0.02em solid #353333;
+    max-height: 4em;
+}
+
+.header-text {
+    display: flex;
+    justify-content: center;
+    font-size: 3em;
+}
+
+#webpong-button {
+    background: none;
+    border: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 0.3s ease;
+    text-shadow: 2px 1px 2px #000000;
+    margin-top: 0.15em;
+    pointer-events: none;
+}
+
+#webpong-button .button-text {
+    pointer-events: auto;
+}
+
+#webpong-button .button-text:hover {
+    color: #e6e4e7;
+    text-shadow: 2px 2px 2px #000000;
+}
+
+.header-login-logout-button {
+    display: flex;
+    justify-content: flex-end;
+    margin-right: 1em;
+    margin-top: 0.2em;
+}
+
+.login-logout-button {
+    background: linear-gradient(to bottom, #56565f,#706f7a 100%);
+    border: 0.1em solid #353333;
+    position: relative;
+    text-shadow: 1px 1px 2px #000000;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.login-logout-button:hover {
+    border: 0.1em solid #353333;
+    color: #e6e4e7;
+    text-shadow: 2px 2px 2px #000000;
+}
+
+.main-content {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.footer {
+    height: 3em;
+    background: linear-gradient(to bottom,#4740a8 0,#8581c7 100%);
+    font-family: 'Press Start 2P';
+    text-shadow: 1px 1px 2px #000000;
+    border-top:  0.12em solid #353333;
+    color:#ffffff !important;
+    font-size:1em;
+    flex-direction: row;
+    display: flex;
+    align-items: center;
+    /* position: fixed; */
+    bottom: 0;
+    width: 100%;
+    position: sticky;
+}
+
+.footer-col {
+    width: 50%;
+}
+
+.footer-text {
+    display: flex;
+    margin-left: 1vw;
+}
+
+.footer-text > p{
+    margin: 0;
+}
+
+.footer-settings {
+    display: flex;
+    justify-content: flex-end;
+    margin-right: 1vw;
+}
+
+.footer-settings > p{
+    margin: 0;
+}
+
+.footer-settings button {
+    background: none;
+    border: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 0.3s ease;
+    text-shadow: 1px 1px 2px #000000;
+}
+
+.footer-settings button:hover {
+    color: #e6e4e7;
+    text-shadow: 2px 2px 2px #000000;
+}
+
+.login {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items:center;
+    width: 100%;
+    padding: 3em;
+}
+
+.login-container {
+    background-color: rgba(0, 0, 0, 0.4);
+    padding: 32px 48px 38px 48px;
+    border-radius: 8px;
+    border: 0.1em solid #000000;
+}
+
+.login-instructions {
+    font-family: 'Press Start 2P';
+    text-shadow: 1px 1px 2px #000000;
+    color:#ffffff !important;
+    font-size:1em;
+    margin-bottom: 1.8em;
+}
+
+.login-instructions > p{
+    text-align: center;
+}
+
+.signin-button {
+    background: linear-gradient(to bottom,#2a1ece 0,#6058c5 100%);
+    border: 0.1em solid #353333;
+    position: relative;
+    text-shadow: 1px 1px 2px #000000;
+    overflow: hidden;
+    white-space: nowrap;
+    margin-top: 1vh;
+}
+
+.signin-button:hover {
+    color: #2d2c2e;
+    text-shadow: 1px 1px 2px #ffffff;
+    border: 0.1em solid #353333;
+    filter:brightness(90%);
+}
+
+.signin-42-button {
+    background: linear-gradient(to bottom, #00A881,#06ce9f 100%);
+    border: 0.1em solid #353333;
+    position: relative;
+    text-shadow: 1px 1px 2px #000000;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.signin-42-button:hover {
+    color: #2d2c2e;
+    text-shadow: 1px 1px 2px #ffffff;
+    border: 0.1em solid #353333;
+    filter:brightness(90%);
+}
+
+.signin-or-text > p{
+    font-family: 'Press Start 2P';
+    text-shadow: 1px 1px 2px #000000;
+    color:#ffffff !important;
+    font-size:0.7em;
+    margin: 0;
+    text-align: center;
+    margin-top: 0.8vh;
+    margin-bottom: 0.8vh;
+}
+
+.form-control-new {
+    width: 100%;
+}
+
+.login-form-field {
+    margin-bottom: 1vh;
+}
+
+.menu {
+    flex-direction: row;
+    display: flex;
+    padding: 3em;
+    /* height: calc(100vh - 9em); */
+    /* margin-top: 6em; */
+}
+
+.menu-friends {
+    width: 35%;
+    /* padding: 4vh; */
+    padding-right: 0;
+    font-family: 'Press Start 2P';
+}
+
+.menu-gamemodes {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+    /* justify-content: center; */
+    align-items: flex-end;
+    padding-left: 10vw;
+}
+
+.menu-friends-container {
+    /* height: calc(100vh - 9em); */
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    padding: 2em;
+    padding-bottom: 1em;
+    border-radius: 8px;
+    border: 0.1em solid #000000;
+    overflow: hidden;
+    flex-direction: column;
+    display: flex;
+}
+
+.menu-friends-header {
+    font-size: 1.6em;
+    color: #d8d3d3;
+    text-shadow: 1px 1px 2px #000000;
+    text-align: center;
+}
+
+/* .menu-friends-header > p {
+    margin-top: 1em;
+    margin-bottom: 0;
+} */
+
+.friends-divider {
+    height: 4px;
+    background-color: #d8d3d3;
+}
+
+.friends-online-header {
+    color: #049127;
+    font-size: 1.6em;
+    text-shadow: 1px 1px 2px #000000;
+}
+
+.friends-online-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    color: #d8d3d3;
+    text-shadow: 1px 1px 2px #000000;
+    font-size:1em;
+    margin-left: 1em;
+    height: 12.6em;
+    overflow: scroll;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.friends-online-list::-webkit-scrollbar {
+    display: none;
+}
+
+.friends-offline-header {
+    color: #af210e;
+    font-size: 1.6em;
+    text-shadow: 1px 1px 2px #000000;
+}
+
+.friends-offline-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    color: #d8d3d3;
+    text-shadow: 1px 1px 2px #000000;
+    font-size:1em;
+    margin-left: 1em;
+    height: 13.6em;
+    overflow: scroll;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.friends-offline-list::-webkit-scrollbar {
+    display: none;
+}
+
+.friends-options {
+    color: #d8d7d3;
+    text-shadow: 1px 1px 2px #000000;
+    flex-direction: row;
+    display: flex;
+    font-size: 1.2em;
+    margin-top: auto;
+}
+
+.friends-options-add {
+    width: 100%;
+    text-align: center;
+}
+
+.friends-options button {
+    background: none;
+    border: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 0.3s ease;
+    text-shadow: 1px 1px 2px #000000;   
+}
+
+.friends-options button:hover {
+    color: #a7a3aa;
+    text-shadow: 2px 2px 2px #000000;
+}
+
+.menu-item {
+    text-align: left;
+    /* height: 8.78em; */
+    width: 110%;
+    border-radius: 4px;
+    position: relative;
+    font-family: 'Press Start 2P';
+    padding: 1.35em;
+    color: #d8d3d3;
+    text-shadow: 1px 1px 2px #000000;
+    transition: transform 0.3s ease;
+    border: 0.1em solid #292424;
+    filter:brightness(100%);
+    overflow: hidden;
+}
+
+.menu-item > h1 {
+    font-size: 3em;
+}
+
+.menu-item > p {
+    font-size: 1em;
+}
+
+.menu-item:hover {
+    transform: translate(-50px, 4px);
+    filter:brightness(90%);
+    color: #ffffff;
+    border: 0.11em solid #292424;
+}
+
+#menuItemLocal {
+    background: linear-gradient(to bottom, rgba(221, 88, 10, 0.7) 0%, rgba(226, 121, 60, 0.7) 100%);
+}
+
+#menuItemOnline {
+    background: linear-gradient(to bottom, rgba(7, 112, 24, 0.7) 0%, rgba(15, 156, 39, 0.7) 100%);
+}
+
+#menuItemTournament {
+    background: linear-gradient(to bottom, rgba(71, 64, 168, 0.7) 0%, rgba(133, 129, 199, 0.7) 100%);
+}
+
+#menuItemMultiplayer {
+    background: linear-gradient(to bottom, rgba(219, 22, 32, 0.7) 0%, rgba(241, 48, 58, 0.7) 100%);
+}
+
+#menuItemDashboard {
+    background: linear-gradient(to bottom, rgba(206, 31, 162, 0.7) 0%, rgba(221, 62, 181, 0.7) 100%);
+}
+
+@keyframes changeColor {
+    0% {
+        background-color: #8581c7;
+    }
+    25% {
+        background-color: #6a67ce;
+    }
+    50% {
+        background-color: #5c56af;
+    }
+    75% {
+        background-color: #6a67ce;
+    }
+    100% {
+        background-color: #8581c7;
+    }
+}
+
+@keyframes gradientAnimation {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    font-family: 'Press Start 2P';
+    overflow: hidden;
+}
+
+.modal-modify {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.8); /* Black w/ opacity */
+    font-family: 'Press Start 2P';
+    overflow: hidden;
+}
+
+.modal-content {
+    background-color: rgba(54, 52, 52, 1.0);
+    border: 0.1em solid #000000;
+    margin: 15% auto; /* 15% from the top and centered */
+    padding: 20px;
+    /* border: 1px solid #888; */
+    width: 40%; /* Could be more or less, depending on screen size */
+    border-radius: 0.5vw;
+}
+
+.modal-content-modify {
+    background-color: rgba(54, 52, 52, 1.0);
+    border: 0.1em solid #000000;
+    margin: 15% auto; /* 15% from the top and centered */
+    padding: 20px;
+    /* border: 1px solid #888; */
+    width: 40%; /* Could be more or less, depending on screen size */
+    border-radius: 0.5vw;
+}
+
+.close-button {
+    position: absolute;
+    top: 0.3vh;
+    right: 0.5vw;
+    color: #aaa;
+    float: right;
+    font-size: 2vw;
+    font-weight: bold;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.friends-add-header {
+    text-shadow: 1px 1px 2px #000000;
+    color:#ffffff !important;
+    font-size:1vw;
+    margin-left: 1vw;
+}
+
+.friends-add-divider1 {
+    height: 0.5vh;
+    background-color: #d8d3d3;
+    margin: 0.5vh;
+    width: 13.2vw;
+}
+
+.friends-add-input-container {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 10px; /* Space between input and button */
+    margin-top: 2vh; /* Space above the input container */
+}
+
+#friendUsername {
+    padding: 10px;
+    font-size: 1em;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 16vw; /* Adjust the width as needed */
+    height: 4vh;
+    margin-left: 0.4vw;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+#sendInvitationButton {
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 0.3s ease;
+    text-shadow: 1px 1px 2px #000000;
+    overflow: hidden;
+    white-space: nowrap;
+    font-size: 1vw;
+    color:#047e0e !important;
+}
+
+#sendInvitationButton:hover {
+    color: #2d2c2e;
+    text-shadow: 1px 1px 2px #ffffff;
+}
+
+.friends-add-lists {
+    color: #d8d3d3;
+    text-shadow: 1px 1px 2px #000000;
+    flex-direction: row;
+    display: flex;
+    font-size:1.4vw;
+    margin-top: 4vh;
+}
+
+.friends-add-list-item {
+    width: 33.333333%;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+}
+
+.friends-add-divider2 {
+    height: 0.3vh;
+    background-color: #d8d3d3;
+    margin: 0.5vh;
+    width: 10vw;
+    align-self: center;
+}
+
+.friends-add-list-header {
+    color: #ffffff;
+    font-size:1vw;
+    text-shadow: 1px 1px 2px #000000;
+    margin-top: 0.8vh;
+    text-shadow: 1px 1px 2px #000000;
+}
+
+.friends-add-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    color: #d8d3d3;
+    text-shadow: 1px 1px 2px #000000;
+    font-size:1vw;
+    margin-left: 2vw;
+    min-height: 4vh;
+    max-height: 20vh;
+    max-width: 67%;
+    overflow: scroll;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    background-color: #047e0e;
+    text-align: left;
+}
+
+.friends-add-list::-webkit-scrollbar {
+    display: none;
+}
+
+.invitation-message {
+    position: absolute;
+    top: 11.3em;
+    left: 3em;
+    font-size: 0.6vw;
+    color: #ff0000;
+    text-align: left;
+    width: auto; /* Adjust the width as needed */
+    transform-origin: center;
+    text-shadow: 1px 1px 1px #000000;
+}
+
+@keyframes wiggle {
+    0%, 100% {
+        transform: rotateZ(2deg)
+    }
+    25% {
+        transform: rotateZ(-2deg);
+    }
+    50% {
+        transform: rotateZ(2deg);
+    }
+    75% {
+        transform: rotateZ(-2deg);
+    }
+}
+
+.login-form-field {
+    font-family: 'Press Start 2P';
+    overflow: scroll;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.login-form-field::-webkit-scrollbar {
+    display: none;
+}
+
+.settings-label {
+    color: white;
+    font-size: 0.8em;
+    text-shadow: 1px 1px 1px #000000;
+}
+
+.settings-input {
+    font-size: 0.6vw;
+}
+
+.login-messages {
+    top: 14vh; /* Adjust as needed */
+    left: 2vw;
+    font-size: 0.8vw;
+    color: #ff0000;
+    text-align: left;
+    width: auto; /* Adjust the width as needed */
+    transform-origin: center;
+    text-shadow: 1px 1px 1px #000000;
+}
+
+.friends-add-list-user {
+    position: relative;
+}
+
+.remove-button {
+    display: none; /* Hide the button by default */
+    position: absolute; /* Position it absolutely within the list item */
+    top: 50%; /* Center vertically */
+    right: 10px; /* Position it to the right */
+    transform: translateY(-50%); /* Adjust for vertical centering */
+    background: red; /* Red background */
+    color: white; /* White text */
+    border: none; /* Remove border */
+    border-radius: 50%; /* Make it circular */
+    cursor: pointer; /* Pointer cursor on hover */
+    padding: 5px; /* Adjust padding as needed */
+}
+
+.list-item-content {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    color: #d8d3d3;
+    text-shadow: 1px 1px 2px #000000;
+    font-family: 'Press Start 2P';
+    font-size:1em;
+    margin-left: 1em;
+    height: 100%;
+    overflow: scroll;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.list-item-content:hover {
+    color: #504948;
+}
+
+.friends-add-divider3 {
+    height: 0.5vh;
+    background-color: #d8d3d3;
+    margin: 0.5vh;
+    margin-bottom: 0;
+    width: 18.4vw;
+}
+
+.friends-modify-username {
+    color: #ffffff;
+    text-shadow: 1px 1px 2px #000000;
+    flex-direction: row;
+    display: flex;
+    font-size: 1vw;
+    margin-top: 2vh;
+    margin-left: 0.4vw;
+    margin-bottom: 2vh;
+    overflow: hidden;
+}
+
+.friends-modify-button button {
+    margin-bottom: 1.2vh;
+    display: none;
+}
+
+.friends-modify-button:hover button{
+    background-color: #1792ca;
+    color: white;
+}
+
+#closeFriendsModifyModalButton {
+    position: absolute;
+    top: 33vh;
+    right: 30.5vw;
+}
+
+.tournament-or-text {
+    display: flex;
+    justify-content: center; /* Center text horizontally */
+    align-items: center; /* Center text vertically */
+    width: 110%;
+}
+
+.tournament-or-text > p{
+    font-family: 'Press Start 2P';
+    text-shadow: 1px 1px 2px #000000;
+    color:#ffffff !important;
+    font-size: 1.2em;
+    margin: 0;
+    text-align: center;
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+
+.tournament-enter-lobby {
+    display: flex;
+    /* justify-content: center; */
+    width: 110%;
+}
+
+#tournamentLobbyId {
+    font-size: 1.6em;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    height: 2em;
+    width: 110%;
+    font-family: 'Courier New', Courier, monospace;
+    text-align: left;
+    padding-left: 0.6em;
+    color: #000000;
+}
+
+#onlineLobbyId {
+    font-size: 1.6em;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    height: 2em;
+    width: 110%;
+    font-family: 'Courier New', Courier, monospace;
+    text-align: left;
+    padding-left: 0.6em;
+    color: #000000;
+}
+
+#joinLobbyButton {
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 0.3s ease;
+    text-shadow: 1px 1px 2px #000000;
+    overflow: hidden;
+    white-space: nowrap;
+    font-size: 1vw;
+    color:#047e0e !important;
+}
+
+#joinLobbyButton:hover {
+    color: #2d2c2e;
+    text-shadow: 1px 1px 2px #ffffff;
+}
+
+#tournamentItemRR {
+    background: linear-gradient(to bottom, rgba(221, 88, 10, 0.7) 0%, rgba(226, 121, 60, 0.7) 100%);
+}
+
+#tournamentItemKO {
+    background: linear-gradient(to bottom, rgba(7, 112, 24, 0.7) 0%, rgba(15, 156, 39, 0.7) 100%);
+}
+
+#onlineItemLobby {
+    background: linear-gradient(to bottom, rgba(221, 88, 10, 0.7) 0%, rgba(226, 121, 60, 0.7) 100%);
+}
+
+.lobby-container {
+    width:100%;
+    height: 46em;
+    background-color: rgba(0, 0, 0, 0.4);
+    padding: 1em;
+    padding-bottom: 1em;
+    border-radius: 8px;
+    border: 0.1em solid #000000;
+    flex-direction: column;
+    display: flex;
+    overflow: scroll;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.lobby-container::-webkit-scrollbar {
+    display: none;
+}
+
+.lobby-container-header {
+    font-size: 1.6em;
+    color: #d8d3d3;
+    text-shadow: 1px 1px 2px #000000;
+    text-align: center;
+    font-family: 'Press Start 2P';
+}
+
+.lobby-container-divider {
+    height: 4px;
+    background-color: #d8d3d3;
+    margin-bottom: 1.6em;
+}
+
+.lobby-container-inside {
+    display: flex;
+    flex-direction: row;
+}
+
+.lobby-container-data {
+    width: 90%;
+    display: flex;
+    flex-direction: row;
+    background-color: rgba(245, 244, 244, 0.4);
+    border-radius: 8px;
+    border: 0.1em solid #000000;
+}
+
+.tournament-vertical-divider {
+    width: 4px; 
+    height: 95%;
+    background-color: #221e1e;
+    margin: 1em 1.4em;
+    margin-bottom: 1em;
+    margin-right: 2em;
+}
+
+.tournament-table1 {
+    width: 52%;
+    padding: 2em;
+}
+
+.tournament-table2 {
+    width: 44%;
+    padding: 2em;
+}
+
+.lobby-container-buttons {
+    width: 10%;
+    margin-left: 2.5%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.lobby-id {
+    width: 9.5em;
+    /* height: 5em; */
+    background-color: rgba(245, 244, 244, 0.6);
+    border-radius: 8px;
+    border: 0.1em solid #000000;
+    font-size: 1.2em;
+    display: flex;
+    flex-direction: column;
+    text-shadow: 1px 1px 2px #000000;
+    text-align: center;
+    font-family: 'Press Start 2P';
+    padding: 0.4em 0;
+}
+
+#copyLobbyIdButton {
+    background: none;
+    border: none;
+    font: inherit;
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 0.3s ease;
+    text-shadow: 2px 1px 2px #000000;
+    margin-top: 0.15em;
+    pointer-events: none;
+    color: #4740a8;
+}
+    
+#copyLobbyIdButton .button-text {
+    pointer-events: auto;
+}
+
+#copyLobbyIdButton .button-text:hover {
+    color: #ae4fdd;
+    text-shadow: 2px 2px 2px #000000;
+}
+
+#tournamentStartButton {
+    width: 11em;
+    background-color: rgba(245, 244, 244, 0.6);
+    border-radius: 8px;
+    border: 0.1em solid #000000;
+    font-size: 1.2em;
+    display: flex;
+    flex-direction: column;
+    text-shadow: 1px 1px 2px #000000;
+    text-align: center;
+    font-family: 'Press Start 2P';
+    padding: 0.6em;
+    /* white-space: nowrap; */
+    color: white;
+}
+
+#roundStartButton {
+    display: none;
+    width: 11em;
+    background-color: rgba(245, 244, 244, 0.6);
+    border-radius: 8px;
+    border: 0.1em solid #000000;
+    font-size: 1.2em;
+    flex-direction: column;
+    text-shadow: 1px 1px 2px #000000;
+    text-align: center;
+    font-family: 'Press Start 2P';
+    padding: 0.6em;
+    color: white;
+}
+
+#startOnlineMatch {
+    display: none;
+    width: 11em;
+    background-color: rgba(245, 244, 244, 0.6);
+    border-radius: 8px;
+    border: 0.1em solid #000000;
+    font-size: 1.2em;
+    flex-direction: column;
+    text-shadow: 1px 1px 2px #000000;
+    text-align: center;
+    font-family: 'Press Start 2P';
+    padding: 0.6em;
+    color: white;
+}
+
+#tournamentStartButtonSpan:hover {
+    color: #e6e4e7;
+    text-shadow: 2px 2px 2px #000000;
+}
+
+#roundStartButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+#roundStartButtonSpan.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+#roundStartButtonSpan:not(.disabled):hover {
+    color: #e6e4e7;
+    text-shadow: 2px 2px 2px #000000;
+}
+
+.copy-message {
+    display: none;
+    position: fixed;
+    top: 37%;
+    left: 87.2%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(to bottom, #8581c7,#4740a8 100%);
+    color: white;
+    padding: 0.3em;
+    border-radius: 0.4em;
+    z-index: 1000;
+    border: 0.1em solid #000000;
+    font-size: 0.8em;
+    text-shadow: 1px 1px 2px #000000;
+    font-family: 'Press Start 2P';
+    white-space: nowrap;
+}
+
+.tournament-table-header {
+    color: white;
+    font-size: 1.6em;
+    text-shadow: 1px 1px 2px #000000;
+    font-family: 'Press Start 2P';
+    margin-bottom: 0.6em;
+}
+
+.tournament-controls {
+    padding: 0;
+    padding-left: 1em;
+    color: white;
+    font-size: 1em;
+    white-space: nowrap;
+}
+
+.controls-divider {
+    height: 4px; 
+    background-color: #ffffff;
+    margin: 0.3em;
+    margin-bottom: 0.6em;
+    width: 17.25em;
+}
+
+.close-controls-button {
+    position: relative;
+    transform: translate(20%, -30%);
+    color: #aaa;
+    float: right;
+    font-size: 2vw;
+    font-weight: bold;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+.close-controls-button:hover,
+.close-controls-button:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+#controlsButton {
+    /* align-self: flex-end; */
+    width: 10em;
+    background-color: rgba(245, 244, 244, 0.6);
+    border-radius: 8px;
+    border: 0.1em solid #000000;
+    font-size: 1.2em;
+    display: flex;
+    flex-direction: column;
+    text-shadow: 1px 1px 2px #000000;
+    text-align: center;
+    font-family: 'Press Start 2P';
+    padding: 0.6em;
+    white-space: nowrap;
+    margin-top: 9.6em;
+    margin-bottom: 9.6em;
+    color: white;
+}
+
+#controlsButton .button-text {
+    pointer-events: auto;
+}
+
+#controlsButton .button-text:hover {
+    color: #e6e4e7;
+    text-shadow: 2px 2px 2px #000000;
+}
+
+.tournament-standings-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 0.4em;
+    overflow: hidden;
+    border: 1px solid #ccc;
+}
+
+.tournament-standings-table th, .tournament-standings-table td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: center;
+    font-family: 'Press Start 2P';
+    font-size: 0.8em;
+}
+
+.tournament-standings-table th {
+    background: linear-gradient(to bottom, #8581c7,#4740a8 100%);
+    border: 1px solid #ccc;
+    color: white;
+    text-shadow: 1px 1px 2px #000000;
+}
+
+.tournament-table-body {
+    background-color: rgba(0, 0, 0, 0.25);
+    color: white;
+}
+
+.tournament-match {
+    display: flex;
+    flex-direction: row;
+    text-align: center;
+}
+
+.tournament-match-item {
+    padding: 0.2em 0em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Press Start 2P';
+    color: white;
+    font-size: 0.8em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.countdown-container {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Press Start 2P';
+    font-size: 5em;
+    color: red;
+}
+
+.join-message {
+    position: absolute;
+    top: 25.8em;
+    left: 26.4em;
+    font-size: 1.4em;
+    color: #ff0000;
+    text-align: left;
+    width: auto;
+    transform-origin: center;
+    text-shadow: 1px 1px 1px #000000;
+}
+
+.pong-loader {
+    /* width: 15%; */
+    padding: 0.5em 0em;
+
+    --color: #4740a8;
+    --paddle-width: 0.4em;
+    --paddle-height: 1.8em;
+    --ball-size: 0.56em;
+  
+    display: inline-block;
+    position: relative;
+    width: 2.6em;
+    height: 3.2em;
+    overflow: hidden;
+}
+  
+.pong-loader::before,
+.pong-loader::after {
+    content: '';
+    position: absolute;
+    background-color: var(--color);
+}
+  
+.pong-loader::before { /* Left paddle */
+    width: var(--paddle-width);
+    height: var(--paddle-height);
+    top: calc(50% - var(--paddle-height) / 2);
+    left: 0;
+    animation: left-paddle-bounce 2s infinite ease-in-out alternate;
+}
+  
+.pong-loader::after { /* Right paddle */
+    width: var(--paddle-width);
+    height: var(--paddle-height);
+    top: calc(50% - var(--paddle-height) / 2);
+    right: 0;
+    animation: right-paddle-bounce 2s infinite ease-in-out alternate;
+}
+  
+@keyframes left-paddle-bounce {
+    0%, 100% { transform: translateY(-15%); }
+    50% { transform: translateY(15%); }
+}
+  
+@keyframes right-paddle-bounce {
+    0%, 100% { transform: translateY(15%); }
+    50% { transform: translateY(-15%); }
+}
+  
+.ball {
+    position: absolute;
+    width: var(--ball-size);
+    height: var(--ball-size);
+    border-radius: 50%;
+    background-color: var(--color);
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    animation: ball-bounce 1s infinite linear;
+}
+  
+@keyframes ball-bounce {
+    0%, 100% { transform: translateX(-175%) translateY(-50%); }
+    50% { transform: translateX(75%) translateY(-50%); }
+}
+  
+.pong-loader:hover::before,
+.pong-loader:hover::after {
+    animation-duration: 1.5s;
+}
+
+.lava-lamp {
+    animation: gradientAnimation 5s ease infinite, changeColor 5s linear infinite;
+}
+
+.check-symbol {
+    width: 3.4em;
+    height: 3.4em;
+    color: #4740a8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+}
+
+.clock-symbol {
+    width: 3em;
+    height: 3em;
+    fill: #4740a8;
+    margin: 0;
+    padding: 0;
+}
+
+.register-message {
+    font-size: 1.4em;
+    color: #ff0000;
+    text-align: left;
+    width: auto;
+    transform-origin: center;
+    text-shadow: 1px 1px 1px #000000;
+}
+
+.loader {
+    display: none;
+    margin-top: 2em;
+    width: 6em;
+    height: 2.5em;
+    --g: radial-gradient(farthest-side,#0000 calc(70% - 3px),#4740a8 calc(100% - 3px) 98%,#0000 101%) no-repeat;
+    background: var(--g), var(--g), var(--g);
+    background-size: 1.6em 1.6em;
+    animation: l9 1s infinite alternate;
+  }
+  @keyframes l9 {
+    0% {
+      background-position: 0 50%, 50% 50%, 100% 50%;
+    }
+    20% {
+      background-position: 0 0, 50% 50%, 100% 50%;
+    }
+    40% {
+      background-position: 0 100%, 50% 0, 100% 50%;
+    }
+    60% {
+      background-position: 0 50%, 50% 100%, 100% 0;
+    }
+    80% {
+      background-position: 0 50%, 50% 50%, 100% 100%;
+    }
+    100% {
+      background-position: 0 50%, 50% 50%, 100% 50%;
+    }
+  }
+
+
+.waiting-img {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: calc(100vh - 8em);
+    width: 100%;
+    position: absolute;
+}
+
+.waiting-img img {
+    max-height: 10em;
+    animation: oscillate 2s ease-in-out infinite;
+}
+
+@keyframes oscillate {
+    0%, 100% {
+        transform: scale(0.85);
+    }
+    50% {
+        transform: scale(1.2);
+    }
+}
+
+.dashboard-container {
+    width: 100%;
+    height: 46em;
+    background-color: rgba(0, 0, 0, 0.4);
+    padding: 2em;
+    padding-bottom: 1em;
+    border-radius: 8px;
+    border: 0.1em solid #000000;
+    flex-direction: column;
+    display: flex;
+    overflow: hidden;
+}
+
+.dashboard-container-header {
+    font-size: 1.6em;
+    color: #d8d3d3;
+    text-shadow: 1px 1px 2px #000000;
+    text-align: center;
+    font-family: 'Press Start 2P';
+}
+
+.dashboard-container-divider {
+    height: 4px;
+    background-color: #d8d3d3;
+    margin-bottom: 1.6em;
+}
+
+.dashboard-grid-container {
+    display: grid;
+    grid-template-columns: repeat(16, 1fr); /* 6 equal columns */
+    grid-template-rows: repeat(16, 1fr); /* 4 equal rows */
+    gap: 1em; /* Adjust spacing between items */
+    width: 100%; /* Adjust width based on your need */
+    height: 37em; /* Adjust height based on your need */
+}
+
+#avatarItem > img{
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 50%;
+}
+.grid-item {
+    background-color: rgba(255, 255, 255, 0.4);
+    
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px;
+    border-radius: 8px;
+    padding: 1em;
+}
+
+.grid-item canvas {
+    width: 100% !important;
+    height: 100% !important;
+} 
+
+.item1 {
+    grid-column: span 2;
+    grid-row: span 8;
+}
+  
+.item2 {
+    grid-column: span 2;
+    grid-row: span 8;
+}
+
+.item3 {
+    grid-column: span 9;
+    grid-row: span 8;
+}
+
+.item4 {
+    grid-column: span 3;
+    grid-row: span 8;
+}
+
+.item5 {
+    grid-column: span 5;
+    grid-row: span 4;
+}
+
+.item8 {
+    grid-column: span 5;
+    grid-row: span 4;
+}
+
+.item6 {
+    grid-column: span 7;
+    grid-row: span 8;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.item7 {
+    grid-column: span 4;
+    grid-row: span 8;
+}
+
+.graph-title {
+    color: white;
+    font-size: 0.7em;
+    font-family: 'Press Start 2P';
+    text-shadow: 1px 1px 2px #000000;
+}
+
+.dashboard-matches-list {
+    width: 100%;
+    height: 100%;
+    list-style-type: none;
+    margin: 0;
+    background-color: rgba(75, 192, 192, 0.2);
+    padding: 0.6em;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.4);
+    overflow-y: scroll;
+    overflow-x: hidden;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.dashboard-matches-list::-webkit-scrollbar {
+    display: none;
+}
+
+.dashboard-match {
+    display: flex;
+    flex-direction: row;
+    text-align: center;
+}
+
+.dashboard-match-item {
+    padding: 0.6em 0em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Press Start 2P';
+    color: white;
+    font-size: 0.7em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dashboard-information-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(75, 192, 192, 0.2);
+    padding: 0.6em;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.4);
+    overflow: hidden;
+}
+
+.dashboard-information-item {
+    width: 100%;
+    /* height: 22.5%; */
+    margin: 0.6em;
+    /* border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.4); */
+    display: flex;
+    flex-direction: row;
+    color: white;
+    font-size: 0.68em;
+    font-family: 'Press Start 2P';
+    text-shadow: 1px 1px 2px #000000;
+}
+
+.dashboard-highlight-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(75, 192, 192, 0.2);
+    padding-left: 0.4em;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.4);
+    overflow: hidden;
+}
+
+.dashboard-highlight-item {
+    width: 100%;
+    margin: 0.6em;
+    display: flex;
+    flex-direction: row;
+    color: white;
+    font-size: 0.68em;
+    font-family: 'Press Start 2P';
+    text-shadow: 1px 1px 2px #000000;
+}
+
+.dashboard-form-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 1em;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.dashboard-form-item {
+    height: 4em;
+    width: 4em;
+    color: white;
+    font-size: 0.68em;
+    font-family: 'Press Start 2P';
+    text-shadow: 1px 1px 2px #000000;
+    border-radius: 2em;
+    border: 1px solid rgba(0, 0, 0, 0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.match-players-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    color: #d8d3d3;
+    text-shadow: 1px 1px 2px #000000;
+    font-size:1em;
+    margin-left: 1em;
+    height: 29em;
+    overflow: scroll;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.match-players-list::-webkit-scrollbar {
+    display: none;
+}
+
+.lobby-table1 {
+    width: 24%;
+    padding: 2em;
+}
+
+.lobby-table2 {
+    width: 72%;
+    padding: 2em;
+}
+
+.start-match-button {
+    display: none;
+}
+
+.game-container {
+    width: 100%;
+    height: 48em;
+    background-color: rgba(0, 0, 0, 0.4);
+    padding: 2em 0em;
+    border-radius: 12px;
+    border: 0.1em solid #000000;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    /* align-items: center; */
+    overflow: hidden;
+}
+
+#canvasContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 44em;
+}
+
+canvas {
+    max-height: 100%;
+    max-width: 100%;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.game-information {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    font-family: 'Press Start 2P';
+    color: white;
+}
+
+.game-name {
+    margin-top: 0.6em;
+    text-align: center;
+    font-size: 2em;
+}
+
+.game-score {
+    margin-top: 1.6em;
+    text-align: center;
+    font-size: 8em;
+}
