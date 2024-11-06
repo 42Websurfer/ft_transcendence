@@ -30,9 +30,14 @@ export function renderMenuTournament() {
 
     async function joinTournamentLobby(lobby_id) {
         try {
+            const token = localStorage.getItem('access_token'); 
+
             const response = await fetch(`/tm/join_tournament_lobby/${lobby_id}/`, {
                 method: 'GET',
-                credentials: 'include'
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
             });
             return await response.json();
         } catch (error) {
@@ -59,9 +64,14 @@ export function renderMenuTournament() {
 
     async function createTournamentLobby() {
         try {
+            const token = localStorage.getItem('access_token'); 
+
             const response = await fetch(`/tm/create/tournament`, {
                 method: 'GET',
-                credentials: 'include'
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
             });            
             return await response.json();
         } catch (error) {

@@ -68,12 +68,13 @@ async function handleFormSubmit(event) {
 		username: formData.get('register-username')
     };
 	
-    const csrftoken = getCookie('csrftoken');
-	
+    const token = localStorage.getItem('access_token'); 
+
     const response = await fetch('/register/', {
 		method: 'POST',
         headers: {
-            'X-CSRFToken': csrftoken
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
         },
         body: formData//JSON.stringify(data)
     });

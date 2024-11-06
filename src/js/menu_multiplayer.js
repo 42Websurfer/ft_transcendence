@@ -65,9 +65,14 @@ export function renderMenuMultiplayer() {
 
     userIdInput.addEventListener('click', async () => {
         try {
+            const token = localStorage.getItem('access_token'); 
+
             const response = await fetch(`/tm/bc_get_score/`, {
                 method: 'GET',
-                credentials: 'include'
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
             });
 
             const result = await response.json()
@@ -100,13 +105,13 @@ export function renderMenuMultiplayer() {
 
             try {
     
-                const csrftoken = getCookie('csrftoken');
+                const token = localStorage.getItem('access_token'); 
         
                 const response = await fetch('/tm/bc_update_score/', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': csrftoken
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({'newScore': userScore})
                 });
@@ -136,9 +141,14 @@ export function renderMenuMultiplayer() {
 
     deleteScoreInput.addEventListener('click', async () => {
         try {
+            const token = localStorage.getItem('access_token'); 
+
             const response = await fetch(`/tm/bc_delete_score/`, {
                 method: 'GET',
-                credentials: 'include'
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
             });
 
             const result = await response.json()
@@ -190,13 +200,13 @@ async function handleFormSubmit(event) {
 	
     console.log("data sent: ", data);
 
-    const csrftoken = getCookie('csrftoken');
-	
+    const token = localStorage.getItem('access_token'); 
+
     const response = await fetch('/tm/test_set_online_match/', {
 		method: 'POST',
         headers: {
-			'Content-Type': 'application/json',
-            'X-CSRFToken': csrftoken
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
         },
         body: JSON.stringify(data)
     });
