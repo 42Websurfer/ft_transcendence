@@ -2,13 +2,17 @@ import threading, time, asyncio
 from .GameSystem import *
 from functools import partial
 from tournament.models import GameStatsUser
-from tournament.utils import set_online_match, set_match_data
+from tournament.utils import set_online_match, set_match_data, tournament_string
 from asgiref.sync import async_to_sync
+import redis
+import json
 
 # Constants
 PLAYER_MOVE_SPEED = 20
 CANVAS_WIDTH = 1280
 CANVAS_HEIGHT = 780
+redis = redis.Redis(host='redis', port=6379, db=0)
+
 
 class Ball(Entity):
 	def __init__(self, x=CANVAS_WIDTH // 2, y=CANVAS_HEIGHT // 2):
@@ -423,6 +427,16 @@ class GamesHandler:
 			return
 		if self.players.__len__() == 2:
 			print('init PongGame class!')
+			if self.players[0].match_type == 'tournament':
+				tournament_matches = redis.get(tournament_string(self.players[0].lobby_id))
+				if tournament_matches:
+					tournament_matches_json = json.loads(tournament_matches)
+					match = tournament_matches_json['matches'][self.players[0].match_id - 1]
+					if match['home'] == self.players[1].user.id:
+						temp = self.players[0]
+						self.players[0] = self.players[1]
+						self.players[1] = temp
+				
 			self.game = PongGame(self.players[0], self.players[1])
 			self.game.start_game()
 	

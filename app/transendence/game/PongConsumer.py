@@ -1,13 +1,11 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.layers import get_channel_layer
-import redis
 from asgiref.sync import sync_to_async
 from django.contrib.auth import get_user_model
 from .Pong import *
 from tournament.utils import match_lobby_string, tournament_string
 
-redis = redis.Redis(host='redis', port=6379, db=0)
 class MyConsumer(AsyncWebsocketConsumer):
 	
 	async def connect(self):
@@ -20,7 +18,7 @@ class MyConsumer(AsyncWebsocketConsumer):
 		self.match_type = split[0] if len(split) > 0 else None
 		self.lobby_id = split[1] if len(split) > 1 else None
 		self.match_id = int(split[-1]) if len(split) > 3 else -1
-		
+
 		if self.match_type == 'tournament':
 			data = redis.get(tournament_string(self.lobby_id))
 			if not data:

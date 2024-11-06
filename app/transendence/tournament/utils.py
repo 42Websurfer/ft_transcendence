@@ -147,7 +147,7 @@ def set_online_match(data, lobby_id):
 		away = data.get('away'),
 		home_score = data.get('home_score'),
 		away_score = data.get('away_score'),
-		modus = 'test' #vllt noch setzen welcher type!
+		modus = 'match' #vllt noch setzen welcher type!
 	)
 	match.save()
 	(async_to_sync)(update_online_match_socket)(data, lobby_id)
@@ -243,7 +243,8 @@ async def set_match_data(lobby_id, match_id, score_home, score_away, status):
 			'type': 'match_list',
 		}
 	)
-	status, tournament_finished = round_completed(tournament_dic['matches'], match['round'])
+	round, start = get_current_round(tournament_dic['matches'])
+	status, tournament_finished = round_completed(tournament_dic['matches'], round)
 	if status and not tournament_finished:
 		logger.debug(f"Round completed")
 		await channel_layer.group_send(

@@ -69,8 +69,10 @@ export function runWebsocket() {
                     console.log('Round completed');
                     const roundStartButton = document.getElementById('roundStartButton');
                     if (roundStartButton)
-                        roundStartButton.style.display = 'block'
-                        roundStartButton.disabled = false;
+                        setTimeout(() => {
+                            roundStartButton.style.display = 'block'
+                            roundStartButton.disabled = false;
+                        }, 4000);
                 }
             }
             else if (data.type === 'tournament_finished')
