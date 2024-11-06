@@ -174,7 +174,7 @@ REST_FRAMEWORK = {
 }
 
 
-SECRET_KEY = secrets.token_urlsafe(50)
+SECRET_KEY = 'D3RSIch3r5teKeYYYY33333v3r'
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
