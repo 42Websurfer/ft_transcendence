@@ -9,6 +9,7 @@ import json
 
 # Constants
 PLAYER_MOVE_SPEED = 20
+BALL_MOVE_SPEED = 15
 CANVAS_WIDTH = 1280
 CANVAS_HEIGHT = 780
 redis = redis.Redis(host='redis', port=6379, db=0)
@@ -157,6 +158,7 @@ class GameLogicManager(Entity):
 		self.round_running = False
 		self.winner = None
 		self.counter = time.time()
+		self.starter = None
 	
 	def buildDynamicField(self, world, playerCount):
 		if playerCount == 2:
@@ -186,14 +188,18 @@ class GameLogicManager(Entity):
 			world.addEntity(section.player)
 			world.addEntity(section.goal)
 
+		self.starter = self.sections[0].player
+
 	def create_goal_function(self, section):
 		def goal_function(other, collision_point=None):
 			if isinstance(other, Ball):
 				if other.last_hit is not None:
 					if other.last_hit != section.player:
 						other.last_hit.increase_score()
+						self.starter = other.last_hit
 					elif other.second_last_hit is not None:
 						other.second_last_hit.increase_score()
+						self.starter = other.second_last_hit
 					self.reset_ball()
 				else:
 					print("WHAT NOW? THIS IS AN INVALID GOAL AS THE BALL WAS LAUNCHED FROM CENTER")
@@ -242,15 +248,22 @@ class GameLogicManager(Entity):
 			return
 		if not self.round_running:
 			if time.time() - self.counter >= 3.0:
-				dir = None
-				if self.ball.last_hit is not None:
-					dir = self.ball.last_hit.position.sub(self.ball.position)
-					dir.normalize()
-					dir.scale(15)
-				else:
-					dir = Vector(15, 0)
-				self.ball.physics.set_velocity(dir.x, dir.y)
+				dir = Vector(CANVAS_WIDTH * 0.5, CANVAS_HEIGHT * 0.5).sub(self.starter.position)
+				dir.y = 0
+				dir.normalize()
+				dir.scale(BALL_MOVE_SPEED)
+				self.ball.physics.set_velocity_v(dir)
+				self.ball.last_hit = self.starter
 				self.round_running = True
+			elif self.starter:
+				dir = Vector(CANVAS_WIDTH * 0.5, CANVAS_HEIGHT * 0.5).sub(self.starter.position)
+				dir.y = 0
+				dir.normalize()
+				dir.scale(50)
+				dir = self.starter.position.add(dir)
+				self.ball.set_pos(dir.x, dir.y)
+				thread_local.pong_game.send_entity_move(self.ball)
+		#self.ball.physics.velocity.scale(1.0001) #fun idea to scale speed!
 		#this check is to reset the round when the ball somehow escapes the play area
 		if self.ball.position.sub(Vector(CANVAS_WIDTH//2, CANVAS_HEIGHT//2)).sqr_length() > (CANVAS_WIDTH*1.5)**2:
 			self.reset_ball()
