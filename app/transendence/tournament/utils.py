@@ -21,7 +21,7 @@ def round_completed(matches, round):
 	logger.debug(f"Current round = {round}")
 	for index, match in enumerate(matches):
 		logger.debug(f"Current round: {round} | Loop match_round = {match['round']} | loop match_status = {match['status']}")
-		if index == len(matches) - 1:
+		if index == len(matches) - 1 and match['status'] != 'pending':
 			return True, True
 		if match['round'] > round:
 			return True, False
@@ -59,6 +59,9 @@ def sort_group_tournament(results):
 	),
 	reverse=True
 	)
+	connected_users = [user for user in sorted_result if user['status'] != 'disconnected']
+	disconnected_users = [user for user in sorted_result if user['status'] == 'disconnected']
+	sorted_result = connected_users + disconnected_users	
 	
 	idx = 0
 	while (idx < len(sorted_result)):
@@ -107,6 +110,7 @@ async def update_tournament_group(lobby_id, match_data):
 			user['games'] += 1
 	
 	sorted_result = sort_group_tournament(results)
+
 	redis.set(lobby_id, json.dumps(sorted_result))
 	channel_layer = get_channel_layer()
 	await channel_layer.group_send(
@@ -246,7 +250,7 @@ async def set_match_data(lobby_id, match_id, score_home, score_away, status):
 	round, start = get_current_round(tournament_dic['matches'])
 	status, tournament_finished = round_completed(tournament_dic['matches'], round)
 	if status and not tournament_finished:
-		logger.debug(f"Round completed")
+		print("Round completed")
 		await channel_layer.group_send(
 			lobby_id,
 			{
@@ -254,7 +258,7 @@ async def set_match_data(lobby_id, match_id, score_home, score_away, status):
 			}
 		)
 	elif status and tournament_finished:
-		logger.debug(f"Tournament completed") 
+		print("Tournament completed") 
 		await channel_layer.group_send(
 			lobby_id,
 			{
@@ -329,6 +333,7 @@ async def update_matches_disconnect(user_id, lobby_id):
 	if not matches:
 		return
 	for match in matches['matches']:
+		print('MATCH_ID FOR DISCONNECTING! = ', match['match_id'])
 		if (match['home'] == user_id):
 			await update_match(lobby_id, match)
 		elif (match['away'] == user_id):
@@ -340,16 +345,16 @@ async def update_matches_disconnect(user_id, lobby_id):
 	# dann standing und matches erneut senden.
 
 def get_longest_winstreak(form):
-    
-    current = 0
-    highest = 0
+	
+	current = 0
+	highest = 0
 
-    for item in form:
-        if (item == 'W'):
-            current += 1
-            if (current > highest):
-                highest = current 
-        if (item == "L"):
-            current = 0
+	for item in form:
+		if (item == 'W'):
+			current += 1
+			if (current > highest):
+				highest = current 
+		if (item == "L"):
+			current = 0
 
-    return (highest)
+	return (highest)

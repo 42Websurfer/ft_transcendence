@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 from asgiref.sync import sync_to_async
 from .models import Tournament as TournamentModel
 import redis
+from .utils import sort_group_tournament
 from .utils import create_user_structure, tournament_string, update_matches_disconnect, match_lobby_string
 
 redis = redis.Redis(host='redis', port=6379, db=0)
@@ -89,8 +90,10 @@ class Tournament(AsyncWebsocketConsumer):
 				redis.delete(tournament_string(self.group_name))
 				return
 			if (tournament_started):
+				results = sort_group_tournament(results)
 				redis.set(self.group_name, json.dumps(results))
 				if not await (sync_to_async)(TournamentModel.objects.filter(tournament_id=self.group_name).exists)():
+					print("\n\nKOMMEN WIR HIER ZWEI MAL REIN?!\n\n")
 					await update_matches_disconnect(self.user.id, self.group_name)
 					
 			#update all games again the disconnected user!
