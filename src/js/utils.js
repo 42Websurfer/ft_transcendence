@@ -34,45 +34,56 @@ export function displayMessages(result) {
 
 export async function handleLogoutSubmit(ws, wsBool)
 {
-    const csrftoken = getCookie('csrftoken');
+    const token = localStorage.getItem('access_token'); 
 
     const response = await fetch('/logout/', {
         method: 'GET',
         headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrftoken
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
         },
     });
 
-    const result = await response.json();
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
     if (ws)
         ws.close(1000, "Client closed connection");
     wsBool = false;
     showSection('auth_login');
 }
 
-export async function checkAuthentication() {
-    const response = await fetch('/checkauth/', {
-        method: 'GET',
-        credentials: 'include'  // Ensure cookies are included in the request
-    });
-    const result = await response.json();
-    if (result.authenticated) {
-        localStorage.setItem('authenticated', 'true');
-        localStorage.setItem('user', JSON.stringify(result.user));
-    } else {
-        localStorage.removeItem('authenticated');
-        localStorage.removeItem('user');
-    }
-    return result.authenticated;
-}
+// export async function checkAuthentication() {
+//     const token = localStorage.getItem('access_token'); 
+    
+//     const response = await fetch('/checkauth/', {
+//         method: 'GET',
+//         headers: {
+//             'Authorization': `Bearer ${token}`,
+//             'Content-Type': 'application/json'
+//         },
+//     });
+//     const result = await response.json();
+//     if (result.authenticated) {
+//         localStorage.setItem('authenticated', 'true');
+//         localStorage.setItem('user', JSON.stringify(result.user));
+//     } else {
+//         localStorage.removeItem('authenticated');
+//         localStorage.removeItem('user');
+//     }
+//     return result.authenticated;
+// }
 
 export async function fetch_get(url)
 {
+    const token = localStorage.getItem('access_token'); 
+
     try {
         const response = await fetch(url, {
             method: 'GET',
-            credentials: 'include'
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
         });
         return (await response.json());
     } catch (error) {

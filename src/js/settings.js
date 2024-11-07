@@ -70,10 +70,14 @@ export async function renderSettings() {
 
 async function getUserInformation() {
     try {
-        const csrftoken = getCookie('csrftoken');
+		const token = localStorage.getItem('access_token'); 
+
         const response = await fetch(`/get_user_information/`, {
             method: 'GET',
-            credentials: 'include'
+			headers: {
+				'Authorization': `Bearer ${token}`,
+				'Content-Type': 'application/json'
+			}
         });
         return await response.json();
     }
@@ -87,12 +91,13 @@ async function handleSettingsFormSubmit(event) {
     const form = event.target;
     const formData = new FormData(form);
 	
-    const csrftoken = getCookie('csrftoken');
+    const token = localStorage.getItem('access_token'); 
 	
     const response = await fetch('/settings/', {
 		method: 'POST',
         headers: {
-            'X-CSRFToken': csrftoken
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
         },
         body: formData//JSON.stringify(data)
     });

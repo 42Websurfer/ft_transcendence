@@ -76,6 +76,7 @@ export function runWebsocket() {
                 }
             }
             else if (data.type === 'tournament_finished')
+                //HIER EINE MESSAGE VOM FRONTEND DASS DAS TOURNAMENT ZU ENDE IST UND MAN ZURÜCK IN DAS MENU GEHEN KANN
                 console.log('Tournament finished');
             else if (data.type === 'start_tournament_match')
             {
@@ -321,16 +322,24 @@ export function renderMenuTournamentRoundRobin(lobbyId) {
     `;
     if (!g_socket)
     {
-            g_socket = new WebSocket(`ws://${window.location.host}/ws/tm/${lobbyId}/`);
-            runWebsocket(g_socket);
-            closeWebsocket(g_socket);
+        const token = localStorage.getItem('access_token');
+
+        g_socket = new WebSocket(`ws://${window.location.host}/ws/tm/${lobbyId}/?token=${token}`);
+        runWebsocket(g_socket);
+        closeWebsocket(g_socket);
     }
     else {
         const startTournamentButton = document.getElementById('tournamentStartButton');
         startTournamentButton.style.display = 'none';
+        
+        const token = localStorage.getItem('access_token'); 
+
         fetch(`/tm/get_tournament_lobby_data/${lobbyId}/`, {
             method: 'GET',
-            credentials: 'include'
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
         }).then((response) => response.json())
         .then((data) => {
             if (data.type === 'error') {
@@ -402,9 +411,14 @@ export function renderMenuTournamentRoundRobin(lobbyId) {
 
     async function showTournamentMatches() {
         try {
+            const token = localStorage.getItem('access_token'); 
+
             const response = await fetch(`/tm/start_tournament/${lobbyId}/`, {
                 method: 'GET',
-                credentials: 'include'
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
             });
             return await response.json();
         } catch (error) {

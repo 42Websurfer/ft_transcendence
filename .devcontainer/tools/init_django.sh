@@ -18,6 +18,8 @@ pip install django-otp
 pip install pyotp
 pip install django-otp-totp
 pip install qrcode
+pip install djangorestframework 
+pip install djangorestframework-simplejwt
 export PYTHONPATH=/workspaces/app/transendence
 daphne -p 8001 -b 0.0.0.0 transendence.asgi:application &
 python3 /workspaces/app/transendence/manage.py runserver 0.0.0.0:8000

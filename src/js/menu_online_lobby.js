@@ -246,13 +246,20 @@ export function renderMenuOnlineLobby(lobbyId) {
     </div>
     `;
     if (!g_socket) {
-        g_socket = new WebSocket(`ws://${window.location.host}/ws/match/${lobbyId}/`);
+        const token = localStorage.getItem('access_token');
+
+        g_socket = new WebSocket(`ws://${window.location.host}/ws/match/${lobbyId}/?token=${token}`);
         runWebsocket(g_socket);
         closeWebsocket(g_socket);
     } else {
+        const token = localStorage.getItem('access_token'); 
+
         fetch(`/tm/get_online_lobby_data/${lobbyId}/`, {
             method: 'GET',
-            credentials: 'include'
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
         }).then((response) => response.json())
         .then((data) => {
             if (data.type === 'error') {
@@ -332,9 +339,14 @@ export function renderMenuOnlineLobby(lobbyId) {
 
     matchStartButton.addEventListener('click', async() => {
         try {
+            const token = localStorage.getItem('access_token'); 
+
             const response = await fetch(`/tm/start_game/${lobbyId}/`, {
                 method: 'GET',
-                credentials: 'include'
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
             });
             console.log('Response: ', response);
         } catch (error) {

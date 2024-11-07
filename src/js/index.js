@@ -7,19 +7,34 @@ wsBool = false;
 
 let ws;
 async function checkAuthentication() {
-    const response = await fetch('/checkauth/', {
-        method: 'GET',
-        credentials: 'include'  // Ensure cookies are included in the request
-    });
-    const result = await response.json();
-    if (result.authenticated) {
-        localStorage.setItem('authenticated', 'true');
-        localStorage.setItem('user', JSON.stringify(result.user));
-    } else {
-        localStorage.removeItem('authenticated');
-        localStorage.removeItem('user');
+    const token = localStorage.getItem('access_token'); 
+    try {
+        const response = await fetch('/checkauth/', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+        });
+        if (response.status === 401)
+        {
+            console.log('STATUS CODE 401')
+            return false;
+        }
+        else if (response.status === 200)
+        {
+            console.log("statusCODE 200")
+            const result = await response.json();
+            return result.authenticated;
+        }
+
     }
-    return result.authenticated;
+    catch(error) {
+        console.log("LOL EXCPETION")
+        console.error(error);
+        return false;
+    }
+
 }
 
 async function renderLoginLogoutButton(isAuthenticated, section) {
@@ -83,9 +98,14 @@ homeButton.addEventListener('click', () => {
 
 export async function handleFriendRequest(url) {
     try {
+        const token = localStorage.getItem('access_token'); 
+
         const response = await fetch(`${url}`, {
             method: 'GET',
-            credentials: 'include'
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },        
         });
         return await response.json();
     } catch (error) {
@@ -280,7 +300,8 @@ export async function addListItem(content, ul, list, role)
 }
 
 function initOnlineStatus() {
-    ws = new WebSocket(`ws://${window.location.host}/ws/online-status/`);
+    const token = localStorage.getItem('access_token');
+    ws = new WebSocket(`ws://${window.location.host}/ws/online-status/?token=${token}`);
 
     ws.onopen =  function() {
         console.log("Connected to WebSocket Online Status");
@@ -422,16 +443,12 @@ window.addEventListener('popstate', (event) => {
 });
 
 async function sendCodeToBackend(code) {
-    console.log("NOW WE ARE SENDING THE CODE TO THE BACKEND: CODE = ", code);
-    try {
-        const csrftoken = getCookie('csrftoken');
-        
+    try {        
         const response = await fetch(`/callback/`, {
             method: 'POST',
             headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrftoken
-        },
+                'Content-Type': 'application/json'
+            },
         body: JSON.stringify({ 'code': code })
         });
         return (await response.json())
@@ -469,7 +486,12 @@ window.onload = async function() {
             return;
         }
         else if (response.type === 'success')
+        {
+            console.log('TOKEN WILL BE SETTED: ', response.tokens.access);
+            localStorage.setItem('access_token', response.tokens.access);  
+            localStorage.setItem('refresh_token', response.tokens.refresh);
             showSection('menu');
+        }
         else if (response.type === 'error')
             showSection(login);
         console.log('Response = ', response);

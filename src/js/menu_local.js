@@ -78,9 +78,14 @@ export function renderMenuLocal(groupName) {
 
     async function showTournamentMatches() {
         try {
+            const token = localStorage.getItem('access_token'); 
+
             const response = await fetch(`/tm/start_tournament/${lobbyId}/`, {
                 method: 'GET',
-                credentials: 'include'
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
             });
             return await response.json();
         } catch (error) {
@@ -95,34 +100,38 @@ export function renderMenuLocal(groupName) {
         const score_home = parseInt(document.getElementById(`score_home_${match_id}`).value);
         const score_away = parseInt(document.getElementById(`score_away_${match_id}`).value);
     
-        const csrftoken = getCookie('csrftoken');
-        console.log('SUBMITTEN WIR?')
-            try {
-                const response = await fetch('/tm/set_match/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': csrftoken
-                    },
-                    body: JSON.stringify({
-                        match_id: match_id,
-                        score_home: score_home,
-                        score_away: score_away,
-                        tournament_id: tournament_id
-                    }),
-                })
-                return (response);
-            }
-            catch (error) {
-                return {'type': 'Error'};
-            }
+        const token = localStorage.getItem('access_token'); 
+        try {
+            const response = await fetch('/tm/set_match/', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    match_id: match_id,
+                    score_home: score_home,
+                    score_away: score_away,
+                    tournament_id: tournament_id
+                }),
+            })
+            return (response);
+        }
+        catch (error) {
+            return {'type': 'Error'};
+        }
     };
 
     async function showTournamentMatches() {
         try {
+            const token = localStorage.getItem('access_token'); 
+              
             const response = await fetch(`/tm/start_tournament/${groupName}/`, {
                 method: 'GET',
-                credentials: 'include'
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
             });
             return await response.json();
         } catch (error) {
@@ -135,8 +144,9 @@ export function renderMenuLocal(groupName) {
         const response = await showTournamentMatches();
         displayMatches(response);
     });
+    const token = localStorage.getItem('access_token');
 
-    const socket = new WebSocket(`ws://${window.location.host}/ws/tm/${groupName}/`);
+    const socket = new WebSocket(`ws://${window.location.host}/ws/tm/${groupName}/?token=${token}`);
     runWebsocket(socket);
     closeWebsocket(socket);
 }

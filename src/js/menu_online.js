@@ -27,9 +27,14 @@ export function renderMenuOnline() {
 
     async function joinOnlineLobby(lobby_id) {
         try {
+            const token = localStorage.getItem('access_token'); 
+
             const response = await fetch(`/tm/join_online_lobby/${lobby_id}/`, {
                 method: 'GET',
-                credentials: 'include'
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
             });
             return await response.json();
         } catch (error) {
@@ -57,9 +62,14 @@ export function renderMenuOnline() {
 
     async function createOnlineLobby() {
         try {
+            const token = localStorage.getItem('access_token'); 
+
             const response = await fetch(`/tm/create/match`, {
                 method: 'GET',
-                credentials: 'include'
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
             });            
             return await response.json();
         } catch (error) {

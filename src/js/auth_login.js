@@ -64,18 +64,19 @@ async function handleLoginFormSubmit(event)
 		username: formData.get('login-username'),
         password: formData.get('login-password')
     };
-    const csrftoken = getCookie('csrftoken');
 
     const response = await fetch('/login/', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrftoken
-        },
         body: JSON.stringify(data)
     });
 
     const result = await response.json();
+	if (result.success)
+	{
+		console.log('TOKEN WILL BE SETTED: ', result.tokens.access);
+		localStorage.setItem('access_token', result.tokens.access);  
+        localStorage.setItem('refresh_token', result.tokens.refresh);		
+	}
     displayMessages(result);
 	console.log(result.error);
 	console.log(result.sucess);
