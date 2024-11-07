@@ -299,6 +299,11 @@ export class Entity extends Transform{
 		this.position.y += yAdd;
 	}
 
+	setPos(x, y) {
+		this.position.x = x;
+		this.position.y = y;
+	}
+
 	update(){
 	}
 }
