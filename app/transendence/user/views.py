@@ -2,6 +2,8 @@ import json
 import logging
 import redis
 import requests
+import pyotp
+import qrcode
 from django.shortcuts import get_object_or_404, redirect
 from django.http import JsonResponse
 from django.contrib.auth.models import User
@@ -10,6 +12,8 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Q
+from io import BytesIO
+from base64 import b64encode
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -89,11 +93,51 @@ def user_logout(request):
     }, status=200)
 
 @api_view(['POST'])
+def verify_2fa_code(request):
+    try:
+        data = json.loads(request.body)
+        otp_code = data.get('otp_code')
+        user = data.get('user')
+        logger.debug(f"Data = {data}")
+        logger.debug(f"otp_code = {otp_code}")
+        logger.debug("FEHLER BEIM LADEN DES BODYS")
+        username = user.get('username') 
+        logger.debug(f"Username = {username}")
+        user = User.objects.get(username=username)
+        logger.debug("BEKOMMEN WIR ÜBERHAUPT DEN USER DAMN IT!")
+        user_profile = UserProfile.objects.get(user=user)
+        if not user_profile:
+            logger.debug("NO user_profile found!")
+        logger.debug("FEHLER BEIM Fehler beim laden des otp_secret code aus db")
+        totp = pyotp.TOTP(user_profile.otp_secret)
+        
+        if totp.verify(otp_code):
+            refresh = RefreshToken.for_user(user)
+
+            return JsonResponse({
+                'type': 'success',
+                'tokens': {
+                    'refresh': str(refresh),
+                    'access': str(refresh.access_token),
+                }
+            }, status=200)
+        else:
+            return JsonResponse({'error': 'Invalid 2FA code.'}, status=400)
+            
+    except User.DoesNotExist:
+        return JsonResponse({'type': 'error', 'message': 'User not found.'}, status=404)
+    except Exception as e:
+        return JsonResponse({'type': 'error', 'message': str(e)}, status=400)
+
+@api_view(['POST'])
 def register(request):
     if request.method == 'POST':
         try:
+            logger.debug("WE ARE IN REGISTER!")
             #data = json.loads(request.body)		
             data = request.POST
+            logger.debug("Hier failen wir!")
+
             email = data.get('email')
             password = data.get('password')
             firstname = data.get('firstname')
@@ -112,7 +156,23 @@ def register(request):
                 user_game_stats = GameStatsUser.objects.get(username=username)
                 user_game_stats.avatar = avatar
                 user_game_stats.save()
-            refresh = RefreshToken.for_user(user)
+
+            #Es wird einmal ein otp_secret key erstellt der dann in der DB gespeichert wird und immer beim login verwendet wird
+            otp_secret = pyotp.random_base32() #totp time-based-one-password!!! für die 2fa apps
+            user_profile = UserProfile.objects.get(user=user)
+            user_profile.otp_secret = otp_secret
+            user_profile.save()
+
+            logger.debug(f"OTP_SECRET = {otp_secret}")
+            totp = pyotp.TOTP(otp_secret)
+            uri = totp.provisioning_uri(name=username, issuer_name="Websurfer app"), 
+            qr_code = qrcode.make(uri)
+            buffer = BytesIO() #qrcode wird im arbeitsspeicher gespeichert
+            qr_code.save(buffer, format="PNG")
+            qr_code_string = b64encode(buffer.getvalue()).decode("utf-8")
+
+
+            #refresh = RefreshToken.for_user(user)
             return JsonResponse({
                 'type': 'success',
                 'message': 'User registered successfully.',
@@ -123,13 +183,10 @@ def register(request):
                     'first_name': user.first_name,
                     'last_name': user.last_name
                 },
-                'tokens': {
-                    'refresh': str(refresh),
-                    'access': str(refresh.access_token),
-                }
+                'qr_code': f"data:image/png;base64,{qr_code_string}",
             }, status=201)
         except json.JSONDecodeError:
-                    return JsonResponse({'error': 'Invalid JSON.'}, status=400)
+            return JsonResponse({'error': 'Invalid JSON.'}, status=400)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

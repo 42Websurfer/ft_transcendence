@@ -16,7 +16,6 @@ pip install requests
 pip install Pillow
 pip install django-otp
 pip install pyotp
-pip install django-otp-totp
 pip install qrcode
 pip install djangorestframework 
 pip install djangorestframework-simplejwt
