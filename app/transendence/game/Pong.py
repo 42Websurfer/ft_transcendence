@@ -273,9 +273,7 @@ async def getCurrentState(world, consumer):
 				'id': ent.id,
 				'entType': type(ent).__name__,
 				'transform': ent.serialize(),
-				'constr':{
-					'height': 0 if not hasattr(ent, 'height') else ent.height
-				}
+				'height': 0 if not hasattr(ent, 'height') else ent.height
 			}
 		)
 

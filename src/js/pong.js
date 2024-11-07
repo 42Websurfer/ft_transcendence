@@ -364,21 +364,20 @@ class RemoteHandler extends Entity{
 		window.addEventListener('keyup', sendMovementInput);
 	}
 
-	newEntity(data){
+	newEntity(type, id, transform, height=undefined){
 		let ent = undefined;
-		if (data.entType === 'Player'){
-			ent = new Player(0, 0, data.constr.height);
-		} else if (data.entType === 'Ball'){
+		if (type === 'Player'){
+			ent = new Player(0, 0, Number(height));
+		} else if (type === 'Ball'){
 			ent = new Ball(0,0);
-		} else if (data.entType === 'Wall'){
-			ent = new Wall(0, 0, 0, data.constr.height);
+		} else if (type === 'Wall'){
+			ent = new Wall(0, 0, 0, Number(height));
 		} else {
 			ent = new Entity(0, 0);
 		}
-		ent.addComponent(Network, new Network(socket));
-		ent.id = data.id;
+		ent.id = id;
 		this.addEntity(ent.id, ent);
-		this.setEntityPosition(ent.id, data.transform);
+		this.setEntityPosition(ent.id, transform);
 	}
 
 	addPlayer(entid, uid, uname) {
@@ -396,9 +395,9 @@ class RemoteHandler extends Entity{
 	setEntityPosition(id, transform){
 		const ent = this.entities[id];
 
-		ent.position.x = transform.position.x;
-		ent.position.y = transform.position.y;
-		ent.rotate(transform.rotation);
+		ent.position.x = Number(transform.position.x);
+		ent.position.y = Number(transform.position.y);
+		ent.rotate(Number(transform.rotation));
 	}
 
 	moveEntity(id, transform){
@@ -410,7 +409,7 @@ class RemoteHandler extends Entity{
 	}
 
 	updatePlayerScore(id, score) {
-		manager.entities[id].score = score;
+		this.entities[id].score = score;
 		let i = 0;
 		for (const entid in this.players) {
 			const player = this.players[entid];
@@ -489,42 +488,45 @@ function setupSocketHandlers(socket){
 	}
 	
 	socket.onmessage = (event) => {
-		if (event.data[0] !== '{') {
-			const data = event.data.split(';');
-			manager.moveEntity(data[0], {position: {x: data[1], y: data[2]}, rotation: data[3]});
-			return;
-		}
-		const data = JSON.parse(event.data);
+		const data = event.data.split(';');
 
-		if (!data.hasOwnProperty('type'))
-			console.log("Typeless:", data);
-		if (data.type !== 'updatePos')
+		//newEntity		ne;id;type;xpos;ypos;rotation;?.height
+		//updatePos		up;id;xpos;ypos;rot
+		//setPos 		sp;id;xpos;ypos;rot
+		//roundStart 	rs
+		//setScore 		ss;id;score
+		//initPlayer 	ip;entid;uid;uname
+		//disconnect 	dc;id
+		//gameOver 		go
+		//drawDot 		dd;x;y
+		//drawLine 		dl;x1;y1;x2;y2
+
+		if (data[0] !== 'up')
 			console.log(data);
-		if (data.type === 'newEntity'){
-			manager.newEntity(data);
-		} else if (data.type === 'updatePos'){
-			manager.moveEntity(data.id, data.transform);
-		} else if (data.type === 'setPos'){
-			manager.setEntityPosition(data.id, data.transform);
-		} else if (data.type === 'roundStart'){
+		if (data[0] === 'ne'){
+			manager.newEntity(data[2], data[1], {position: {x: data[3], y: data[4]}, rotation: data[5]}, data[6]);
+		} else if (data[0] === 'up'){
+			manager.moveEntity(data[1], {position: {x: data[2], y: data[3]}, rotation: data[4]});
+		} else if (data[0] === 'sp'){
+			manager.setEntityPosition(data[1], {position: {x: data[2], y: data[3]}, rotation: data[4]});
+		} else if (data[0] === 'rs'){
 			starRound();
-		} else if (data.type === 'setScore'){
-			manager.updatePlayerScore(data.id, data.score)
-		} else if (data.type === 'initPlayer') {
-			manager.addPlayer(data.ent_id, data.uid, data.uname);
-		} else if (data.type === 'disconnected') {
-			let player = manager.players[data.id];
+		} else if (data[0] === 'ss'){
+			manager.updatePlayerScore(data[1], data[2])
+		} else if (data[0] === 'ip') {
+			manager.addPlayer(data[1], data[2], data[3]);
+		} else if (data[0] === 'dc') {
+			let player = manager.players[data[1]];
 			displayDisconnect(player.uname);
 			endGame();
-		} else if (data.type === 'gameOver') {
-			// socket.close();
+		} else if (data[0] === 'go') {
 			endGame();
-		} else if (data.type === 'drawDot'){
+		} else if (data[0] === 'dd'){
 			ctx.fillStyle = 'red';
-			ctx.fillRect(data.x, data.y, 5, 5);
+			ctx.fillRect(data[1], data[2], 5, 5);
 			ctx.fillStyle = 'white';
-		} else if (data.type === 'drawLine'){
-			drawLine(new Vector(data.x1, data.y1), new Vector(data.x2, data.y2), 'blue');
+		} else if (data[0] === 'dl'){
+			drawLine(new Vector(data[1], data[2]), new Vector(data[3], data[4]), 'blue');
 		}
 	}
 	
