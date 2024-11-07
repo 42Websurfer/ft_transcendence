@@ -21,7 +21,7 @@ def round_completed(matches, round):
 	logger.debug(f"Current round = {round}")
 	for index, match in enumerate(matches):
 		logger.debug(f"Current round: {round} | Loop match_round = {match['round']} | loop match_status = {match['status']}")
-		if index == len(matches) - 1:
+		if index == len(matches) - 1 and match['status'] != 'pending':
 			return True, True
 		if match['round'] > round:
 			return True, False
@@ -59,6 +59,9 @@ def sort_group_tournament(results):
 	),
 	reverse=True
 	)
+	connected_users = [user for user in sorted_result if user['status'] != 'disconnected']
+	disconnected_users = [user for user in sorted_result if user['status'] == 'disconnected']
+	sorted_result = connected_users + disconnected_users	
 	
 	idx = 0
 	while (idx < len(sorted_result)):
@@ -107,6 +110,7 @@ async def update_tournament_group(lobby_id, match_data):
 			user['games'] += 1
 	
 	sorted_result = sort_group_tournament(results)
+
 	redis.set(lobby_id, json.dumps(sorted_result))
 	channel_layer = get_channel_layer()
 	await channel_layer.group_send(
@@ -169,52 +173,49 @@ def safe_tournament_data(lobby_id):
 	results = json.loads(results_json)
 	tournament = Tournament(tournament_id=lobby_id)
 	tournament.save()
-	logger.debug(f"Lets see the result: \n {results}")
 	for result in results: 
 		try:
 			user_Gamestats = GameStatsUser.objects.get(username=result['player'])
 		except ObjectDoesNotExist:
 			continue
-		if result['rank'] == 1:
-			user_Gamestats.tournament_wins += 1
-			user_Gamestats.save()
-		tournament_result = TournamentResults(
-			tournament_id = tournament,
-			rank = result['rank'],
-			games = result['games'],
-			won = result['won'],
-			lost = result['lost'],
-			goals_for = result['goals'],
-			goals_against = result['goals_against'],
-			diff = result['diff'],
-			points = result['points'],
-			user = user_Gamestats,
-		)
-		tournament_result.save()
+		if result['status'] != 'disconnected':
+			if result['rank'] == 1:
+				user_Gamestats.tournament_wins += 1
+				user_Gamestats.save()
+			tournament_result = TournamentResults(
+				tournament_id = tournament,
+				rank = result['rank'],
+				games = result['games'],
+				won = result['won'],
+				lost = result['lost'],
+				goals_for = result['goals'],
+				goals_against = result['goals_against'],
+				diff = result['diff'],
+				points = result['points'],
+				user = user_Gamestats,
+			)
+			tournament_result.save()
 		
 	tournament_json = redis.get(tournament_string(lobby_id))
 	if not tournament_json:
 		return
 	tournament = json.loads(tournament_json)
 	matches = tournament['matches']
-	logger.debug(f"Lets see the matches: \n {matches}")
 	for match in matches:
-		logger.debug (f"Gamestatsuser home = {match['player_home']}")
-		logger.debug (f"Gamestatsuser away = {match['player_away']}")
 		try:
 			home_user = GameStatsUser.objects.get(username=match['player_home'])
 			away_user = GameStatsUser.objects.get(username=match['player_away'])
 		except ObjectDoesNotExist:
 			continue
-
-		online_match = OnlineMatch(
-			home = home_user,
-			away = away_user,
-			home_score = match['score_home'],
-			away_score = match['score_away'],
-			modus = 'RoundRobin',
-		)
-		online_match.save()
+		if (match['status'] == 'finished'):
+			online_match = OnlineMatch(
+				home = home_user,
+				away = away_user,
+				home_score = match['score_home'],
+				away_score = match['score_away'],
+				modus = 'RoundRobin',
+			)
+			online_match.save()
 
 		#need to delete redis database!!. and set everything to finish!
 
@@ -249,7 +250,6 @@ async def set_match_data(lobby_id, match_id, score_home, score_away, status):
 		round = 0
 	status, tournament_finished = round_completed(tournament_dic['matches'], round)
 	if status and not tournament_finished:
-		logger.debug(f"Round completed1")
 		await channel_layer.group_send(
 			lobby_id,
 			{
@@ -257,7 +257,6 @@ async def set_match_data(lobby_id, match_id, score_home, score_away, status):
 			}
 		)
 	elif status and tournament_finished:
-		logger.debug(f"Tournament completed1") 
 		await channel_layer.group_send(
 			lobby_id,
 			{
@@ -334,6 +333,7 @@ async def update_matches_disconnect(user_id, lobby_id):
 	if not matches:
 		return
 	for match in matches['matches']:
+		print('MATCH_ID FOR DISCONNECTING! = ', match['match_id'])
 		if (match['home'] == user_id):
 			await update_match(lobby_id, match)
 		elif (match['away'] == user_id):
@@ -345,16 +345,16 @@ async def update_matches_disconnect(user_id, lobby_id):
 	# dann standing und matches erneut senden.
 
 def get_longest_winstreak(form):
-    
-    current = 0
-    highest = 0
+	
+	current = 0
+	highest = 0
 
-    for item in form:
-        if (item == 'W'):
-            current += 1
-            if (current > highest):
-                highest = current 
-        if (item == "L"):
-            current = 0
+	for item in form:
+		if (item == 'W'):
+			current += 1
+			if (current > highest):
+				highest = current 
+		if (item == "L"):
+			current = 0
 
-    return (highest)
+	return (highest)

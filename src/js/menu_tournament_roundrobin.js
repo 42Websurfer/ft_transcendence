@@ -76,6 +76,7 @@ export function runWebsocket() {
                 }
             }
             else if (data.type === 'tournament_finished')
+                //HIER EINE MESSAGE VOM FRONTEND DASS DAS TOURNAMENT ZU ENDE IST UND MAN ZURÜCK IN DAS MENU GEHEN KANN
                 console.log('Tournament finished');
             else if (data.type === 'start_tournament_match')
             {
