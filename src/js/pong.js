@@ -1,4 +1,4 @@
-import {Vector, Plane, World, Entity, Mesh, Physics, Network, Box, Circle, RenderSystem, CollisionSystem, MovementSystem, canvas, drawText, strokeText, drawLine, ctx} from './GameSystem.js';
+import {Vector, Plane, World, Entity, Mesh, Physics, Box, Circle, RenderSystem, CollisionSystem, MovementSystem, canvas, drawText, strokeText, drawLine, ctx} from './GameSystem.js';
 import { showSection } from './index.js';
 
 const PLAYER_MOVE_SPEED = 20;

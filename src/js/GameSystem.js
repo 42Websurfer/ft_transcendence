@@ -129,14 +129,6 @@ export class Component{
 	}
 }
 
-export class Network extends Component{
-	constructor(socket, isLocal = false){
-		super();
-		this.socket = socket;
-		this.isLocal = isLocal;
-	}
-}
-
 /**
  * Physics component
  * responsible for storing Entitys movement direction
@@ -328,13 +320,10 @@ export class MovementSystem extends System{
 	execute(entities){
 		entities.forEach(entity => {
 			const phys = entity.getComponent(Physics);
-			const net = entity.getComponent(Network);
 			if (phys){
 				if (phys.hasGravity){
 					phys.setVelocity(phys.velocity.x, phys.velocity.y + 0.0981);
 				}
-				// if (net && !net.isLocal)
-				// 	return;
 				entity.move(phys.velocity.x, phys.velocity.y);
 			}
 		});
@@ -345,8 +334,7 @@ export class CollisionSystem extends System{
 	execute(entities){
 		entities.forEach(currentEnt => {
 			const entMesh = currentEnt.getComponent(Mesh);
-			const net = currentEnt.getComponent(Network);
-			if (!entMesh || net && !net.isLocal)
+			if (!entMesh)
 				return ;
 			entities.forEach(otherEnt => {
 				if (currentEnt != otherEnt){
