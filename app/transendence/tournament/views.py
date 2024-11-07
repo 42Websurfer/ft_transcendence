@@ -10,6 +10,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from .models import GameStatsUser, OnlineMatch, TournamentResults
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
+from asgiref.sync import async_to_sync
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -23,7 +24,6 @@ def lobby_name_generator():
 @permission_classes([IsAuthenticated])
 def create_lobby(request, match_type):
 	user = request.user
-	logger.debug("\n\nSAFE KEIN USER ODER?\n\n", user)
 	if redis.sismember('user_lobbies', user.id):
 		return JsonResponse({
 			'type': 'error',
@@ -76,18 +76,18 @@ def join_lobby(request, lobby_id):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-async def get_online_lobby_data(request, lobby_id):
+def get_online_lobby_data(request, lobby_id):
 	online_match_json = redis.get(match_lobby_string(lobby_id))
 	if (not online_match_json):
 		return (JsonResponse({'type': 'error', 'message': 'No data in redis.'}))
 	channel_layer = get_channel_layer()
-	await channel_layer.group_send(
+	(async_to_sync)(channel_layer.group_send)(
 		match_lobby_string(lobby_id),
 		{
 			'type': 'send_online_match_list',
 		}
 	)
-	await channel_layer.group_send(
+	(async_to_sync)(channel_layer.group_send)(
 		match_lobby_string(lobby_id),	
 		{
 			'type': 'send_online_lobby_user',
@@ -97,20 +97,20 @@ async def get_online_lobby_data(request, lobby_id):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-async def get_tournament_lobby_data(request, lobby_id):
+def get_tournament_lobby_data(request, lobby_id):
 	tournament = redis.get(tournament_string(lobby_id))
 	if tournament is None:
 		return JsonResponse({'type': 'error', 'message': 'Tournament not found.'})
 	tournament_dic = json.loads(tournament)
 	round, start = get_current_round(tournament_dic['matches'])
 	channel_layer = get_channel_layer()
-	await channel_layer.group_send(
+	(async_to_sync)(channel_layer.group_send)(
 		lobby_id,
 		{
 			'type': 'match_list',
 		}
 	)
-	await channel_layer.group_send(
+	(async_to_sync)(channel_layer.group_send)(
 		lobby_id,
 		{
 			'type': 'send_tournament_users',
@@ -122,7 +122,7 @@ async def get_tournament_lobby_data(request, lobby_id):
 	status, tournament_finished = round_completed(tournament_dic['matches'], round)
 	if status and not tournament_finished:
 		logger.debug(f"Round completed")
-		await channel_layer.group_send(
+		(async_to_sync)(channel_layer.group_send)(
 			lobby_id,
 			{
 				'type': 'send_round_completed'
@@ -130,7 +130,7 @@ async def get_tournament_lobby_data(request, lobby_id):
 		)
 	elif status and tournament_finished:
 		logger.debug(f"Tournament completed") 
-		await channel_layer.group_send(
+		(async_to_sync)(channel_layer.group_send)(
 			lobby_id,
 			{
 				'type': 'send_tournament_finished',
@@ -140,7 +140,7 @@ async def get_tournament_lobby_data(request, lobby_id):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-async def start_tournament_round(request, lobby_id):
+def start_tournament_round(request, lobby_id):
 	tournament_matches_json = redis.get(tournament_string(lobby_id))
 	if not tournament_matches_json:
 		return (JsonResponse({'type': 'error', 'message': 'Tournament not found'}))
@@ -156,7 +156,7 @@ async def start_tournament_round(request, lobby_id):
 				break
 			if match['status'] == 'pending':
 				logger.debug(f"We are sending match_id = {match['match_id']}")
-				await channel_layer.group_send(
+				(async_to_sync)(channel_layer.group_send)(
 					lobby_id,
 					{
 						'type': 'start_tournament_match',
@@ -172,7 +172,7 @@ async def start_tournament_round(request, lobby_id):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-async def start_group_tournament(request, lobby_id):
+def start_group_tournament(request, lobby_id):
 	results_json = redis.get(lobby_id)
 	if (not results_json):
 		return (JsonResponse({'type': 'error', 'message': 'No data in redis.'}))
@@ -219,7 +219,7 @@ async def start_group_tournament(request, lobby_id):
 	tournament_json = json.dumps(tournament_dict)
 	redis.set(tournament_string(lobby_id), tournament_json)
 	channel_layer = get_channel_layer()
-	await channel_layer.group_send(
+	(async_to_sync)(channel_layer.group_send)(
 		lobby_id,
 		{
 			'type': 'match_list',
@@ -242,9 +242,9 @@ async def set_tournament_match(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-async def start_game_loop(request, lobby_id):
+def start_game_loop(request, lobby_id):
 	channel_layer = get_channel_layer()	
-	await channel_layer.group_send(
+	(async_to_sync)(channel_layer.group_send)(
 		match_lobby_string(lobby_id),
 		{
 			'type': 'send_online_start_match',

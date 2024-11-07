@@ -244,9 +244,12 @@ async def set_match_data(lobby_id, match_id, score_home, score_away, status):
 		}
 	)
 	round, start = get_current_round(tournament_dic['matches'])
+	round -= 1
+	if round == -1:
+		round = 0
 	status, tournament_finished = round_completed(tournament_dic['matches'], round)
 	if status and not tournament_finished:
-		logger.debug(f"Round completed")
+		logger.debug(f"Round completed1")
 		await channel_layer.group_send(
 			lobby_id,
 			{
@@ -254,13 +257,14 @@ async def set_match_data(lobby_id, match_id, score_home, score_away, status):
 			}
 		)
 	elif status and tournament_finished:
-		logger.debug(f"Tournament completed") 
+		logger.debug(f"Tournament completed1") 
 		await channel_layer.group_send(
 			lobby_id,
 			{
 				'type': 'send_tournament_finished',
 			}
 		)
+		logger.debug(f"\n\nWHO WILL SAVE IT\n\n ")
 		await (sync_to_async)(safe_tournament_data)(lobby_id)
 	return True
 
@@ -314,6 +318,7 @@ def reset_match(lobby_id, match):
 	redis.set(lobby_id, json.dumps(results))
 
 async def update_match(lobby_id, match):
+	logger.debug(f"JEMAND HAT SICH DISCONNECTED")
 	if (match['status'] == 'freegame' or match['status'] == 'disconnected'):
 		return
 	if match['status'] == 'finished':
