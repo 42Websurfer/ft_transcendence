@@ -12,6 +12,9 @@ def create_user_profile(sender, instance, created, **kwargs):
         UserProfile.objects.create(user=instance)
         GameStatsUser.objects.create(user=instance)
 
+def save_user_profile(sender, instance, **kwargs):
+    instance.profile.save()
+
 @receiver(pre_save, sender=User)
 def update_gamestatsuser(sender, instance, **kwargs):
     if instance.pk:

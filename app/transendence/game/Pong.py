@@ -226,7 +226,7 @@ class GameLogicManager(Entity):
 
 	def player_has_won(self):
 		for section in self.sections:
-			if section.player.score >= 7:
+			if section.player.score >= 1:
 				lead = True
 				for sec in self.sections:
 					if sec != section:
