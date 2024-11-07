@@ -40,6 +40,18 @@ class MyConsumer(AsyncWebsocketConsumer):
 		await self.accept()
 		await GamesHandler.add_consumer_to_game(self, self.group_name)
 
+	#Send table
+	#newEntity		ne;id;type;xpos;ypos;rotation;?.height
+	#updatePos		up;id;xpos;ypos;rot
+	#setPos 		sp;id;xpos;ypos;rot
+	#roundStart 	rs
+	#setScore 		ss;id;score
+	#initPlayer 	ip;entid;uid;uname
+	#disconnect 	dc;id
+	#gameOver 		go
+	#drawDot 		dd;x;y
+	#drawLine 		dl;x1;y1;x2;y2
+
 	async def assign_player(self, pong_player):
 		print('consumer gets PongPlayer assigned')
 		self.player_c = pong_player
@@ -72,67 +84,47 @@ class MyConsumer(AsyncWebsocketConsumer):
 			return
 		print(f"text:data: {text_data_json}")
 
+	#initPlayer 	ip;entid;uid;uname
 	async def init_players(self, event):
 		print('We send what player has wich uid and uname')
-		await self.send(text_data=json.dumps(
-			{
-				'type': 'initPlayer',
-				'ent_id': event.get('ent_id'),
-				'uid': event.get('uid'),
-				'uname': event.get('uname')
-			}))
+		await self.send(text_data=f"ip;{event.get('ent_id')};{event.get('uid')};{event.get('uname')}")
 		
-
+	#newEntity		ne;id;type;xpos;ypos;rotation;?.height
 	async def client_create_entity(self, event):
 		print('client_create_entity event sent:', event)
-		await self.send(text_data=json.dumps({
-			'type': 'newEntity',
-			'entType': event.get('entType'),
-			'id': event.get('id'),
-			'transform': event.get('transform'),
-			'constr': event.get('constr')
-		}))
+		transform = event.get('transform')
+		await self.send(text_data=f"ne;{event.get('id')};{event.get('entType')};{transform['position']['x']};{transform['position']['y']};{transform['rotation']};{event.get('height')}")
 		print('client_create_entity event processed')
 
 	"""
 	This is to indicate an entity moved, client side will smooth out rough movements
 	"""
+	#updatePos		up;id;xpos;ypos;rot
 	async def move_entity(self, event):
 		transform = event.get('transform')
-		await self.send(text_data=f"{event.get('id')};{transform['position']['x']};{transform['position']['y']};{transform['rotation']}")
+		await self.send(text_data=f"up;{event.get('id')};{transform['position']['x']};{transform['position']['y']};{transform['rotation']}")
 
 	"""
 	This is to set the pos aka so for ball reset
 	"""
+	#setPos 		sp;id;xpos;ypos;rot
 	async def set_entity_pos(self, event):
-		await self.send(text_data=json.dumps({
-			'type': 'setPos',
-			'id': event.get('id'),
-			'transform': event.get('transform'),
-		}))
+		transform = event.get('transform')
+		await self.send(text_data=f"sp;{event.get('id')};{transform['position']['x']};{transform['position']['y']};{transform['rotation']}")
 
+	#roundStart 	rs
 	async def round_start(self, event):
-		await self.send(json.dumps({
-			'type': 'roundStart'
-		}))
+		await self.send(text_data='rs')
 
+	#gameOver 		go
 	async def game_over(self, event):
-		await self.send(json.dumps({
-			'type': 'gameOver'
-		}))
+		await self.send(text_data='go')
 
+	#setScore 		ss;id;score
 	async def player_score(self, event):
-		await self.send(text_data=json.dumps({
-			'type': 'setScore',
-			'id': event.get('id'),
-			'score': event.get('score')
-		}))
+		await self.send(text_data=f"ss;{event.get('id')};{event.get('score')}")
 
+	#disconnect 	dc;id
 	async def disconnectedMsg(self, event):
-		users_data = {
-			'type': 'disconnected',
-			'id': event.get('id'),
-			'uid': event.get('uid')
-		}
-		await self.send(text_data=json.dumps(users_data))
+		await self.send(text_data=f"dc;{event.get('id')}")
 	
