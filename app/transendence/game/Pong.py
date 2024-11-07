@@ -9,6 +9,7 @@ import json
 
 # Constants
 PLAYER_MOVE_SPEED = 20
+GAME_WINNING_SCORE = 2
 BALL_MOVE_SPEED = 15
 CANVAS_WIDTH = 1280
 CANVAS_HEIGHT = 780
@@ -213,12 +214,6 @@ class GameLogicManager(Entity):
 		
 		self.winner = self.player_has_won()
 		if self.winner is not None:
-			asyncio.run_coroutine_threadsafe(thread_local.host.channel_layer.group_send(
-				thread_local.host.group_name,
-				{
-					'type': 'game_over',
-				}
-			), thread_local.event_loop)
 			thread_local.pong_game.game_complete()
 			return
 		asyncio.run_coroutine_threadsafe(thread_local.host.channel_layer.group_send(
@@ -232,7 +227,7 @@ class GameLogicManager(Entity):
 
 	def player_has_won(self):
 		for section in self.sections:
-			if section.player.score >= 7:
+			if section.player.score >= GAME_WINNING_SCORE:
 				lead = True
 				for sec in self.sections:
 					if sec != section:
@@ -327,6 +322,12 @@ class PongGame:
 		print(f'stop_thread set to {self.stop_thread}')
 
 	def game_complete(self):
+		asyncio.run_coroutine_threadsafe(thread_local.host.channel_layer.group_send(
+				thread_local.host.group_name,
+				{
+					'type': 'game_over',
+				}
+			), thread_local.event_loop)
 		print('We have a winner! Stop game thread, and asyncio thread')
 		self.stop()
 		print('Start of DB save')
