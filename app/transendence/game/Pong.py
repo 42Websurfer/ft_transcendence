@@ -169,7 +169,6 @@ class GameLogicManager(Entity):
 			world.addEntity(Wall(CANVAS_WIDTH * .5, 0, 90, CANVAS_WIDTH))
 			world.addEntity(Wall(CANVAS_WIDTH * .5, CANVAS_HEIGHT, 90, CANVAS_WIDTH))
 		else:
-			center = Vector(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2)
 			point1 = Vector(0, -CANVAS_HEIGHT / 2)
 			rotationStep = 360 / playerCount
 			rot = (rotationStep) / 2
@@ -178,7 +177,7 @@ class GameLogicManager(Entity):
 				ba = point2.sub(point1)
 				ba.scale(0.5)
 				midpoint = ba.add(point1)
-				midpoint = midpoint.add(center)
+				midpoint = midpoint.add(VECTOR_CENTER)
 				self.sections.append(PlayerSection(midpoint.x, midpoint.y, rot + 90, ba.length() * 2))
 				point1.rotate(rotationStep)
 				point2.rotate(rotationStep)
