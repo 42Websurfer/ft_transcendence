@@ -1,7 +1,8 @@
-import {Vector, Plane, World, Entity, Mesh, Physics, Network, Box, Circle, RenderSystem, CollisionSystem, MovementSystem, canvas, drawText, strokeText, drawLine, ctx} from './GameSystem.js';
+import {Vector, Plane, World, Entity, Mesh, Physics, Box, Circle, RenderSystem, CollisionSystem, MovementSystem, canvas, drawText, strokeText, drawLine, ctx} from './GameSystem.js';
 import { showSection } from './index.js';
 
 const PLAYER_MOVE_SPEED = 20;
+const BALL_MOVE_SPEED = 15;
 
 export function renderPong(match_id) {
 	const app = document.getElementById('app');
@@ -129,6 +130,24 @@ class Player extends Entity{
 		}
 	}
 
+	keyDown(event){
+		if (event.key === this.keyBinds.up){
+			let dir = new Vector(this.up.x, this.up.y);
+			dir.scale(PLAYER_MOVE_SPEED);
+			this.physics.velocity = dir;
+		} else if (event.key === this.keyBinds.down) {
+			let dir = new Vector(this.up.x, this.up.y);
+			dir.scale(-PLAYER_MOVE_SPEED);
+			this.physics.velocity = dir;
+		} else if (event.key === 'g') {
+			this.rotate(this.rotation + 5);
+		}
+		else {
+			return;
+		}
+		event.preventDefault();
+	}
+
 	keyUp(event){
 		if (event.key === this.keyBinds.up || event.key === this.keyBinds.down){
 			this.physics.velocity.x = 0;
@@ -158,6 +177,8 @@ class PlayerSection extends Entity{
 		this.bindPlayer();
 		world.addEntity(this.goal);
 		world.addEntity(this.player);
+		window.addEventListener('keydown', (event) => this.player.keyDown(event));
+		window.addEventListener('keyup', (event) => this.player.keyUp(event));
 	}
 
 	bindPlayer(){
@@ -182,6 +203,9 @@ class PongLocalManager extends Entity{
 		this.sections = [];
 		this.ball = new Ball();
 		this.winner = undefined;
+		this.round_running = false;
+		this.counter = Date.now();
+		this.starter = undefined;
 		world.addEntity(this.ball);
 		this.initGame();
 	}
@@ -218,79 +242,111 @@ class PongLocalManager extends Entity{
 	initGame(){
 		
 		this.buildDynamicField(2);
-		// this.sections.push(new PlayerSection(0, canvas.height / 2, 0, canvas.height));
-		// this.sections.push(new PlayerSection(canvas.width, canvas.height / 2, 0, canvas.height));
-		// this.sections.push(new PlayerSection(canvas.width / 2, 0, 90, canvas.width));
-		// this.sections.push(new PlayerSection(canvas.width / 2, canvas.height, 90, canvas.width));
 
 		this.sections.forEach( section => {
-			world.addEntity(section);
+			this.updatePlayerScore(section.player);
 			section.goal.onTrigger = (other) =>{
 				if (other instanceof Ball){
 					if (other.lastHit){
 						if (other.lastHit != section.player){
 							other.lastHit.score++;
+							this.updatePlayerScore(other.lastHit)
 						} else if(other.secondLastHit) {
 							other.secondLastHit.score++;
-						} else {
-							console.log("WHAT THE FUCK DO WE DO NOW?");
+							this.updatePlayerScore(other.secondLastHit)
 						}
+					} else {
+						console.log("WHAT THE FUCK DO WE DO NOW?");
 					}
 					this.resetRound();
 				}
 			};
 		});
 
-		window.addEventListener("keydown", event => {
-			if(event.key == ' ' && !this.roundRunning){
-				this.startRound();
-				event.preventDefault();
-			}
-		})
+		this.starter = this.sections[0].player;
 	}
 
-	startRound(){
-		if (this.winner){
-			for (let s of this.sections){
-				s.player.score = 0;
-			}
-			this.winner = undefined;
-		}
-		let dir = undefined;
-		if (this.ball.lastHit !== undefined){
-			dir = this.ball.lastHit.position.sub(this.ball.position);
-			dir.normalize();
-			dir.scale(15);
-		}
-		else{
-			dir = new Vector(15, 0);
-		}
-		this.ball.physics.setVelocity(dir.x, dir.y);
+	updatePlayerScore(playerScored) {
+		this.starter = playerScored;
+		let section = this.sections.find((value) => value.player == playerScored);
+		let idx = this.sections.indexOf(section);
+		console.log('idx:', idx);
+		let scoreText = document.getElementById(`player${idx+1}_score`);
+		let scoreName = document.getElementById(`player${idx+1}_name`);
+		if (scoreText)
+			scoreText.innerText = playerScored.score;
+		if (scoreName)
+			scoreName.innerText = idx > 0 ? 'localP2' : 'localP1';
 	}
 
-	checkWinCondition(){
-		for (const sec of this.sections) {			
-			if (sec.player.score >= 11){
-				for (const s of this.sections){
-					if (sec != s){
-						if (Math.abs(sec.player.score - s.player.score) >= 2)
-							return (sec.player.score > s.player.score ? sec.player : s.player);
+	resetRound() {
+		this.ball.resetBall();
+		
+		this.winner = this.playerHasWon();
+		if (this.winner) {
+			console.log('we have a winner', this.winner);
+			return ;
+		}
+		this.round_running = false;
+		this.counter = Date.now();
+	}
+
+	playerHasWon() {
+		for (let section of this.sections) {
+			if (section.player.score >= 7) {
+				let lead = true;
+				for (let osection of this.sections) {
+					if (osection != section) {
+						if (Math.abs(section.player.score - osection.player.score) < 2) {
+							lead = false;
+							break;
+						}
 					}
 				}
-				return (sec.player);
+				if (lead) {
+					return section.player;
+				}
 			}
 		}
-		return (undefined);
+		return undefined;
+	}
+	
+	update() {
+		if (this.winner)
+			return;
+		if (!this.round_running) {
+			if (Date.now() - this.counter >= 3000.0) {
+				let dir  = new Vector(canvas.width * 0.5, canvas.height * 0.5).sub(this.starter.position);
+				dir.y = 0;
+				dir.normalize();
+				dir.scale(BALL_MOVE_SPEED);
+				this.ball.physics.setVelocity(dir.x, dir.y);
+				this.ball.lastHit = this.starter;
+				this.round_running = true;
+			} else if (this.starter) {
+				console.log('round not running time < 3s and we have starter');
+				let direction = new Vector(canvas.width * 0.5, canvas.height * 0.5).sub(this.starter.position);
+				direction.y = 0;
+				direction.normalize();
+				direction.scale(50);
+				direction = this.starter.position.add(direction);
+				this.ball.position.x = direction.x;
+				this.ball.position.y = direction.y;
+			}
+		}
+		this.ball.physics.velocity.scale(1.0001); //fun idea to increase speed of ball over time :)
+		if (this.ball.position.sub(new Vector(canvas.width * 0.5, canvas.height * 0.5)).sqrLength() > (Math.pow(canvas.width * 1.5, 2))) {
+			this.resetRound();
+		}
 	}
 
-	resetRound(){
-		this.ball.resetBall();
-		this.winner = this.checkWinCondition();
-		if (this.winner){
-			let a = document.getElementById('buttonContainer');
-			a.innerHTML = `${this.winner} has Won!`;
-			console.log(this.winner, 'Is winner');
-		}
+	cleanup(){
+		this.sections.forEach(section => {
+			let success = window.removeEventListener('keydown', section.player.keyDown);
+			success = window.removeEventListener('keyup', section.player.keyUp);
+			if (!success)
+				console.error('could not remove event listener')
+		});
 	}
 }
 
@@ -304,7 +360,8 @@ class RemoteHandler extends Entity{
 		super(0, 0);
 		this.entities = {};
 		this.players = {};
-		this.localPlayer = undefined;
+		window.addEventListener('keypress', sendMovementInput);
+		window.addEventListener('keyup', sendMovementInput);
 	}
 
 	newEntity(type, id, transform, height=undefined){
@@ -370,11 +427,15 @@ class RemoteHandler extends Entity{
 		world.removeEntity(this.entities[id]);
 		delete this.entities[id];
 	}
+
+	cleanup(){
+		window.removeEventListener('keypress', sendMovementInput);
+		window.removeEventListener('keyup', sendMovementInput);
+	}
 }
 
 let world = new World();
 ctx.fillStyle = '#d8d3d3';
-world.addSystem(new RenderSystem());
 
 let intervalId;
 
@@ -398,10 +459,12 @@ let lobbyId;
 let matchType;
 
 function selectGamemode(groupName){
+	world.addSystem(new RenderSystem());
 	if (!groupName){
 		world.addSystem(new CollisionSystem());
 		world.addSystem(new MovementSystem());
 		manager = new PongLocalManager();
+		setupCloseLocal();
 	} else {
 		let split = groupName.split('_');
 		matchType = split.length > 0 ? split[0] : undefined;
@@ -409,15 +472,13 @@ function selectGamemode(groupName){
 		const token = localStorage.getItem('access_token');
 		socket = new WebSocket(`ws://${window.location.host}/ws/pong/${groupName}/?token=${token}`);
 		setupCloseWebsocket(socket);
-		window.addEventListener('keypress', sendMovementInput);
-		window.addEventListener('keyup', sendMovementInput);
 		manager = new RemoteHandler();
 		setupSocketHandlers(socket);
 	}
 	world.addEntity(manager);
 	intervalId = setInterval(function() {
 		world.update();
-	}, 10);
+	}, 16);
 }
 
 function setupSocketHandlers(socket){
@@ -473,19 +534,38 @@ function setupSocketHandlers(socket){
 		console.log('GAME SOCKET CLOSED!');
 		clearInterval(intervalId);
 		world.entities = [];
+		world.systems = [];
 	}
 }
 
 function endGame() {
 	clearInterval(intervalId);
+	manager.cleanup();
 	world.entities = [];
+	world.systems = [];
 	if (matchType === 'match') {
 		setTimeout(() => showSection('menu_online_lobby', lobbyId), 2000);
 	} else if (matchType === 'tournament') {
 		setTimeout(() => showSection('menu_tournament_roundrobin', lobbyId), 2000);
 	} else {
-		setTimeout(() => showSection('menu'), 2000);
+		// setTimeout(() => showSection('menu'), 2000);
+		showSection('menu');
 	}
+}
+
+function setupCloseLocal() {
+	const logoutButton = document.getElementById('logoutButton');
+	const homeButton = document.getElementById('webpong-button');
+
+	const closeGame = () => {
+		console.log("CLOSING LOCAL GAME!");
+		endGame();
+		homeButton.removeEventListener('click', closeGame);
+		logoutButton.removeEventListener('click', closeGame);
+	}
+
+	homeButton.addEventListener('click', closeGame)
+	logoutButton.addEventListener('click', closeGame);
 }
 
 function setupCloseWebsocket(socket) {
