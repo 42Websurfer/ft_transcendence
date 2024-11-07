@@ -12,6 +12,7 @@ class UserStatus(AsyncWebsocketConsumer):
 	async def connect(self):
 		self.group_name = 'online_status'
 		self.user = self.scope["user"]
+		print("user = ", self.user.id)
 		if (self.user.is_authenticated):
 			await self.channel_layer.group_add(
 				self.group_name,

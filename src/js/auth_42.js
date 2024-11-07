@@ -50,17 +50,17 @@ async function handleUsernameFormSubmit(session_data)
     
     username = usernameElement.value.trim();
     
-    console.log(username);
-    console.log('Session_data = ', session_data);
+
+    const token = localStorage.getItem('access_token');   
     try {
         
-        const csrftoken = getCookie('csrftoken');
+        const token = localStorage.getItem('access_token'); 
     
         const response = await fetch('/register_api/', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrftoken
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({'username': username, 'session_data': session_data})
         });
@@ -70,6 +70,9 @@ async function handleUsernameFormSubmit(session_data)
 	
         if (result.type === 'success')
         {
+            console.log('TOKEN WILL BE SETTED: ', result.tokens.access);
+            localStorage.setItem('access_token', result.tokens.access);  
+            localStorage.setItem('refresh_token', result.tokens.refresh);		
 
             registerMessage.textContent = '';
     

@@ -407,7 +407,8 @@ function selectGamemode(groupName){
 		let split = groupName.split('_');
 		matchType = split.length > 0 ? split[0] : undefined;
 		lobbyId = split.length > 1 ? split[1] : undefined;
-		socket = new WebSocket(`ws://${window.location.host}/ws/pong/${groupName}/`);
+		const token = localStorage.getItem('access_token');
+		socket = new WebSocket(`ws://${window.location.host}/ws/pong/${groupName}/?token=${token}`);
 		setupCloseWebsocket(socket);
 		window.addEventListener('keypress', sendMovementInput);
 		window.addEventListener('keyup', sendMovementInput);

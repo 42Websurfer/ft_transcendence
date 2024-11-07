@@ -149,10 +149,14 @@ export function renderMenu() {
         try {
             if (!username)
                 return;
-            const csrftoken = getCookie('csrftoken');
+            const token = localStorage.getItem('access_token');
+            
             const response = await fetch(`/send_friend_request/${username}/`, {
                 method: 'GET',
-                credentials: 'include'
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
             });
             return await response.json();
         } catch (error) {
