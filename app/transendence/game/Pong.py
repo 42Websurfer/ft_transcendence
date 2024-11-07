@@ -13,6 +13,7 @@ GAME_WINNING_SCORE = 2
 BALL_MOVE_SPEED = 15
 CANVAS_WIDTH = 1280
 CANVAS_HEIGHT = 780
+VECTOR_CENTER = Vector(CANVAS_WIDTH * 0.5, CANVAS_HEIGHT * 0.5)
 redis = redis.Redis(host='redis', port=6379, db=0)
 
 
@@ -167,21 +168,21 @@ class GameLogicManager(Entity):
 			self.sections.append(PlayerSection(CANVAS_WIDTH, CANVAS_HEIGHT * .5, 0, CANVAS_HEIGHT))
 			world.addEntity(Wall(CANVAS_WIDTH * .5, 0, 90, CANVAS_WIDTH))
 			world.addEntity(Wall(CANVAS_WIDTH * .5, CANVAS_HEIGHT, 90, CANVAS_WIDTH))
-			# return
-		# center = Vector(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2)
-		# point1 = Vector(0, -CANVAS_HEIGHT / 2)
-		# rotationStep = 360 / playerCount
-		# rot = (rotationStep) / 2
-		# point2 = point1.dup().rotate(rotationStep)
-		# for i in range(playerCount):
-		# 	ba = point2.sub(point1)
-		# 	ba.scale(0.5)
-		# 	midpoint = ba.add(point1)
-		# 	midpoint = midpoint.add(center)
-		# 	self.sections.append(PlayerSection(midpoint.x, midpoint.y, rot + 90, ba.length() * 2))
-		# 	point1.rotate(rotationStep)
-		# 	point2.rotate(rotationStep)
-		# 	rot += rotationStep
+		else:
+			center = Vector(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2)
+			point1 = Vector(0, -CANVAS_HEIGHT / 2)
+			rotationStep = 360 / playerCount
+			rot = (rotationStep) / 2
+			point2 = point1.dup().rotate(rotationStep)
+			for i in range(playerCount):
+				ba = point2.sub(point1)
+				ba.scale(0.5)
+				midpoint = ba.add(point1)
+				midpoint = midpoint.add(center)
+				self.sections.append(PlayerSection(midpoint.x, midpoint.y, rot + 90, ba.length() * 2))
+				point1.rotate(rotationStep)
+				point2.rotate(rotationStep)
+				rot += rotationStep
 		world.addEntity(self.ball)
 		for section in self.sections:
 			section.goal.on_trigger = self.create_goal_function(section)
@@ -243,15 +244,18 @@ class GameLogicManager(Entity):
 			return
 		if not self.round_running:
 			if time.time() - self.counter >= 3.0:
-				dir = Vector(CANVAS_WIDTH * 0.5, CANVAS_HEIGHT * 0.5).sub(self.starter.position)
-				dir.y = 0
-				dir.normalize()
-				dir.scale(BALL_MOVE_SPEED)
-				self.ball.physics.set_velocity_v(dir)
+				if self.starter:
+					dir = VECTOR_CENTER.sub(self.starter.position)
+					dir.y = 0
+					dir.normalize()
+					dir.scale(BALL_MOVE_SPEED)
+					self.ball.physics.set_velocity_v(dir)
+				else:
+					self.ball.physics.set_velocity(15, 0)
 				self.ball.last_hit = self.starter
 				self.round_running = True
 			elif self.starter:
-				dir = Vector(CANVAS_WIDTH * 0.5, CANVAS_HEIGHT * 0.5).sub(self.starter.position)
+				dir = VECTOR_CENTER.sub(self.starter.position)
 				dir.y = 0
 				dir.normalize()
 				dir.scale(50)
