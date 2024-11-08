@@ -275,7 +275,7 @@ export function renderMenu() {
 
     const menuLocalButton = document.getElementById('menuItemLocal');
     menuLocalButton.addEventListener('click', () => {
-        showSection('pong');
+        showSection('menu_local');
     });
 
     const menuOnlineButton = document.getElementById('menuItemOnline');
