@@ -2,6 +2,8 @@ import json
 import logging
 import redis
 import requests
+import pyotp
+import qrcode
 from django.shortcuts import get_object_or_404, redirect
 from django.http import JsonResponse
 from django.contrib.auth.models import User
@@ -10,6 +12,8 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Q
+from io import BytesIO
+from base64 import b64encode
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -56,9 +60,8 @@ def user_login(request):
             user = authenticate(username=username, password=password)
             logger.debug("WO FAILST DU JUNGE2")
             if user is not None:
-                refresh = RefreshToken.for_user(user)
-                access_token = str(refresh.access_token)
-                logger.debug(f"{access_token}")
+                # refresh = RefreshToken.for_user(user)
+                # access_token = str(refresh.access_token)
                 return JsonResponse({
                     'success': 'User logged in successfully.',
                     'user': {
@@ -68,10 +71,10 @@ def user_login(request):
                         'first_name': user.first_name,
                         'last_name': user.last_name
                     },
-                    'tokens': {
-                        'refresh': str(refresh),
-                        'access': access_token,
-                    }
+                    # 'tokens': {
+                    #     'refresh': str(refresh),
+                    #     'access': access_token,
+                    # }
                 }, status=200)
             else:
                 return JsonResponse({'error': 'Incorrect username or password.'}, status=400)
@@ -89,11 +92,40 @@ def user_logout(request):
     }, status=200)
 
 @api_view(['POST'])
+def verify_2fa_code(request):
+    try:
+        data = json.loads(request.body)
+        otp_code = data.get('otp_code')
+        user = data.get('user')
+        username = user.get('username') 
+        user = User.objects.get(username=username)
+        user_profile = UserProfile.objects.get(user=user)
+        totp = pyotp.TOTP(user_profile.otp_secret)
+        
+        if totp.verify(otp_code):
+            refresh = RefreshToken.for_user(user)
+
+            return JsonResponse({
+                'type': 'success',
+                'tokens': {
+                    'refresh': str(refresh),
+                    'access': str(refresh.access_token),
+                }
+            }, status=200)
+        else:
+            return JsonResponse({'error': 'Invalid 2FA code.'}, status=400)
+            
+    except User.DoesNotExist:
+        return JsonResponse({'type': 'error', 'message': 'User not found.'}, status=404)
+    except Exception as e:
+        return JsonResponse({'type': 'error', 'message': str(e)}, status=400)
+
+@api_view(['POST'])
 def register(request):
     if request.method == 'POST':
         try:
-            #data = json.loads(request.body)		
             data = request.POST
+
             email = data.get('email')
             password = data.get('password')
             firstname = data.get('firstname')
@@ -112,7 +144,21 @@ def register(request):
                 user_game_stats = GameStatsUser.objects.get(username=username)
                 user_game_stats.avatar = avatar
                 user_game_stats.save()
-            refresh = RefreshToken.for_user(user)
+
+            otp_secret = pyotp.random_base32() 
+            user_profile = UserProfile.objects.get(user=user)
+            user_profile.otp_secret = otp_secret
+            user_profile.save()
+
+            totp = pyotp.TOTP(otp_secret)
+            uri = totp.provisioning_uri(name=username, issuer_name="Websurfer app"), 
+            qr_code = qrcode.make(uri)
+            buffer = BytesIO() 
+            qr_code.save(buffer, format="PNG")
+            qr_code_string = b64encode(buffer.getvalue()).decode("utf-8")
+
+
+            #refresh = RefreshToken.for_user(user)
             return JsonResponse({
                 'type': 'success',
                 'message': 'User registered successfully.',
@@ -123,14 +169,11 @@ def register(request):
                     'first_name': user.first_name,
                     'last_name': user.last_name
                 },
-                'tokens': {
-                    'refresh': str(refresh),
-                    'access': str(refresh.access_token),
-                }
+                'qr_code': f"data:image/png;base64,{qr_code_string}",
             }, status=201)
         except json.JSONDecodeError:
-                    return JsonResponse({'error': 'Invalid JSON.'}, status=400)
-
+            return JsonResponse({'error': 'Invalid JSON.'}, status=400)
+            
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_user_information(request):

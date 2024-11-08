@@ -45,12 +45,51 @@ export function renderAuthRegister() {
 			</form>
 			<div id="registerMessage" class="register-message"></div>
 		</div>
-		<div id="registerLoader" class="loader"></div> 	
+		<div id="registerLoader" class="loader"></div>
+		<img id="qrcode">
+		<input id="authcode"></input>
+		<button id="sendCode" class="signin-button btn btn-primary w-100 py-2" type="click">Send 2FA Code</button>
+
+
 	</div>
 	`;
 
 	const form = document.getElementById('registerForm');
     form.addEventListener('submit', handleFormSubmit);
+}
+
+export async function sendAuthCode(user) {
+	const input_code = document.getElementById('authcode');
+	const code = input_code.value; 
+	console.log("Code = ", code);
+	 console.log("User = ", user);
+	const response = await fetch('/verify_2fa_code/', {
+		method: 'POST',
+    	headers: {
+            //'Authorization': `Bearer ${token}`,
+           'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({'user': user, 'otp_code': code})
+    });
+	const result = await response.json()
+	console.log("result = ", result);
+	if (result.type === 'success')
+	{
+		localStorage.setItem('access_token', result.tokens.access);  
+        localStorage.setItem('refresh_token', result.tokens.refresh);	
+
+		showSection('menu');
+	}
+	else
+	{
+		const registerMessage = document.getElementById('registerMessage');
+
+		registerMessage.textContent = result.message;
+		registerMessage.style.color = 'red';
+		registerMessage.style.animation = 'none';
+		registerMessage.offsetHeight;
+		registerMessage.style.animation = 'wiggle 0.5s ease-in-out';
+	}	
 }
 
 async function handleFormSubmit(event) {
@@ -72,10 +111,10 @@ async function handleFormSubmit(event) {
 
     const response = await fetch('/register/', {
 		method: 'POST',
-        headers: {
+        /* headers: {
             'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-        },
+           // 'Content-Type': 'application/json'
+        }, */
         body: formData//JSON.stringify(data)
     });
 	
@@ -90,8 +129,15 @@ async function handleFormSubmit(event) {
 
 		const registerLoader = document.getElementById('registerLoader');
 		registerLoader.style.display = 'block';
+		//Implement qr code!
+		const qrcode = document.getElementById('qrcode');
+		qrcode.src = result.qr_code;
+		const codeButton = document.getElementById('sendCode');
+		codeButton.addEventListener('click', function() {
+			sendAuthCode(result.user);
+		});
 
-		setTimeout(() => showSection('menu'), 2000);
+		//setTimeout(() => showSection('menu'), 2000);
 	}
 	else
 	{

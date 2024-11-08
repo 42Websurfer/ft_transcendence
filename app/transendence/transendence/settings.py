@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     'game',
     'tournament',
     'channels',
+    'django_otp',
+    'django_otp.plugins.otp_totp',
     'rest_framework',
     'rest_framework_simplejwt',
 ]
@@ -57,6 +59,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    'django_otp.middleware.OTPMiddleware',
 ]
 
 ROOT_URLCONF = 'transendence.urls'

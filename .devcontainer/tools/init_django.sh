@@ -14,6 +14,9 @@ pip install daphne
 pip install channels_redis
 pip install requests
 pip install Pillow
+pip install django-otp
+pip install pyotp
+pip install qrcode
 pip install djangorestframework 
 pip install djangorestframework-simplejwt
 export PYTHONPATH=/workspaces/app/transendence
