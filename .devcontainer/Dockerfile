@@ -18,6 +18,8 @@ RUN apt-get update && \
 
 COPY ./tools/init_django.sh /usr/local/bin/init_django.sh
 
+RUN echo "alias dstart='cd /workspaces/app/transendence/ && /workspaces/app/webappenv/bin/daphne -p 8001 -b 0.0.0.0 transendence.asgi:application'" >> ~/.bashrc
+
 RUN chmod +x /usr/local/bin/init_django.sh
 
 CMD ["/usr/local/bin/init_django.sh"]

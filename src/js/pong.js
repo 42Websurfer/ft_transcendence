@@ -1,7 +1,8 @@
-import {Vector, Plane, World, Entity, Mesh, Physics, Network, Box, Circle, RenderSystem, CollisionSystem, MovementSystem, canvas, drawText, strokeText, drawLine, ctx} from './GameSystem.js';
+import {Vector, Plane, World, Entity, Mesh, Physics, Box, Circle, RenderSystem, CollisionSystem, MovementSystem, canvas, drawText, strokeText, drawLine, ctx} from './GameSystem.js';
 import { showSection } from './index.js';
 
 const PLAYER_MOVE_SPEED = 20;
+const BALL_MOVE_SPEED = 15;
 
 export function renderPong(match_id) {
 	const app = document.getElementById('app');
@@ -129,6 +130,21 @@ class Player extends Entity{
 		}
 	}
 
+	keyDown(event){
+		if (event.key === this.keyBinds.up){
+			let dir = new Vector(this.up.x, this.up.y);
+			dir.scale(PLAYER_MOVE_SPEED);
+			this.physics.velocity = dir;
+		} else if (event.key === this.keyBinds.down) {
+			let dir = new Vector(this.up.x, this.up.y);
+			dir.scale(-PLAYER_MOVE_SPEED);
+			this.physics.velocity = dir;
+		} else {
+			return;
+		}
+		event.preventDefault?.();
+	}
+
 	keyUp(event){
 		if (event.key === this.keyBinds.up || event.key === this.keyBinds.down){
 			this.physics.velocity.x = 0;
@@ -136,7 +152,52 @@ class Player extends Entity{
 		} else {
 			return;
 		}
-		event.preventDefault();
+		event.preventDefault?.();
+	}
+}
+
+class AiPlayer extends Player {
+	constructor(x, y, height, ball, difficulty) {
+		super(x, y, height);
+		this.gameBall = ball;
+		this.difficulty = difficulty;
+		this.target = undefined;
+	}
+
+	moveToTarget() {
+		if (!this.target) {
+			console.log('AI: no target!')
+			return;
+		}
+		if (this.target.x > canvas.width * 0.75) {
+			if (this.target.y > this.position.y + 20) {
+				this.keyDown({ key: this.keyBinds.down });
+			} else if (this.target.y < this.position.y - 20) {
+				this.keyDown({ key: this.keyBinds.up });
+			} else {
+				this.keyUp({ key: this.keyBinds.down });
+			}
+		}
+	}
+
+	setTarget(position) {
+		this.target = position;
+	}
+
+	update() {
+		if (!this.gameBall) {
+			console.log('AI: no ref to ball!');
+			//if ball is somehow undefined search for it in the world.entities
+			this.gameBall = world.entities.find((value) => value instanceof Ball);
+		}
+
+		if (this.gameBall.physics.velocity.sqrLength() == 0) {
+			this.setTarget(new Vector(this.position.x, canvas.height * 0.5));
+		} else {
+			this.setTarget(this.gameBall.position);
+		}
+
+		this.moveToTarget();
 	}
 }
 
@@ -151,10 +212,17 @@ class Wall extends Entity{
 }
 
 class PlayerSection extends Entity{
-	constructor(x, y, rotation, height){
+	constructor(x, y, rotation, height, ai = undefined){
 		super(x, y);
 		this.goal = new Wall(x, y, rotation, height);
-		this.player = new Player(x, y, height * 0.33);
+		this.player = undefined;
+		if (ai) {
+			this.player = new AiPlayer(x, y, height * 0.33, undefined, 1);
+		} else {
+			this.player = new Player(x, y, height * 0.33);
+			window.addEventListener('keydown', (event) => this.player.keyDown(event));
+			window.addEventListener('keyup', (event) => this.player.keyUp(event));
+		}
 		this.bindPlayer();
 		world.addEntity(this.goal);
 		world.addEntity(this.player);
@@ -177,11 +245,15 @@ class PlayerSection extends Entity{
 }
 
 class PongLocalManager extends Entity{
-	constructor(){
+	constructor(aiOpponent = false){
 		super(0, 0);
 		this.sections = [];
 		this.ball = new Ball();
 		this.winner = undefined;
+		this.round_running = false;
+		this.counter = Date.now();
+		this.starter = undefined;
+		this.aiOpponent = aiOpponent;
 		world.addEntity(this.ball);
 		this.initGame();
 	}
@@ -189,7 +261,7 @@ class PongLocalManager extends Entity{
 	buildDynamicField(playerCount){
 		if (playerCount === 2){
 			this.sections.push(new PlayerSection(0, canvas.height * .5, 0, canvas.height));
-			this.sections.push(new PlayerSection(canvas.width, canvas.height * .5, 0, canvas.height));
+			this.sections.push(new PlayerSection(canvas.width, canvas.height * .5, 0, canvas.height, this.aiOpponent));
 			this.sections[0].player.keyBinds = {up: 'w', down: 's'};
 			this.sections[1].player.keyBinds = {up: 'ArrowUp', down: 'ArrowDown'};
 			world.addEntity(new Wall(canvas.width * .5, 0, 90, canvas.width));
@@ -218,79 +290,112 @@ class PongLocalManager extends Entity{
 	initGame(){
 		
 		this.buildDynamicField(2);
-		// this.sections.push(new PlayerSection(0, canvas.height / 2, 0, canvas.height));
-		// this.sections.push(new PlayerSection(canvas.width, canvas.height / 2, 0, canvas.height));
-		// this.sections.push(new PlayerSection(canvas.width / 2, 0, 90, canvas.width));
-		// this.sections.push(new PlayerSection(canvas.width / 2, canvas.height, 90, canvas.width));
 
 		this.sections.forEach( section => {
-			world.addEntity(section);
+			this.updatePlayerScore(section.player);
 			section.goal.onTrigger = (other) =>{
 				if (other instanceof Ball){
 					if (other.lastHit){
 						if (other.lastHit != section.player){
 							other.lastHit.score++;
+							this.updatePlayerScore(other.lastHit)
 						} else if(other.secondLastHit) {
 							other.secondLastHit.score++;
-						} else {
-							console.log("WHAT THE FUCK DO WE DO NOW?");
+							this.updatePlayerScore(other.secondLastHit)
 						}
+					} else {
+						console.log("WHAT THE FUCK DO WE DO NOW?");
 					}
 					this.resetRound();
 				}
 			};
 		});
 
-		window.addEventListener("keydown", event => {
-			if(event.key == ' ' && !this.roundRunning){
-				this.startRound();
-				event.preventDefault();
-			}
-		})
+		this.starter = this.sections[0].player;
 	}
 
-	startRound(){
-		if (this.winner){
-			for (let s of this.sections){
-				s.player.score = 0;
-			}
-			this.winner = undefined;
-		}
-		let dir = undefined;
-		if (this.ball.lastHit !== undefined){
-			dir = this.ball.lastHit.position.sub(this.ball.position);
-			dir.normalize();
-			dir.scale(15);
-		}
-		else{
-			dir = new Vector(15, 0);
-		}
-		this.ball.physics.setVelocity(dir.x, dir.y);
+	updatePlayerScore(playerScored) {
+		this.starter = playerScored;
+		let section = this.sections.find((value) => value.player == playerScored);
+		let idx = this.sections.indexOf(section);
+		console.log('idx:', idx);
+		let scoreText = document.getElementById(`player${idx+1}_score`);
+		let scoreName = document.getElementById(`player${idx+1}_name`);
+		if (scoreText)
+			scoreText.innerText = playerScored.score;
+		if (scoreName)
+			scoreName.innerText = playerScored instanceof AiPlayer ? 'AI_King' : idx > 0 ? 'localP2' : 'localP1';
 	}
 
-	checkWinCondition(){
-		for (const sec of this.sections) {			
-			if (sec.player.score >= 11){
-				for (const s of this.sections){
-					if (sec != s){
-						if (Math.abs(sec.player.score - s.player.score) >= 2)
-							return (sec.player.score > s.player.score ? sec.player : s.player);
+	resetRound() {
+		this.ball.resetBall();
+		
+		this.winner = this.playerHasWon();
+		if (this.winner) {
+			console.log('we have a winner', this.winner);
+			return ;
+		}
+		this.round_running = false;
+		this.counter = Date.now();
+	}
+
+	playerHasWon() {
+		for (let section of this.sections) {
+			if (section.player.score >= 7) {
+				let lead = true;
+				for (let osection of this.sections) {
+					if (osection != section) {
+						if (Math.abs(section.player.score - osection.player.score) < 2) {
+							lead = false;
+							break;
+						}
 					}
 				}
-				return (sec.player);
+				if (lead) {
+					return section.player;
+				}
 			}
 		}
-		return (undefined);
+		return undefined;
+	}
+	
+	update() {
+		if (this.winner)
+			return;
+		if (!this.round_running) {
+			if (Date.now() - this.counter >= 3000.0) {
+				let dir  = new Vector(canvas.width * 0.5, canvas.height * 0.5).sub(this.starter.position);
+				dir.y = 0;
+				dir.normalize();
+				dir.scale(BALL_MOVE_SPEED);
+				this.ball.physics.setVelocity(dir.x, dir.y);
+				this.ball.lastHit = this.starter;
+				this.round_running = true;
+			} else if (this.starter) {
+				console.log('round not running time < 3s and we have starter');
+				let direction = new Vector(canvas.width * 0.5, canvas.height * 0.5).sub(this.starter.position);
+				direction.y = 0;
+				direction.normalize();
+				direction.scale(50);
+				direction = this.starter.position.add(direction);
+				this.ball.position.x = direction.x;
+				this.ball.position.y = direction.y;
+			}
+		}
+		if (this.ball.physics.velocity.sqrLength() < Math.pow(20, 2))
+			this.ball.physics.velocity.scale(1.0005); //fun idea to increase speed of ball over time :)
+		if (this.ball.position.sub(new Vector(canvas.width * 0.5, canvas.height * 0.5)).sqrLength() > (Math.pow(canvas.width * 1.5, 2))) {
+			this.resetRound();
+		}
 	}
 
-	resetRound(){
-		this.ball.resetBall();
-		this.winner = this.checkWinCondition();
-		if (this.winner){
-			let a = document.getElementById('buttonContainer');
-			a.innerHTML = `${this.winner} has Won!`;
-			console.log(this.winner, 'Is winner');
-		}
+	cleanup(){
+		this.sections.forEach(section => {
+			let success = window.removeEventListener('keydown', section.player.keyDown);
+			success = window.removeEventListener('keyup', section.player.keyUp);
+			if (!success)
+				console.error('could not remove event listener')
+		});
 	}
 }
 
@@ -304,24 +409,24 @@ class RemoteHandler extends Entity{
 		super(0, 0);
 		this.entities = {};
 		this.players = {};
-		this.localPlayer = undefined;
+		window.addEventListener('keypress', sendMovementInput);
+		window.addEventListener('keyup', sendMovementInput);
 	}
 
-	newEntity(data){
+	newEntity(type, id, transform, height=undefined){
 		let ent = undefined;
-		if (data.entType === 'Player'){
-			ent = new Player(0, 0, data.constr.height);
-		} else if (data.entType === 'Ball'){
+		if (type === 'Player'){
+			ent = new Player(0, 0, Number(height));
+		} else if (type === 'Ball'){
 			ent = new Ball(0,0);
-		} else if (data.entType === 'Wall'){
-			ent = new Wall(0, 0, 0, data.constr.height);
+		} else if (type === 'Wall'){
+			ent = new Wall(0, 0, 0, Number(height));
 		} else {
 			ent = new Entity(0, 0);
 		}
-		ent.addComponent(Network, new Network(socket));
-		ent.id = data.id;
+		ent.id = id;
 		this.addEntity(ent.id, ent);
-		this.setEntityPosition(ent.id, data.transform);
+		this.setEntityPosition(ent.id, transform);
 	}
 
 	addPlayer(entid, uid, uname) {
@@ -339,9 +444,9 @@ class RemoteHandler extends Entity{
 	setEntityPosition(id, transform){
 		const ent = this.entities[id];
 
-		ent.position.x = transform.position.x;
-		ent.position.y = transform.position.y;
-		ent.rotate(transform.rotation);
+		ent.position.x = Number(transform.position.x);
+		ent.position.y = Number(transform.position.y);
+		ent.rotate(Number(transform.rotation));
 	}
 
 	moveEntity(id, transform){
@@ -353,7 +458,7 @@ class RemoteHandler extends Entity{
 	}
 
 	updatePlayerScore(id, score) {
-		manager.entities[id].score = score;
+		this.entities[id].score = score;
 		let i = 0;
 		for (const entid in this.players) {
 			const player = this.players[entid];
@@ -371,11 +476,15 @@ class RemoteHandler extends Entity{
 		world.removeEntity(this.entities[id]);
 		delete this.entities[id];
 	}
+
+	cleanup(){
+		window.removeEventListener('keypress', sendMovementInput);
+		window.removeEventListener('keyup', sendMovementInput);
+	}
 }
 
 let world = new World();
 ctx.fillStyle = '#d8d3d3';
-world.addSystem(new RenderSystem());
 
 let intervalId;
 
@@ -399,26 +508,26 @@ let lobbyId;
 let matchType;
 
 function selectGamemode(groupName){
-	if (!groupName){
+	world.addSystem(new RenderSystem());
+	let split = groupName?.split('_');
+	matchType = split?.length > 0 ? split[0] : undefined;
+	lobbyId = split?.length > 1 ? split[1] : undefined;
+	if (!matchType || matchType === 'local'){
 		world.addSystem(new CollisionSystem());
 		world.addSystem(new MovementSystem());
-		manager = new PongLocalManager();
+		manager = new PongLocalManager(lobbyId == 'ai');
+		setupCloseLocal();
 	} else {
-		let split = groupName.split('_');
-		matchType = split.length > 0 ? split[0] : undefined;
-		lobbyId = split.length > 1 ? split[1] : undefined;
 		const token = localStorage.getItem('access_token');
 		socket = new WebSocket(`ws://${window.location.host}/ws/pong/${groupName}/?token=${token}`);
 		setupCloseWebsocket(socket);
-		window.addEventListener('keypress', sendMovementInput);
-		window.addEventListener('keyup', sendMovementInput);
 		manager = new RemoteHandler();
 		setupSocketHandlers(socket);
 	}
 	world.addEntity(manager);
 	intervalId = setInterval(function() {
 		world.update();
-	}, 10);
+	}, 16);
 }
 
 function setupSocketHandlers(socket){
@@ -428,47 +537,45 @@ function setupSocketHandlers(socket){
 	}
 	
 	socket.onmessage = (event) => {
-		if (event.data[0] !== '{') {
-			const data = event.data.split(';');
-			manager.moveEntity(data[0], {position: {x: data[1], y: data[2]}, rotation: data[3]});
-			return;
-		}
-		const data = JSON.parse(event.data);
+		const data = event.data.split(';');
 
-		if (!data.hasOwnProperty('type'))
-			console.log("Typeless:", data);
-		if (data.type !== 'updatePos')
+		//newEntity		ne;id;type;xpos;ypos;rotation;?.height
+		//updatePos		up;id;xpos;ypos;rot
+		//setPos 		sp;id;xpos;ypos;rot
+		//roundStart 	rs
+		//setScore 		ss;id;score
+		//initPlayer 	ip;entid;uid;uname
+		//disconnect 	dc;id
+		//gameOver 		go
+		//drawDot 		dd;x;y
+		//drawLine 		dl;x1;y1;x2;y2
+
+		if (data[0] !== 'up')
 			console.log(data);
-		if (data.type === 'initLocal'){
-			manager.localPlayer = manager.entities[data.id];
-			manager.localPlayer.keyBinds = {up: 'ArrowUp', down: 'ArrowDown'};
-			console.log(manager.localPlayer, manager.localPlayer.keyBinds);
-			console.log(manager.localPlayer.id);
-		} else if (data.type === 'newEntity'){
-			manager.newEntity(data);
-		} else if (data.type === 'updatePos'){
-			manager.moveEntity(data.id, data.transform);
-		} else if (data.type === 'setPos'){
-			manager.setEntityPosition(data.id, data.transform);
-		} else if (data.type === 'roundStart'){
+		if (data[0] === 'ne'){
+			manager.newEntity(data[2], data[1], {position: {x: data[3], y: data[4]}, rotation: data[5]}, data[6]);
+		} else if (data[0] === 'up'){
+			manager.moveEntity(data[1], {position: {x: data[2], y: data[3]}, rotation: data[4]});
+		} else if (data[0] === 'sp'){
+			manager.setEntityPosition(data[1], {position: {x: data[2], y: data[3]}, rotation: data[4]});
+		} else if (data[0] === 'rs'){
 			starRound();
-		} else if (data.type === 'setScore'){
-			manager.updatePlayerScore(data.id, data.score)
-		} else if (data.type === 'initPlayer') {
-			manager.addPlayer(data.ent_id, data.uid, data.uname);
-		} else if (data.type === 'disconnected') {
-			let player = manager.players[data.id];
+		} else if (data[0] === 'ss'){
+			manager.updatePlayerScore(data[1], data[2])
+		} else if (data[0] === 'ip') {
+			manager.addPlayer(data[1], data[2], data[3]);
+		} else if (data[0] === 'dc') {
+			let player = manager.players[data[1]];
 			displayDisconnect(player.uname);
 			endGame();
-		} else if (data.type === 'gameOver') {
-			// socket.close();
+		} else if (data[0] === 'go') {
 			endGame();
-		} else if (data.type === 'drawDot'){
+		} else if (data[0] === 'dd'){
 			ctx.fillStyle = 'red';
-			ctx.fillRect(data.x, data.y, 5, 5);
+			ctx.fillRect(data[1], data[2], 5, 5);
 			ctx.fillStyle = 'white';
-		} else if (data.type === 'drawLine'){
-			drawLine(new Vector(data.x1, data.y1), new Vector(data.x2, data.y2), 'blue');
+		} else if (data[0] === 'dl'){
+			drawLine(new Vector(data[1], data[2]), new Vector(data[3], data[4]), 'blue');
 		}
 	}
 	
@@ -476,19 +583,38 @@ function setupSocketHandlers(socket){
 		console.log('GAME SOCKET CLOSED!');
 		clearInterval(intervalId);
 		world.entities = [];
+		world.systems = [];
 	}
 }
 
 function endGame() {
 	clearInterval(intervalId);
+	manager.cleanup();
 	world.entities = [];
+	world.systems = [];
 	if (matchType === 'match') {
 		setTimeout(() => showSection('menu_online_lobby', lobbyId), 2000);
 	} else if (matchType === 'tournament') {
 		setTimeout(() => showSection('menu_tournament_roundrobin', lobbyId), 2000);
 	} else {
-		setTimeout(() => showSection('menu'), 2000);
+		// setTimeout(() => showSection('menu'), 2000);
+		showSection('menu');
 	}
+}
+
+function setupCloseLocal() {
+	const logoutButton = document.getElementById('logoutButton');
+	const homeButton = document.getElementById('webpong-button');
+
+	const closeGame = () => {
+		console.log("CLOSING LOCAL GAME!");
+		endGame();
+		homeButton.removeEventListener('click', closeGame);
+		logoutButton.removeEventListener('click', closeGame);
+	}
+
+	homeButton.addEventListener('click', closeGame)
+	logoutButton.addEventListener('click', closeGame);
 }
 
 function setupCloseWebsocket(socket) {

@@ -9,8 +9,11 @@ import json
 
 # Constants
 PLAYER_MOVE_SPEED = 20
+GAME_WINNING_SCORE = 2
+BALL_MOVE_SPEED = 15
 CANVAS_WIDTH = 1280
 CANVAS_HEIGHT = 780
+VECTOR_CENTER = Vector(CANVAS_WIDTH * 0.5, CANVAS_HEIGHT * 0.5)
 redis = redis.Redis(host='redis', port=6379, db=0)
 
 
@@ -157,6 +160,7 @@ class GameLogicManager(Entity):
 		self.round_running = False
 		self.winner = None
 		self.counter = time.time()
+		self.starter = None
 	
 	def buildDynamicField(self, world, playerCount):
 		if playerCount == 2:
@@ -164,21 +168,20 @@ class GameLogicManager(Entity):
 			self.sections.append(PlayerSection(CANVAS_WIDTH, CANVAS_HEIGHT * .5, 0, CANVAS_HEIGHT))
 			world.addEntity(Wall(CANVAS_WIDTH * .5, 0, 90, CANVAS_WIDTH))
 			world.addEntity(Wall(CANVAS_WIDTH * .5, CANVAS_HEIGHT, 90, CANVAS_WIDTH))
-			# return
-		# center = Vector(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2)
-		# point1 = Vector(0, -CANVAS_HEIGHT / 2)
-		# rotationStep = 360 / playerCount
-		# rot = (rotationStep) / 2
-		# point2 = point1.dup().rotate(rotationStep)
-		# for i in range(playerCount):
-		# 	ba = point2.sub(point1)
-		# 	ba.scale(0.5)
-		# 	midpoint = ba.add(point1)
-		# 	midpoint = midpoint.add(center)
-		# 	self.sections.append(PlayerSection(midpoint.x, midpoint.y, rot + 90, ba.length() * 2))
-		# 	point1.rotate(rotationStep)
-		# 	point2.rotate(rotationStep)
-		# 	rot += rotationStep
+		else:
+			point1 = Vector(0, -CANVAS_HEIGHT / 2)
+			rotationStep = 360 / playerCount
+			rot = (rotationStep) / 2
+			point2 = point1.dup().rotate(rotationStep)
+			for i in range(playerCount):
+				ba = point2.sub(point1)
+				ba.scale(0.5)
+				midpoint = ba.add(point1)
+				midpoint = midpoint.add(VECTOR_CENTER)
+				self.sections.append(PlayerSection(midpoint.x, midpoint.y, rot + 90, ba.length() * 2))
+				point1.rotate(rotationStep)
+				point2.rotate(rotationStep)
+				rot += rotationStep
 		world.addEntity(self.ball)
 		for section in self.sections:
 			section.goal.on_trigger = self.create_goal_function(section)
@@ -186,14 +189,18 @@ class GameLogicManager(Entity):
 			world.addEntity(section.player)
 			world.addEntity(section.goal)
 
+		self.starter = self.sections[0].player
+
 	def create_goal_function(self, section):
 		def goal_function(other, collision_point=None):
 			if isinstance(other, Ball):
 				if other.last_hit is not None:
 					if other.last_hit != section.player:
 						other.last_hit.increase_score()
+						self.starter = other.last_hit
 					elif other.second_last_hit is not None:
 						other.second_last_hit.increase_score()
+						self.starter = other.second_last_hit
 					self.reset_ball()
 				else:
 					print("WHAT NOW? THIS IS AN INVALID GOAL AS THE BALL WAS LAUNCHED FROM CENTER")
@@ -207,12 +214,6 @@ class GameLogicManager(Entity):
 		
 		self.winner = self.player_has_won()
 		if self.winner is not None:
-			asyncio.run_coroutine_threadsafe(thread_local.host.channel_layer.group_send(
-				thread_local.host.group_name,
-				{
-					'type': 'game_over',
-				}
-			), thread_local.event_loop)
 			thread_local.pong_game.game_complete()
 			return
 		asyncio.run_coroutine_threadsafe(thread_local.host.channel_layer.group_send(
@@ -226,7 +227,7 @@ class GameLogicManager(Entity):
 
 	def player_has_won(self):
 		for section in self.sections:
-			if section.player.score >= 1:
+			if section.player.score >= GAME_WINNING_SCORE:
 				lead = True
 				for sec in self.sections:
 					if sec != section:
@@ -242,15 +243,25 @@ class GameLogicManager(Entity):
 			return
 		if not self.round_running:
 			if time.time() - self.counter >= 3.0:
-				dir = None
-				if self.ball.last_hit is not None:
-					dir = self.ball.last_hit.position.sub(self.ball.position)
+				if self.starter:
+					dir = VECTOR_CENTER.sub(self.starter.position)
+					dir.y = 0
 					dir.normalize()
-					dir.scale(15)
+					dir.scale(BALL_MOVE_SPEED)
+					self.ball.physics.set_velocity_v(dir)
 				else:
-					dir = Vector(15, 0)
-				self.ball.physics.set_velocity(dir.x, dir.y)
+					self.ball.physics.set_velocity(15, 0)
+				self.ball.last_hit = self.starter
 				self.round_running = True
+			elif self.starter:
+				dir = VECTOR_CENTER.sub(self.starter.position)
+				dir.y = 0
+				dir.normalize()
+				dir.scale(50)
+				dir = self.starter.position.add(dir)
+				self.ball.set_pos(dir.x, dir.y)
+				thread_local.pong_game.send_entity_move(self.ball)
+		#self.ball.physics.velocity.scale(1.0001) #fun idea to scale speed!
 		#this check is to reset the round when the ball somehow escapes the play area
 		if self.ball.position.sub(Vector(CANVAS_WIDTH//2, CANVAS_HEIGHT//2)).sqr_length() > (CANVAS_WIDTH*1.5)**2:
 			self.reset_ball()
@@ -265,9 +276,7 @@ async def getCurrentState(world, consumer):
 				'id': ent.id,
 				'entType': type(ent).__name__,
 				'transform': ent.serialize(),
-				'constr':{
-					'height': 0 if not hasattr(ent, 'height') else ent.height
-				}
+				'height': 0 if not hasattr(ent, 'height') else ent.height
 			}
 		)
 
@@ -314,6 +323,12 @@ class PongGame:
 		print(f'stop_thread set to {self.stop_thread}')
 
 	def game_complete(self):
+		asyncio.run_coroutine_threadsafe(thread_local.host.channel_layer.group_send(
+				thread_local.host.group_name,
+				{
+					'type': 'game_over',
+				}
+			), thread_local.event_loop)
 		print('We have a winner! Stop game thread, and asyncio thread')
 		self.stop()
 		print('Start of DB save')
