@@ -412,7 +412,7 @@ export async function showSection(section, lobbyId)
             });
         else if (section === 'pong')
             import('./pong.js').then(module => {
-                module.renderPong();
+                module.renderPong(lobbyId);
             });
         else if (section === 'waiting')
             import('./waiting.js').then(module => {

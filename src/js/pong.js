@@ -509,15 +509,15 @@ let matchType;
 
 function selectGamemode(groupName){
 	world.addSystem(new RenderSystem());
-	if (!groupName){
+	let split = groupName?.split('_');
+	matchType = split?.length > 0 ? split[0] : undefined;
+	lobbyId = split?.length > 1 ? split[1] : undefined;
+	if (!matchType || matchType === 'local'){
 		world.addSystem(new CollisionSystem());
 		world.addSystem(new MovementSystem());
-		manager = new PongLocalManager();
+		manager = new PongLocalManager(lobbyId == 'ai');
 		setupCloseLocal();
 	} else {
-		let split = groupName.split('_');
-		matchType = split.length > 0 ? split[0] : undefined;
-		lobbyId = split.length > 1 ? split[1] : undefined;
 		const token = localStorage.getItem('access_token');
 		socket = new WebSocket(`ws://${window.location.host}/ws/pong/${groupName}/?token=${token}`);
 		setupCloseWebsocket(socket);
