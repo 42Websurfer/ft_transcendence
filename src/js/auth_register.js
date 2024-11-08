@@ -58,7 +58,7 @@ export function renderAuthRegister() {
     form.addEventListener('submit', handleFormSubmit);
 }
 
-async function sendAuthCode(user) {
+export async function sendAuthCode(user) {
 	const input_code = document.getElementById('authcode');
 	const code = input_code.value; 
 	console.log("Code = ", code);

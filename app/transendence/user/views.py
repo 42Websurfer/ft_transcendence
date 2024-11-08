@@ -60,9 +60,8 @@ def user_login(request):
             user = authenticate(username=username, password=password)
             logger.debug("WO FAILST DU JUNGE2")
             if user is not None:
-                refresh = RefreshToken.for_user(user)
-                access_token = str(refresh.access_token)
-                logger.debug(f"{access_token}")
+                # refresh = RefreshToken.for_user(user)
+                # access_token = str(refresh.access_token)
                 return JsonResponse({
                     'success': 'User logged in successfully.',
                     'user': {
@@ -72,10 +71,10 @@ def user_login(request):
                         'first_name': user.first_name,
                         'last_name': user.last_name
                     },
-                    'tokens': {
-                        'refresh': str(refresh),
-                        'access': access_token,
-                    }
+                    # 'tokens': {
+                    #     'refresh': str(refresh),
+                    #     'access': access_token,
+                    # }
                 }, status=200)
             else:
                 return JsonResponse({'error': 'Incorrect username or password.'}, status=400)
@@ -98,17 +97,9 @@ def verify_2fa_code(request):
         data = json.loads(request.body)
         otp_code = data.get('otp_code')
         user = data.get('user')
-        logger.debug(f"Data = {data}")
-        logger.debug(f"otp_code = {otp_code}")
-        logger.debug("FEHLER BEIM LADEN DES BODYS")
         username = user.get('username') 
-        logger.debug(f"Username = {username}")
         user = User.objects.get(username=username)
-        logger.debug("BEKOMMEN WIR ÜBERHAUPT DEN USER DAMN IT!")
         user_profile = UserProfile.objects.get(user=user)
-        if not user_profile:
-            logger.debug("NO user_profile found!")
-        logger.debug("FEHLER BEIM Fehler beim laden des otp_secret code aus db")
         totp = pyotp.TOTP(user_profile.otp_secret)
         
         if totp.verify(otp_code):
@@ -133,10 +124,7 @@ def verify_2fa_code(request):
 def register(request):
     if request.method == 'POST':
         try:
-            logger.debug("WE ARE IN REGISTER!")
-            #data = json.loads(request.body)		
             data = request.POST
-            logger.debug("Hier failen wir!")
 
             email = data.get('email')
             password = data.get('password')
@@ -157,17 +145,15 @@ def register(request):
                 user_game_stats.avatar = avatar
                 user_game_stats.save()
 
-            #Es wird einmal ein otp_secret key erstellt der dann in der DB gespeichert wird und immer beim login verwendet wird
-            otp_secret = pyotp.random_base32() #totp time-based-one-password!!! für die 2fa apps
+            otp_secret = pyotp.random_base32() 
             user_profile = UserProfile.objects.get(user=user)
             user_profile.otp_secret = otp_secret
             user_profile.save()
 
-            logger.debug(f"OTP_SECRET = {otp_secret}")
             totp = pyotp.TOTP(otp_secret)
             uri = totp.provisioning_uri(name=username, issuer_name="Websurfer app"), 
             qr_code = qrcode.make(uri)
-            buffer = BytesIO() #qrcode wird im arbeitsspeicher gespeichert
+            buffer = BytesIO() 
             qr_code.save(buffer, format="PNG")
             qr_code_string = b64encode(buffer.getvalue()).decode("utf-8")
 
@@ -187,7 +173,7 @@ def register(request):
             }, status=201)
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON.'}, status=400)
-
+            
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_user_information(request):

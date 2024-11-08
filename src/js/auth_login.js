@@ -1,5 +1,6 @@
 import { getCookie, displayMessages } from './utils.js';
 import { showSection } from './index.js';
+import { sendAuthCode } from './auth_register.js';
 
 export async function renderAuthLogin() {
 	
@@ -33,6 +34,8 @@ export async function renderAuthLogin() {
 				<p>OR</p>
 			</div>
 			<button id="signIn42Button" class="signin-42-button btn btn-primary w-100 py-2">Sign In with <svg viewBox="0 0 137.52 96.5" xml:space="preserve" fill="currentColor" width="1em" height="1em" class="ml-2 size-6"><g><polygon points="76,0 50.67,0 0,50.66 0,71.17 50.67,71.17 50.67,96.5 76,96.5 76,50.66 25.33,50.66"></polygon><polygon points="86.85,25.33 112.19,0 86.85,0"></polygon><polygon points="137.52,25.33 137.52,0 112.19,0 112.19,25.33 86.85,50.66 86.85,76 112.19,76 112.19,50.66"></polygon><polygon points="137.52,50.66 112.19,76 137.52,76"></polygon></g></svg></button>
+		<input id="authcode"></input>
+		<button id="sendCode" class="signin-button btn btn-primary w-100 py-2" type="click">Send 2FA Code</button>
 		</div>
 	</div>
 	`;
@@ -73,14 +76,18 @@ async function handleLoginFormSubmit(event)
     const result = await response.json();
 	if (result.success)
 	{
-		console.log('TOKEN WILL BE SETTED: ', result.tokens.access);
-		localStorage.setItem('access_token', result.tokens.access);  
-        localStorage.setItem('refresh_token', result.tokens.refresh);		
+		const codeButton = document.getElementById('sendCode');
+		codeButton.addEventListener('click', function() {
+			sendAuthCode(result.user);
+		});
+		// console.log('TOKEN WILL BE SETTED: ', result.tokens.access);
+		// localStorage.setItem('access_token', result.tokens.access);  
+        // localStorage.setItem('refresh_token', result.tokens.refresh);		
 	}
     displayMessages(result);
 	console.log(result.error);
 	console.log(result.sucess);
 
-	if (result.success)
-		showSection('menu');
+	// if (result.success)
+	// 	showSection('menu');
 }
