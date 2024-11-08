@@ -139,13 +139,10 @@ class Player extends Entity{
 			let dir = new Vector(this.up.x, this.up.y);
 			dir.scale(-PLAYER_MOVE_SPEED);
 			this.physics.velocity = dir;
-		} else if (event.key === 'g') {
-			this.rotate(this.rotation + 5);
-		}
-		else {
+		} else {
 			return;
 		}
-		event.preventDefault();
+		event.preventDefault?.();
 	}
 
 	keyUp(event){
@@ -155,7 +152,30 @@ class Player extends Entity{
 		} else {
 			return;
 		}
-		event.preventDefault();
+		event.preventDefault?.();
+	}
+}
+
+class AiPlayer extends Player {
+	constructor(x, y, height, ball, difficulty) {
+		super(x, y, height);
+		this.gameBall = ball;
+		this.difficulty = difficulty;
+	}
+
+	update() {
+		if (!this.gameBall) {
+			//if ball is somehow undefined search for it in the world.entities
+			this.gameBall = world.entities.find((value) => value instanceof Ball);
+		}
+
+		if (this.gameBall.position.y > this.position.y + 20) {
+			this.keyDown({ key: this.keyBinds.down });
+		} else if (this.gameBall.position.y < this.position.y - 20) {
+			this.keyDown({ key: this.keyBinds.up });
+		} else {
+			this.keyUp({ key: this.keyBinds.down });
+		}
 	}
 }
 
@@ -170,15 +190,20 @@ class Wall extends Entity{
 }
 
 class PlayerSection extends Entity{
-	constructor(x, y, rotation, height){
+	constructor(x, y, rotation, height, ai = undefined){
 		super(x, y);
 		this.goal = new Wall(x, y, rotation, height);
-		this.player = new Player(x, y, height * 0.33);
+		this.player = undefined;
+		if (ai) {
+			this.player = new AiPlayer(x, y, height * 0.33, undefined, 1);
+		} else {
+			this.player = new Player(x, y, height * 0.33);
+			window.addEventListener('keydown', (event) => this.player.keyDown(event));
+			window.addEventListener('keyup', (event) => this.player.keyUp(event));
+		}
 		this.bindPlayer();
 		world.addEntity(this.goal);
 		world.addEntity(this.player);
-		window.addEventListener('keydown', (event) => this.player.keyDown(event));
-		window.addEventListener('keyup', (event) => this.player.keyUp(event));
 	}
 
 	bindPlayer(){
@@ -213,7 +238,7 @@ class PongLocalManager extends Entity{
 	buildDynamicField(playerCount){
 		if (playerCount === 2){
 			this.sections.push(new PlayerSection(0, canvas.height * .5, 0, canvas.height));
-			this.sections.push(new PlayerSection(canvas.width, canvas.height * .5, 0, canvas.height));
+			this.sections.push(new PlayerSection(canvas.width, canvas.height * .5, 0, canvas.height, true));
 			this.sections[0].player.keyBinds = {up: 'w', down: 's'};
 			this.sections[1].player.keyBinds = {up: 'ArrowUp', down: 'ArrowDown'};
 			world.addEntity(new Wall(canvas.width * .5, 0, 90, canvas.width));
