@@ -161,21 +161,43 @@ class AiPlayer extends Player {
 		super(x, y, height);
 		this.gameBall = ball;
 		this.difficulty = difficulty;
+		this.target = undefined;
+	}
+
+	moveToTarget() {
+		if (!this.target) {
+			console.log('AI: no target!')
+			return;
+		}
+		if (this.target.x > canvas.width * 0.75) {
+			if (this.target.y > this.position.y + 20) {
+				this.keyDown({ key: this.keyBinds.down });
+			} else if (this.target.y < this.position.y - 20) {
+				this.keyDown({ key: this.keyBinds.up });
+			} else {
+				this.keyUp({ key: this.keyBinds.down });
+			}
+		}
+	}
+
+	setTarget(position) {
+		this.target = position;
 	}
 
 	update() {
 		if (!this.gameBall) {
+			console.log('AI: no ref to ball!');
 			//if ball is somehow undefined search for it in the world.entities
 			this.gameBall = world.entities.find((value) => value instanceof Ball);
 		}
 
-		if (this.gameBall.position.y > this.position.y + 20) {
-			this.keyDown({ key: this.keyBinds.down });
-		} else if (this.gameBall.position.y < this.position.y - 20) {
-			this.keyDown({ key: this.keyBinds.up });
+		if (this.gameBall.physics.velocity.sqrLength() == 0) {
+			this.setTarget(new Vector(this.position.x, canvas.height * 0.5));
 		} else {
-			this.keyUp({ key: this.keyBinds.down });
+			this.setTarget(this.gameBall.position);
 		}
+
+		this.moveToTarget();
 	}
 }
 
@@ -223,7 +245,7 @@ class PlayerSection extends Entity{
 }
 
 class PongLocalManager extends Entity{
-	constructor(){
+	constructor(aiOpponent = false){
 		super(0, 0);
 		this.sections = [];
 		this.ball = new Ball();
@@ -231,6 +253,7 @@ class PongLocalManager extends Entity{
 		this.round_running = false;
 		this.counter = Date.now();
 		this.starter = undefined;
+		this.aiOpponent = aiOpponent;
 		world.addEntity(this.ball);
 		this.initGame();
 	}
@@ -238,7 +261,7 @@ class PongLocalManager extends Entity{
 	buildDynamicField(playerCount){
 		if (playerCount === 2){
 			this.sections.push(new PlayerSection(0, canvas.height * .5, 0, canvas.height));
-			this.sections.push(new PlayerSection(canvas.width, canvas.height * .5, 0, canvas.height, true));
+			this.sections.push(new PlayerSection(canvas.width, canvas.height * .5, 0, canvas.height, this.aiOpponent));
 			this.sections[0].player.keyBinds = {up: 'w', down: 's'};
 			this.sections[1].player.keyBinds = {up: 'ArrowUp', down: 'ArrowDown'};
 			world.addEntity(new Wall(canvas.width * .5, 0, 90, canvas.width));
@@ -301,7 +324,7 @@ class PongLocalManager extends Entity{
 		if (scoreText)
 			scoreText.innerText = playerScored.score;
 		if (scoreName)
-			scoreName.innerText = idx > 0 ? 'localP2' : 'localP1';
+			scoreName.innerText = playerScored instanceof AiPlayer ? 'AI_King' : idx > 0 ? 'localP2' : 'localP1';
 	}
 
 	resetRound() {
@@ -359,7 +382,8 @@ class PongLocalManager extends Entity{
 				this.ball.position.y = direction.y;
 			}
 		}
-		this.ball.physics.velocity.scale(1.0001); //fun idea to increase speed of ball over time :)
+		if (this.ball.physics.velocity.sqrLength() < Math.pow(20, 2))
+			this.ball.physics.velocity.scale(1.0005); //fun idea to increase speed of ball over time :)
 		if (this.ball.position.sub(new Vector(canvas.width * 0.5, canvas.height * 0.5)).sqrLength() > (Math.pow(canvas.width * 1.5, 2))) {
 			this.resetRound();
 		}
