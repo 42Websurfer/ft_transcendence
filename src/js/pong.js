@@ -50,11 +50,6 @@ class Ball extends Entity{
 		this.position.y = canvas.height / 2;
 	}
 
-	move(xAdd, yAdd){
-		let newPos = this.position.add(new Vector(xAdd, yAdd));
-		this.position = newPos;
-	}
-
 	onCollision(other, collisionPoint = undefined){
 		if (other instanceof Player){
 			this.secondLastHit = this.lastHit != other ? this.lastHit : this.secondLastHit;
@@ -339,6 +334,7 @@ class PongLocalManager extends Entity{
 		}
 		this.round_running = false;
 		this.counter = Date.now();
+		startRound();
 	}
 
 	playerHasWon() {
@@ -562,7 +558,7 @@ function setupSocketHandlers(socket){
 		} else if (data[0] === 'sp'){
 			manager.setEntityPosition(data[1], {position: {x: data[2], y: data[3]}, rotation: data[4]});
 		} else if (data[0] === 'rs'){
-			starRound();
+			startRound();
 		} else if (data[0] === 'ss'){
 			manager.updatePlayerScore(data[1], data[2])
 		} else if (data[0] === 'ip') {
@@ -640,7 +636,7 @@ function setupCloseWebsocket(socket) {
 let countdown = 3;
 let countdownInterval;
 
-function starRound() {
+function startRound() {
 	console.log('start the countdown!');
 	countdown = 3
 	let countdownDisplay = document.getElementById('countdownDisplay');
