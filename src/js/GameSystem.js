@@ -258,7 +258,6 @@ export class Box extends Mesh{
 export class Entity extends Transform{
 	constructor(x, y){
 		super(x, y);
-		this.id = 0
 		this.components = {};
 	}
 
@@ -334,37 +333,46 @@ export class CollisionSystem extends System{
 	execute(entities){
 		entities.forEach(currentEnt => {
 			const entMesh = currentEnt.getComponent(Mesh);
-			if (!entMesh)
+			const entPhys = currentEnt.getComponent(Physics);
+			if (!entMesh || !entPhys)
 				return ;
 			entities.forEach(otherEnt => {
 				if (currentEnt != otherEnt){
 					const otherMesh = otherEnt.getComponent(Mesh);
 					if (!otherMesh)
 						return ;
-					let ab = otherEnt.position.sub(currentEnt.position);
-					let threshold = Math.max(Math.max(entMesh.width, entMesh.height), Math.max(otherMesh.width, otherMesh.height));
-					if (ab.length() < threshold){
-						let oClosest = otherMesh.getClosestPoint(otherEnt, currentEnt.position);
-						let sClosest = entMesh.getClosestPoint(currentEnt, oClosest);
-						let diff = oClosest.sub(sClosest);
-						if (diff.dot(ab) < 0){
-							let phys = currentEnt.getComponent(Physics);
-							let ophys = otherEnt.getComponent(Physics);
-							if (phys && !phys.isStatic){
-								currentEnt.move(diff.x, diff.y);
-							}
-							if (ophys && !ophys.isStatic){
-								otherEnt.move(-diff.x, -diff.y)
-							}
-							if (entMesh.isTrigger){
-								currentEnt.onTrigger(otherEnt, sClosest);
-							} else {
-								currentEnt.onCollision(otherEnt, sClosest);
-							}
-							if (otherMesh.isTrigger){
-								otherEnt.onTrigger(currentEnt, oClosest);
-							} else {
-								otherEnt.onCollision(currentEnt, oClosest);
+					const steps = Math.ceil(entPhys.velocity.length() / Math.max(entMesh.width * 0.5, entMesh.height * 0.5));
+					for (let i = 0; i <= steps; i++) {
+						const t = i / steps;
+						const currentPos = currentEnt.position.add(entPhys.velocity.dup().scale(t));
+						const otherPos = otherEnt.position;
+						let ab = otherPos.sub(currentPos);
+						let threshold = Math.max(entMesh.width, entMesh.height, otherMesh.width, otherMesh.height);
+						if (ab.length() < threshold){
+							const stepTransform = new Transform(currentPos.x, currentPos.y, currentEnt.rotation);
+							let oClosest = otherMesh.getClosestPoint(otherEnt, currentPos);
+							let sClosest = entMesh.getClosestPoint(stepTransform, oClosest);
+							let diff = oClosest.sub(sClosest);
+							if (diff.dot(ab) < 0) {
+								if (!entPhys.isStatic){
+									currentEnt.setPos(currentPos.x, currentPos.y);
+									currentEnt.move(diff.x, diff.y);
+								}
+								const ophys = otherEnt.getComponent(Physics);
+								if (ophys && !ophys.isStatic){
+									otherEnt.move(-diff.x, -diff.y)
+								}
+								if (entMesh.isTrigger){
+									currentEnt.onTrigger(otherEnt, sClosest);
+								} else {
+									currentEnt.onCollision(otherEnt, sClosest);
+								}
+								if (otherMesh.isTrigger){
+									otherEnt.onTrigger(currentEnt, oClosest);
+								} else {
+									otherEnt.onCollision(currentEnt, oClosest);
+								}
+								break;
 							}
 						}
 					}
