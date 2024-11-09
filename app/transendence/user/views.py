@@ -151,7 +151,7 @@ def register(request):
             user_profile.save()
 
             totp = pyotp.TOTP(otp_secret)
-            uri = totp.provisioning_uri(name=username, issuer_name="Websurfer app"), 
+            uri = totp.provisioning_uri(name=username, issuer_name="Websurfer app")
             qr_code = qrcode.make(uri)
             buffer = BytesIO() 
             qr_code.save(buffer, format="PNG")
