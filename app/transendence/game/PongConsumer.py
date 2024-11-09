@@ -32,6 +32,13 @@ class MyConsumer(AsyncWebsocketConsumer):
 			if self.lobby_id is None or not redis.exists(match_lobby_string(self.lobby_id)):
 				await self.close()
 				return
+		elif self.match_type == 'multiple':
+			if self.lobby_id is None or not redis.exists(self.group_name):
+				await self.close()
+				return
+		else:
+			await self.close()
+			return
 
 		await self.channel_layer.group_add(
 			self.group_name,
