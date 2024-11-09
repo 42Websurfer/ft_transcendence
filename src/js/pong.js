@@ -127,13 +127,9 @@ class Player extends Entity{
 
 	keyDown(event){
 		if (event.key === this.keyBinds.up){
-			let dir = new Vector(this.up.x, this.up.y);
-			dir.scale(PLAYER_MOVE_SPEED);
-			this.physics.velocity = dir;
+			this.physics.velocity = this.up.dup().scale(PLAYER_MOVE_SPEED);
 		} else if (event.key === this.keyBinds.down) {
-			let dir = new Vector(this.up.x, this.up.y);
-			dir.scale(-PLAYER_MOVE_SPEED);
-			this.physics.velocity = dir;
+			this.physics.velocity = this.up.dup().scale(-PLAYER_MOVE_SPEED);
 		} else {
 			return;
 		}
@@ -265,7 +261,7 @@ class PongLocalManager extends Entity{
 			world.addEntity(new Wall(canvas.width * .5, canvas.height, 90, canvas.width));
 			return;
 		}
-		const center = new Vector(canvas.width / 2, canvas.height / 2);
+		const center = new Vector(canvas.width * 0.5, canvas.height * 0.5);
 		let point1 = new Vector(0, -canvas.height / 2);
 		let rotationStep = 360 / playerCount;
 		let rot = (rotationStep) / 2;
@@ -286,7 +282,7 @@ class PongLocalManager extends Entity{
 
 	initGame(){
 		
-		this.buildDynamicField(2);
+		this.buildDynamicField(3);
 
 		this.sections.forEach( section => {
 			this.updatePlayerScore(section.player);
@@ -362,21 +358,19 @@ class PongLocalManager extends Entity{
 			return;
 		if (!this.round_running) {
 			if (Date.now() - this.counter >= 3000.0) {
-				let dir  = new Vector(canvas.width * 0.5, canvas.height * 0.5).sub(this.starter.position);
-				dir.y = 0;
+				let dir = new Vector(canvas.width * 0.5, canvas.height * 0.5).sub(this.starter.startPos);
 				dir.normalize();
 				dir.scale(BALL_MOVE_SPEED);
-				this.ball.physics.setVelocity(dir.x, dir.y);
+				this.ball.physics.setVelocityV(dir)
 				this.ball.lastHit = this.starter;
 				this.round_running = true;
 			} else if (this.starter) {
-				let direction = new Vector(canvas.width * 0.5, canvas.height * 0.5).sub(this.starter.position);
-				direction.y = 0;
-				direction.normalize();
-				direction.scale(50);
-				direction = this.starter.position.add(direction);
-				this.ball.position.x = direction.x;
-				this.ball.position.y = direction.y;
+				let forward = new Vector(canvas.width * 0.5, canvas.height * 0.5).sub(this.starter.startPos);
+				forward.normalize();
+				forward.scale(50);
+				forward = forward.add(this.starter.position);
+				this.ball.position.x = forward.x;
+				this.ball.position.y = forward.y;
 			}
 		}
 		if (this.ball.physics.velocity.sqrLength() < Math.pow(30, 2))
