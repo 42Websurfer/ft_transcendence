@@ -261,7 +261,8 @@ class GameLogicManager(Entity):
 				dir = self.starter.position.add(dir)
 				self.ball.set_pos(dir.x, dir.y)
 				thread_local.pong_game.send_entity_move(self.ball)
-		#self.ball.physics.velocity.scale(1.0001) #fun idea to scale speed!
+		if self.ball.physics.velocity.sqr_length() < pow(30):
+			self.ball.physics.velocity.scale(1.0002)
 		#this check is to reset the round when the ball somehow escapes the play area
 		if self.ball.position.sub(Vector(CANVAS_WIDTH//2, CANVAS_HEIGHT//2)).sqr_length() > (CANVAS_WIDTH*1.5)**2:
 			self.reset_ball()

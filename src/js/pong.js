@@ -383,8 +383,8 @@ class PongLocalManager extends Entity{
 				this.ball.position.y = direction.y;
 			}
 		}
-		// if (this.ball.physics.velocity.sqrLength() < Math.pow(20, 2))
-		this.ball.physics.velocity.scale(1.0002); //fun idea to increase speed of ball over time :)
+		if (this.ball.physics.velocity.sqrLength() < Math.pow(30, 2))
+			this.ball.physics.velocity.scale(1.0002);
 		if (this.ball.position.sub(new Vector(canvas.width * 0.5, canvas.height * 0.5)).sqrLength() > (Math.pow(canvas.width * 1.5, 2))) {
 			this.resetRound();
 		}
