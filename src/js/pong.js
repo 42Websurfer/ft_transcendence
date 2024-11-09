@@ -515,8 +515,8 @@ function selectGamemode(groupName){
 	matchType = split?.length > 0 ? split[0] : undefined;
 	lobbyId = split?.length > 1 ? split[1] : undefined;
 	if (!matchType || matchType === 'local'){
-		world.addSystem(new MovementSystem());
 		world.addSystem(new CollisionSystem());
+		world.addSystem(new MovementSystem());
 		manager = new PongLocalManager(lobbyId == 'ai');
 		setupCloseLocal();
 	} else {

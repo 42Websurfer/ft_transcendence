@@ -354,15 +354,9 @@ export class CollisionSystem extends System{
 							let sClosest = entMesh.getClosestPoint(stepTransform, oClosest);
 							let diff = oClosest.sub(sClosest);
 							if (diff.dot(ab) < 0) {
-								console.log('COLLISION DETECTED!!!');
-								console.log(`Details: Step:${steps}; Velocity: ${entPhys.velocity.length()}; i: ${i}; t: ${t};`);
-								if (entMesh instanceof Circle) {
-									drawLine(oClosest, sClosest);
-								}
 								if (!entPhys.isStatic){
 									currentEnt.setPos(currentPos.x, currentPos.y);
 									currentEnt.move(diff.x, diff.y);
-									// entMesh.draw(currentEnt);
 								}
 								const ophys = otherEnt.getComponent(Physics);
 								if (ophys && !ophys.isStatic){
