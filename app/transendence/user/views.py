@@ -110,7 +110,7 @@ def verify_2fa_code(request):
                 }
             }, status=200)
         else:
-            return JsonResponse({'error': 'Invalid 2FA code.'}, status=400)
+            return JsonResponse({'error': 'Invalid code.'}, status=400)
             
     except User.DoesNotExist:
         return JsonResponse({'type': 'error', 'message': 'User not found.'}, status=404)

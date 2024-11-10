@@ -1,8 +1,9 @@
 import { getCookie, displayMessages } from './utils.js';
 import { showSection } from './index.js';
+import { renderAuth2FARegister } from './auth_2fa_register.js';
 
 export function renderAuthRegister() {
-
+	history.pushState({ section: 'auth_register' }, '', `?section=auth_register`);
 	const app = document.getElementById('app');
 	app.innerHTML = `
 	<div class="login">
@@ -45,12 +46,6 @@ export function renderAuthRegister() {
 			</form>
 			<div id="registerMessage" class="register-message"></div>
 		</div>
-		<div id="registerLoader" class="loader"></div>
-		<img id="qrcode">
-		<input id="authcode"></input>
-		<button id="sendCode" class="signin-button btn btn-primary w-100 py-2" type="click">Send 2FA Code</button>
-
-
 	</div>
 	`;
 
@@ -61,35 +56,22 @@ export function renderAuthRegister() {
 export async function sendAuthCode(user) {
 	const input_code = document.getElementById('authcode');
 	const code = input_code.value; 
-	console.log("Code = ", code);
-	 console.log("User = ", user);
 	const response = await fetch('/verify_2fa_code/', {
 		method: 'POST',
     	headers: {
-            //'Authorization': `Bearer ${token}`,
            'Content-Type': 'application/json'
         },
         body: JSON.stringify({'user': user, 'otp_code': code})
     });
 	const result = await response.json()
-	console.log("result = ", result);
 	if (result.type === 'success')
 	{
 		localStorage.setItem('access_token', result.tokens.access);  
         localStorage.setItem('refresh_token', result.tokens.refresh);	
-
 		showSection('menu');
 	}
 	else
-	{
-		const registerMessage = document.getElementById('registerMessage');
-
-		registerMessage.textContent = result.message;
-		registerMessage.style.color = 'red';
-		registerMessage.style.animation = 'none';
-		registerMessage.offsetHeight;
-		registerMessage.style.animation = 'wiggle 0.5s ease-in-out';
-	}	
+		return result;
 }
 
 async function handleFormSubmit(event) {
@@ -127,15 +109,17 @@ async function handleFormSubmit(event) {
 	{
 		registerMessage.textContent = '';
 
-		const registerLoader = document.getElementById('registerLoader');
-		registerLoader.style.display = 'block';
-		//Implement qr code!
-		const qrcode = document.getElementById('qrcode');
-		qrcode.src = result.qr_code;
-		const codeButton = document.getElementById('sendCode');
-		codeButton.addEventListener('click', function() {
-			sendAuthCode(result.user);
-		});
+		renderAuth2FARegister(result) 
+
+		// const registerLoader = document.getElementById('registerLoader');
+		// registerLoader.style.display = 'block';
+		// //Implement qr code!
+		// const qrcode = document.getElementById('qrcode');
+		// qrcode.src = result.qr_code;
+		// const codeButton = document.getElementById('sendCode');
+		// codeButton.addEventListener('click', function() {
+		// 	sendAuthCode(result.user);
+		// });
 
 		//setTimeout(() => showSection('menu'), 2000);
 	}
