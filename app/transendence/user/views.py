@@ -104,7 +104,7 @@ def verify_2fa_code(request):
                 }
             }, status=200)
         else:
-            return JsonResponse({'error': 'Invalid code.'}, status=400)
+            return JsonResponse({'type': 'error', 'message': 'Invalid code.'}, status=400)
             
     except User.DoesNotExist:
         return JsonResponse({'type': 'error', 'message': 'User not found.'}, status=404)
@@ -156,6 +156,7 @@ def register(request):
 def get_user_information(request):
     user = request.user
     return JsonResponse({
+        'type': 'success',
         'email': user.email,
         'firstname': user.first_name,
         'lastname': user.last_name,

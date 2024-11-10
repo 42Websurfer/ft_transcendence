@@ -21,7 +21,8 @@ export async function renderAuth2FALogin(user) {
 	const sendCodeButton = document.getElementById('sendCode');
 	sendCodeButton.addEventListener('click', async function() {
 		let result = await sendAuthCode(user);
-		displayMessages(result);
+		if (result.type === 'error')
+			displayMessages(result);
 	});
 
 	const authcodeInput = document.getElementById('authcode');
@@ -31,7 +32,8 @@ export async function renderAuth2FALogin(user) {
             if (code)
 			{
 				let result = await sendAuthCode(user);
-				displayMessages(result);
+				if (result.type === 'error')
+					displayMessages(result);
 			}
         }
     });

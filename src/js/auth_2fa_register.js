@@ -29,7 +29,8 @@ export async function renderAuth2FARegister(input) {
 	const sendCodeButton = document.getElementById('sendCode');
 	sendCodeButton.addEventListener('click', async function() {
 		let result = await sendAuthCode(input.user);
-		displayMessages(result);
+		if (result.type === 'error')	
+			displayMessages(result);
 	});
 
 	const authcodeInput = document.getElementById('authcode');
@@ -39,7 +40,8 @@ export async function renderAuth2FARegister(input) {
             if (code)
 			{
 				let result = await sendAuthCode(input.user);
-				displayMessages(result);
+				if (result.type === 'error')
+					displayMessages(result);
 			}
         }
     });
