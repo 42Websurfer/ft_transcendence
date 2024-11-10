@@ -50,11 +50,6 @@ class Ball extends Entity{
 		this.position.y = canvas.height / 2;
 	}
 
-	move(xAdd, yAdd){
-		let newPos = this.position.add(new Vector(xAdd, yAdd));
-		this.position = newPos;
-	}
-
 	onCollision(other, collisionPoint = undefined){
 		if (other instanceof Player){
 			this.secondLastHit = this.lastHit != other ? this.lastHit : this.secondLastHit;
@@ -220,8 +215,10 @@ class PlayerSection extends Entity{
 			this.player = new AiPlayer(x, y, height * 0.33, undefined, 1);
 		} else {
 			this.player = new Player(x, y, height * 0.33);
-			window.addEventListener('keydown', (event) => this.player.keyDown(event));
-			window.addEventListener('keyup', (event) => this.player.keyUp(event));
+			this.keyDownHandler = (event) => this.player.keyDown(event);
+			this.keyUpHandler = (event) => this.player.keyUp(event);
+			window.addEventListener('keydown', this.keyDownHandler);
+			window.addEventListener('keyup', this.keyUpHandler);
 		}
 		this.bindPlayer();
 		world.addEntity(this.goal);
@@ -337,6 +334,7 @@ class PongLocalManager extends Entity{
 		}
 		this.round_running = false;
 		this.counter = Date.now();
+		startRound();
 	}
 
 	playerHasWon() {
@@ -372,7 +370,6 @@ class PongLocalManager extends Entity{
 				this.ball.lastHit = this.starter;
 				this.round_running = true;
 			} else if (this.starter) {
-				console.log('round not running time < 3s and we have starter');
 				let direction = new Vector(canvas.width * 0.5, canvas.height * 0.5).sub(this.starter.position);
 				direction.y = 0;
 				direction.normalize();
@@ -382,8 +379,8 @@ class PongLocalManager extends Entity{
 				this.ball.position.y = direction.y;
 			}
 		}
-		if (this.ball.physics.velocity.sqrLength() < Math.pow(20, 2))
-			this.ball.physics.velocity.scale(1.0005); //fun idea to increase speed of ball over time :)
+		if (this.ball.physics.velocity.sqrLength() < Math.pow(30, 2))
+			this.ball.physics.velocity.scale(1.0002);
 		if (this.ball.position.sub(new Vector(canvas.width * 0.5, canvas.height * 0.5)).sqrLength() > (Math.pow(canvas.width * 1.5, 2))) {
 			this.resetRound();
 		}
@@ -391,10 +388,12 @@ class PongLocalManager extends Entity{
 
 	cleanup(){
 		this.sections.forEach(section => {
-			let success = window.removeEventListener('keydown', section.player.keyDown);
-			success = window.removeEventListener('keyup', section.player.keyUp);
-			if (!success)
-				console.error('could not remove event listener')
+			if (section.keyDownHandler) {
+				window.removeEventListener('keydown', section.keyDownHandler);
+			}
+			if (section.keyUpHandler) {
+				window.removeEventListener('keyup', section.keyUpHandler);
+			}
 		});
 	}
 }
@@ -508,7 +507,6 @@ let lobbyId;
 let matchType;
 
 function selectGamemode(groupName){
-	world.addSystem(new RenderSystem());
 	let split = groupName?.split('_');
 	matchType = split?.length > 0 ? split[0] : undefined;
 	lobbyId = split?.length > 1 ? split[1] : undefined;
@@ -524,6 +522,7 @@ function selectGamemode(groupName){
 		manager = new RemoteHandler();
 		setupSocketHandlers(socket);
 	}
+	world.addSystem(new RenderSystem());
 	world.addEntity(manager);
 	intervalId = setInterval(function() {
 		world.update();
@@ -559,7 +558,7 @@ function setupSocketHandlers(socket){
 		} else if (data[0] === 'sp'){
 			manager.setEntityPosition(data[1], {position: {x: data[2], y: data[3]}, rotation: data[4]});
 		} else if (data[0] === 'rs'){
-			starRound();
+			startRound();
 		} else if (data[0] === 'ss'){
 			manager.updatePlayerScore(data[1], data[2])
 		} else if (data[0] === 'ip') {
@@ -637,7 +636,7 @@ function setupCloseWebsocket(socket) {
 let countdown = 3;
 let countdownInterval;
 
-function starRound() {
+function startRound() {
 	console.log('start the countdown!');
 	countdown = 3
 	let countdownDisplay = document.getElementById('countdownDisplay');

@@ -208,34 +208,42 @@ class CollisionSystem(System):
 	def execute(self, entities):
 		for current_ent in entities:
 			ent_mesh = current_ent.get_component(Mesh)
-			if not ent_mesh:
+			ent_phys = current_ent.get_component(Physics)
+			if not ent_mesh or not ent_phys:
 				continue
 			for other_ent in entities:
 				if current_ent != other_ent:
 					other_mesh = other_ent.get_component(Mesh)
 					if not other_mesh:
 						continue
-					ab = other_ent.position.sub(current_ent.position)
-					threshold = max(max(ent_mesh.width, ent_mesh.height), max(other_mesh.width, other_mesh.height))
-					if ab.length() < threshold:
-						o_closest = other_mesh.get_closest_point(other_ent, current_ent.position)
-						s_closest = ent_mesh.get_closest_point(current_ent, o_closest)
-						diff = o_closest.sub(s_closest)
-						if diff.dot(ab) < 0:
-							phys = current_ent.get_component(Physics)
-							o_phys = other_ent.get_component(Physics)
-							if phys and not phys.is_static:
-								current_ent.move(diff.x, diff.y)
-							if o_phys and not o_phys.is_static:
-								other_ent.move(-diff.x, -diff.y)
-							if ent_mesh.is_trigger:
-								current_ent.on_trigger(other_ent, s_closest)
-							else:
-								current_ent.on_collision(other_ent, s_closest)
-							if other_mesh.is_trigger:
-								other_ent.on_trigger(current_ent, o_closest)
-							else:
-								other_ent.on_collision(current_ent, o_closest)
+					steps = math.ceil(ent_phys.velocity.length() / max(ent_mesh.width * 0.5, ent_mesh.height * 0.5))
+					for i in range(steps):
+						t = i / steps
+						current_pos = current_ent.position.add(ent_phys.velocity.dup().scale(t))
+						other_pos = other_ent.position
+						ab = other_pos.sub(current_pos)
+						threshold = max(ent_mesh.width, ent_mesh.height, other_mesh.width, other_mesh.height)
+						if ab.length() < threshold:
+							step_transform = Transform(current_pos.x, current_pos.y, current_ent.rotation)
+							o_closest = other_mesh.get_closest_point(other_ent, current_pos)
+							s_closest = ent_mesh.get_closest_point(step_transform, o_closest)
+							diff = o_closest.sub(s_closest)
+							if diff.dot(ab) < 0:
+								if not ent_phys.is_static:
+									current_ent.set_pos(current_pos.x, current_pos.y)
+									current_ent.move(diff.x, diff.y)
+								o_phys = other_ent.get_component(Physics)
+								if o_phys and not o_phys.is_static:
+									other_ent.move(-diff.x, -diff.y)
+								if ent_mesh.is_trigger:
+									current_ent.on_trigger(other_ent, s_closest)
+								else:
+									current_ent.on_collision(other_ent, s_closest)
+								if other_mesh.is_trigger:
+									other_ent.on_trigger(current_ent, o_closest)
+								else:
+									other_ent.on_collision(current_ent, o_closest)
+								break
 
 
 class World:

@@ -246,6 +246,7 @@ class OnlineMatch(AsyncWebsocketConsumer):
 			lobby_data = json.loads(lobby_data_json)
 			data = {
 				'type': 'match_list',
+				'username': self.user.username,
 				'matches': lobby_data.get('matches')
 			}
 		await self.send(json.dumps(data))
