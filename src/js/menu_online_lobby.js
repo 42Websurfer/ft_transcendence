@@ -85,6 +85,8 @@ function displayMatches(matches)
     if (historicMatchesList)
         historicMatchesList.innerHTML = '';
 
+    let username = matches.username;
+
     for (let index = 0; index < matches.length; index++) {
         
         const match = matches[index];
@@ -97,13 +99,17 @@ function displayMatches(matches)
             score = "-:-";
         else
             score = match.score_home + ":" + match.score_away;
-        let status = match.status;
 
-        addMatchItem(historicMatchesList, player_home, player_away, score, status);
+        let result = "won";
+
+        if ((player_home === username && player_home < player_away) || (player_away === username && player_home > player_away))
+            result = "lost";
+
+        addMatchItem(historicMatchesList, player_home, player_away, score, result);
     }
 }
 
-function addMatchItem(historicMatchesList, player_home, player_away, score, status) {
+function addMatchItem(historicMatchesList, player_home, player_away, score, result) {
 
     if (!historicMatchesList)
         return;
@@ -120,7 +126,11 @@ function addMatchItem(historicMatchesList, player_home, player_away, score, stat
     let item;
 
     item = '<svg class="check-symbol" xmlns="http://www.w3.org/2000/svg" viewBox="2 1.5 20 20" fill="#4740a8" width="4em" height="4em" style="margin: 0; padding: 0;"><path d="M0 0h24v24H0z" fill="none"/><path d="M9 16.2l-3.5-3.5 1.4-1.4L9 13.4l7.1-7.1 1.4 1.4z"/></svg>';
-    li.style.background = 'linear-gradient(to bottom, rgba(26, 158, 37, 0.8), rgba(15, 126, 24, 0.8) 100%)';
+    
+    if (result === "win")
+        li.style.background = 'linear-gradient(to bottom, rgba(7, 136, 7, 0.5), rgba(7, 136, 7, 0.5) 100%)'; //grün
+    else
+        li.style.background = 'linear-gradient(to bottom, rgba(242, 7, 7, 0.5), rgba(242, 7, 7, 0.5) 100%)'; //rot
 
     let free_color_home = '';
     let free_color_away = '';
