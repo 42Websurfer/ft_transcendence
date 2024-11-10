@@ -47,8 +47,9 @@ export function runWebsocket() {
                     let goals = user.goals + ":" + user.goals_against;
                     let diff = user.diff;
                     let points = user.points;
+                    let status = user.status;
                     
-                    addRowToStandingsTable(rank, player, games, wins, losses, goals, diff, points);
+                    addRowToStandingsTable(rank, player, games, wins, losses, goals, diff, points, status);
                 }
             }
             else if (data.type === 'match_list')
@@ -124,7 +125,7 @@ function displayMatches(response)
     }
 }
 
-function addRowToStandingsTable(rank, player, games, wins, losses, goals, diff, points) {
+function addRowToStandingsTable(rank, player, games, wins, losses, goals, diff, points, status) {
 
     const tableBody = document.getElementById('tournamentStandingsTableBody');
 
@@ -143,6 +144,20 @@ function addRowToStandingsTable(rank, player, games, wins, losses, goals, diff, 
         <td>${diff}</td>
         <td>${points}</td>
     `;
+
+    if (status === "disconnected")
+    {
+        row.innerHTML = `
+        <td style="color: #b7b6bb;">${rank}</td>
+        <td style="color: #b7b6bb;">${player}</td>
+        <td style="color: #b7b6bb;">${games}</td>
+        <td style="color: #b7b6bb;">${wins}</td>
+        <td style="color: #b7b6bb;">${losses}</td>
+        <td style="color: #b7b6bb;">${goals}</td>
+        <td style="color: #b7b6bb;">${diff}</td>
+        <td style="color: #b7b6bb;">${points}</td>
+        `;
+    }
 
     tableBody.appendChild(row);
 }
@@ -171,6 +186,11 @@ function addMatchItem(tournamentMatchesList, player_home, player_away, score, st
     else if (status === 'pending')
     {
         item = '<svg class="clock-symbol" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#4740a8" width="4em" height="4em" style="margin: 0; padding: 0;"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-.5-13h-2v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>';
+        li.style.background = 'linear-gradient(to bottom, rgba(211, 211, 211, 0.8), rgba(169, 169, 169, 0.8) 100%)';
+    }
+    else if (status === 'disconnected')
+    {
+        item = '<svg class="disconnected-symbol" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#4740a8" width="4em" height="4em" style="margin: 0; padding: 0;"><path d="M0 0h24v24H0z" fill="none"/><path d="M17.59 7.41L16.17 6l-4.59 4.59L7 6 5.59 7.41 10.17 12l-4.58 4.59L7 18l4.59-4.59L16.17 18l1.42-1.41L12.83 12l4.76-4.59z"/></svg>';
         li.style.background = 'linear-gradient(to bottom, rgba(211, 211, 211, 0.8), rgba(169, 169, 169, 0.8) 100%)';
     }
     else //running
