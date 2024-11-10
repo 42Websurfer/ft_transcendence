@@ -23,6 +23,7 @@ export function displayMessages(result) {
         const div = document.createElement('div');
         div.classList.add('error');
         div.textContent = result.error;
+        div.style.animation = 'wiggle 0.5s ease-in-out';
         messagesContainer.appendChild(div);
     } else if (result.success) {
         const div = document.createElement('div');

@@ -1,6 +1,7 @@
 import { handleLogoutSubmit, getCookie } from './utils.js';
 import { renderAuth42 } from './auth_42.js';
 import { renderWaiting } from './waiting.js';
+import { renderAuth2FALogin } from './auth_2fa_login.js';
 
 let wsBool;
 wsBool = false;
@@ -424,6 +425,8 @@ export async function showSection(section, lobbyId)
             module.renderAuthLogin();    
         });
         section = 'auth_login';
+    
+
     }
 }
 
@@ -437,9 +440,9 @@ async function initApp() {
 }
 
 window.addEventListener('popstate', (event) => {
-	if (event.state && event.state.section){
-		showSection(event.state.section);
-	}
+    if (event.state && event.state.section) {
+        showSection(event.state.section, event.state.lobbyId);
+    }
 });
 
 async function sendCodeToBackend(code) {
@@ -479,6 +482,7 @@ window.onload = async function() {
     if (code = getAuthorizationCode())
     {
         const response = await sendCodeToBackend(code);
+        console.log(response);
         window.history.replaceState({}, document.title, window.location.pathname);
         if (response.type === 'registration')
         {
@@ -487,13 +491,10 @@ window.onload = async function() {
         }
         else if (response.type === 'success')
         {
-            console.log('TOKEN WILL BE SETTED: ', response.tokens.access);
-            localStorage.setItem('access_token', response.tokens.access);  
-            localStorage.setItem('refresh_token', response.tokens.refresh);
-            showSection('menu');
+            renderAuth2FALogin(response.user)
         }
         else if (response.type === 'error')
-            showSection(login);
+            showSection('login');
         console.log('Response = ', response);
     }
     else

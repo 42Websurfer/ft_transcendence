@@ -1,5 +1,7 @@
 import { getCookie, displayMessages } from './utils.js';
 import { showSection } from './index.js';
+import { sendAuthCode } from './auth_register.js';
+import { renderAuth2FARegister } from './auth_2fa_register.js';
 
 export async function renderAuth42(session_data) {
     console.log('SESSION_DATA: ', session_data);
@@ -8,22 +10,21 @@ export async function renderAuth42(session_data) {
     app.innerHTML = `
 	<div class="login">
 		<div class="login-container">
-				<input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
-				
-				<div class="login-instructions">
-					<p>Welcome, please enter a username!</p>
-				</div>
-				
-				<div class="login-messages" id="messages"></div>
+            <input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
+            
+            <div class="login-instructions">
+                <p>Welcome, please enter a username!</p>
+            </div>
+            
+            <div class="login-messages" id="messages"></div>
 
-				<div class="login-form-field form-floating">
-					<input type="text" name="login-username" class="form-control-new form-control" id="usernameInput" placeholder="Username" required>
-					<label for="floatingInput">Username</label>
-				</div>
+            <div class="login-form-field form-floating">
+                <input type="text" name="login-username" class="form-control-new form-control" id="usernameInput" placeholder="Username" required>
+                <label for="floatingInput">Username</label>
+            </div>
 
-				<button id="usernameButton" class="signin-button btn btn-primary w-100 py-2" type="click">Sign up</button>
-			</div>
-        <div id="registerLoader" class="loader"></div> 	
+            <button id="usernameButton" class="signin-button btn btn-primary w-100 py-2" type="click">Sign up</button>
+		</div>
 	</div>
 	`;
 	const usernameButton = document.getElementById('usernameButton');
@@ -51,7 +52,6 @@ async function handleUsernameFormSubmit(session_data)
     username = usernameElement.value.trim();
     
 
-    const token = localStorage.getItem('access_token');   
     try {
         
         const token = localStorage.getItem('access_token'); 
@@ -67,19 +67,11 @@ async function handleUsernameFormSubmit(session_data)
 
         const result = await response.json();
         const registerMessage = document.getElementById('messages');
-	
+        console.log("Response = ", result);
         if (result.type === 'success')
         {
-            console.log('TOKEN WILL BE SETTED: ', result.tokens.access);
-            localStorage.setItem('access_token', result.tokens.access);  
-            localStorage.setItem('refresh_token', result.tokens.refresh);		
-
             registerMessage.textContent = '';
-    
-            const registerLoader = document.getElementById('registerLoader');
-            registerLoader.style.display = 'block';
-    
-            setTimeout(() => showSection('menu'), 2000);
+            renderAuth2FARegister(result);
         }
         else
         {
