@@ -2,7 +2,7 @@ import { getCookie, displayMessages } from './utils.js';
 import { showSection } from './index.js';
 
 export function renderAuthRegister() {
-
+	history.pushState({ section: 'auth_register' }, '', `?section=auth_register`);
 	const app = document.getElementById('app');
 	app.innerHTML = `
 	<div class="login">
