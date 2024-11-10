@@ -3,6 +3,7 @@ import { showSection } from './index.js';
 
 const PLAYER_MOVE_SPEED = 20;
 const BALL_MOVE_SPEED = 15;
+const VECTOR_CENTER = new Vector(canvas.width * 0.5, canvas.height * 0.5);
 
 export function renderPong(match_id) {
 	const app = document.getElementById('app');
@@ -38,7 +39,6 @@ class Ball extends Entity{
 		super(x, y);
 		this.addComponent(Mesh, new Circle(40));
 		this.physics = new Physics(0,0, false, false);
-		// this.physics.hasGravity = false;
 		this.addComponent(Physics, this.physics);
 		this.lastHit = undefined;
 		this.secondLastHit = undefined;
@@ -46,8 +46,7 @@ class Ball extends Entity{
 
 	resetBall(){
 		this.physics.setVelocity(0, 0);
-		this.position.x = canvas.width / 2;
-		this.position.y = canvas.height / 2;
+		this.setPos(canvas.width * 0.5, canvas.height * 0.5);
 	}
 
 	onCollision(other, collisionPoint = undefined){
@@ -57,8 +56,7 @@ class Ball extends Entity{
 		}
 		if (collisionPoint === undefined)
 			return;
-		let ba = this.position.sub(collisionPoint);
-		ba.normalize();
+		let ba = (this.position.sub(collisionPoint)).normalize();
 		let tangent = new Plane(collisionPoint, ba);
 		let velocityNormalized = this.physics.velocity.dup().normalize();
 		let dotProduct = tangent.dir.dot(velocityNormalized);
@@ -93,7 +91,7 @@ class Player extends Entity{
 			let ab = newPos.sub(this.startPos);
 			let len = ab.length();
 			ab.scale((len + this.mesh.height * 0.5) / len);
-			if (ab.length() > this.goalHeight * 0.5)
+			if (len > this.goalHeight * 0.5)
 				return;
 		}
 		/**
@@ -102,7 +100,6 @@ class Player extends Entity{
 		 */
 		let transformedPoints = this.mesh.points.map(p => p.dup().rotate(this.rotation).add(newPos));
 		for (let point of transformedPoints) {
-			// point = point.add(newPos);
 			if (point.x < 0 || point.x > canvas.width)
 				return;
 			if (point.y < 0 || point.y > canvas.height)
@@ -116,7 +113,6 @@ class Player extends Entity{
 		if (ophys && collisionPoint && other instanceof Ball){
 			let drall = collisionPoint.sub(this.position);
 			let prevScale = ophys.velocity.length();
-			// drall = drall.add(this.physics.velocity);
 			drall.normalize();
 			drall.scale(10);	
 			ophys.velocity = ophys.velocity.add(drall);
@@ -138,8 +134,7 @@ class Player extends Entity{
 
 	keyUp(event){
 		if (event.key === this.keyBinds.up || event.key === this.keyBinds.down){
-			this.physics.velocity.x = 0;
-			this.physics.velocity.y = 0;
+			this.physics.setVelocity(0, 0);
 		} else {
 			return;
 		}
@@ -222,12 +217,11 @@ class PlayerSection extends Entity{
 	}
 
 	bindPlayer(){
-		this.player.position.x = this.goal.position.x;
-		this.player.position.y = this.goal.position.y;
+		this.player.setPos(this.goal.position.x, this.goal.position.y);
 		this.player.rotate(this.goal.rotation);
-		if (this.player.up.dot(new Vector(0, -1)) < 0)
+		if (this.player.up.dot(new Vector(0, -1)) < 0) // Vector(0, -1) is Global Up
 			this.player.rotate(this.player.rotation + 180);
-		let forward = new Vector(canvas.width * 0.5, canvas.height * 0.5).sub(this.player.position);
+		let forward = VECTOR_CENTER.sub(this.player.position);
 		forward.normalize();
 		forward.scale(75);
 		forward = forward.add(this.player.position);
@@ -261,18 +255,13 @@ class PongLocalManager extends Entity{
 			world.addEntity(new Wall(canvas.width * .5, canvas.height, 90, canvas.width));
 			return;
 		}
-		const center = new Vector(canvas.width * 0.5, canvas.height * 0.5);
 		let point1 = new Vector(0, -canvas.height / 2);
 		let rotationStep = 360 / playerCount;
 		let rot = (rotationStep) / 2;
 		let point2 = point1.dup().rotate(rotationStep);
 		for (let i = 0; i < playerCount; i++) {
-			let ba = point2.sub(point1);
-			drawLine(point1.add(center), point2.add(center));
-			ba.scale(0.5);
-			let midpoint = ba.add(point1);
-			midpoint = midpoint.add(center);
-			ctx.fillRect(midpoint.x, midpoint.y, 5, 5);
+			let ba = point2.sub(point1).scale(0.5);
+			let midpoint = ba.add(point1).add(VECTOR_CENTER);
 			this.sections.push(new PlayerSection(midpoint.x, midpoint.y, rot + 90, ba.length() * 2));
 			point1.rotate(rotationStep);
 			point2.rotate(rotationStep);
@@ -282,7 +271,7 @@ class PongLocalManager extends Entity{
 
 	initGame(){
 		
-		this.buildDynamicField(3);
+		this.buildDynamicField(2);
 
 		this.sections.forEach( section => {
 			this.updatePlayerScore(section.player);
@@ -358,24 +347,23 @@ class PongLocalManager extends Entity{
 			return;
 		if (!this.round_running) {
 			if (Date.now() - this.counter >= 3000.0) {
-				let dir = new Vector(canvas.width * 0.5, canvas.height * 0.5).sub(this.starter.startPos);
+				let dir = VECTOR_CENTER.sub(this.starter.startPos);
 				dir.normalize();
 				dir.scale(BALL_MOVE_SPEED);
 				this.ball.physics.setVelocityV(dir)
 				this.ball.lastHit = this.starter;
 				this.round_running = true;
 			} else if (this.starter) {
-				let forward = new Vector(canvas.width * 0.5, canvas.height * 0.5).sub(this.starter.startPos);
+				let forward = VECTOR_CENTER.sub(this.starter.startPos);
 				forward.normalize();
 				forward.scale(50);
 				forward = forward.add(this.starter.position);
-				this.ball.position.x = forward.x;
-				this.ball.position.y = forward.y;
+				this.ball.setPos(forward.x, forward.y)
 			}
 		}
 		if (this.ball.physics.velocity.sqrLength() < Math.pow(30, 2))
 			this.ball.physics.velocity.scale(1.0002);
-		if (this.ball.position.sub(new Vector(canvas.width * 0.5, canvas.height * 0.5)).sqrLength() > (Math.pow(canvas.width * 1.5, 2))) {
+		if (this.ball.position.sub(VECTOR_CENTER).sqrLength() > (Math.pow(canvas.width * 1.5, 2))) {
 			this.resetRound();
 		}
 	}

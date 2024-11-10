@@ -170,10 +170,8 @@ class GameLogicManager(Entity):
 			rot = (rotationStep) / 2
 			point2 = point1.dup().rotate(rotationStep)
 			for i in range(playerCount):
-				ba = point2.sub(point1)
-				ba.scale(0.5)
-				midpoint = ba.add(point1)
-				midpoint = midpoint.add(VECTOR_CENTER)
+				ba = point2.sub(point1).scale(0.5)
+				midpoint = ba.add(point1).add(VECTOR_CENTER)
 				self.sections.append(PlayerSection(midpoint.x, midpoint.y, rot + 90, ba.length() * 2))
 				point1.rotate(rotationStep)
 				point2.rotate(rotationStep)
