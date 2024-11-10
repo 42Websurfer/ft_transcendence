@@ -60,8 +60,6 @@ def user_login(request):
             user = authenticate(username=username, password=password)
             logger.debug("WO FAILST DU JUNGE2")
             if user is not None:
-                # refresh = RefreshToken.for_user(user)
-                # access_token = str(refresh.access_token)
                 return JsonResponse({
                     'success': 'User logged in successfully.',
                     'user': {
@@ -71,10 +69,6 @@ def user_login(request):
                         'first_name': user.first_name,
                         'last_name': user.last_name
                     },
-                    # 'tokens': {
-                    #     'refresh': str(refresh),
-                    #     'access': access_token,
-                    # }
                 }, status=200)
             else:
                 return JsonResponse({'error': 'Incorrect username or password.'}, status=400)
@@ -131,7 +125,6 @@ def register(request):
             firstname = data.get('firstname')
             lastname = data.get('lastname')
             username = data.get('username')
-            #check if one value is missing!
             avatar = data = request.FILES.get('avatar')
             if User.objects.filter(email=email).exists():
                 return JsonResponse({'type': 'error', 'message': 'Email address already exists.'}, status=400)
