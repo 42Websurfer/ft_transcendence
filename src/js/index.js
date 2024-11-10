@@ -425,6 +425,8 @@ export async function showSection(section, lobbyId)
             module.renderAuthLogin();    
         });
         section = 'auth_login';
+    
+
     }
 }
 
@@ -438,9 +440,9 @@ async function initApp() {
 }
 
 window.addEventListener('popstate', (event) => {
-	if (event.state && event.state.section){
-		showSection(event.state.section);
-	}
+    if (event.state && event.state.section) {
+        showSection(event.state.section, event.state.lobbyId);
+    }
 });
 
 async function sendCodeToBackend(code) {
