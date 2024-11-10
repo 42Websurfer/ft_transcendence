@@ -479,6 +479,7 @@ window.onload = async function() {
     if (code = getAuthorizationCode())
     {
         const response = await sendCodeToBackend(code);
+        console.log(response);
         window.history.replaceState({}, document.title, window.location.pathname);
         if (response.type === 'registration')
         {
@@ -487,13 +488,11 @@ window.onload = async function() {
         }
         else if (response.type === 'success')
         {
-            console.log('TOKEN WILL BE SETTED: ', response.tokens.access);
-            localStorage.setItem('access_token', response.tokens.access);  
-            localStorage.setItem('refresh_token', response.tokens.refresh);
+            //Hier muss dann noch der 2fa code validiert werden und von dort aus dann showSection('menu')
             showSection('menu');
         }
         else if (response.type === 'error')
-            showSection(login);
+            showSection('login');
         console.log('Response = ', response);
     }
     else
