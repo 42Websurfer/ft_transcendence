@@ -1,6 +1,7 @@
 import { handleLogoutSubmit, getCookie } from './utils.js';
 import { renderAuth42 } from './auth_42.js';
 import { renderWaiting } from './waiting.js';
+import { renderAuth2FALogin } from './auth_2fa_login.js';
 
 let wsBool;
 wsBool = false;
@@ -488,8 +489,7 @@ window.onload = async function() {
         }
         else if (response.type === 'success')
         {
-            //Hier muss dann noch der 2fa code validiert werden und von dort aus dann showSection('menu')
-            showSection('menu');
+            renderAuth2FALogin(response.user)
         }
         else if (response.type === 'error')
             showSection('login');
