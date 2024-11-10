@@ -3,7 +3,6 @@ import logging
 import redis
 import requests
 import pyotp
-import qrcode
 from django.shortcuts import get_object_or_404, redirect
 from django.http import JsonResponse
 from django.contrib.auth.models import User
@@ -12,15 +11,13 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Q
-from io import BytesIO
-from base64 import b64encode
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from user.utils import updateOnlineStatusChannel
 from tournament.models import GameStatsUser
 from .models import User, Friendship, UserProfile
-
+from .utils import setup_2fa
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
@@ -145,20 +142,7 @@ def register(request):
                 user_game_stats.avatar = avatar
                 user_game_stats.save()
 
-            otp_secret = pyotp.random_base32() 
-            user_profile = UserProfile.objects.get(user=user)
-            user_profile.otp_secret = otp_secret
-            user_profile.save()
-
-            totp = pyotp.TOTP(otp_secret)
-            uri = totp.provisioning_uri(name=username, issuer_name="Websurfer app"), 
-            qr_code = qrcode.make(uri)
-            buffer = BytesIO() 
-            qr_code.save(buffer, format="PNG")
-            qr_code_string = b64encode(buffer.getvalue()).decode("utf-8")
-
-
-            #refresh = RefreshToken.for_user(user)
+            qr_code_string = setup_2fa(user)
             return JsonResponse({
                 'type': 'success',
                 'message': 'User registered successfully.',
@@ -386,15 +370,16 @@ def get_all_online_users(request):
 
 def check_registration(request, session_data):
     try:
+        
         user = User.objects.get(email=session_data.get('email'))
         userprofile = UserProfile.objects.get(user=user)
         if (not userprofile.is_third_party_user):
             logger.debug("Email already registered")
-            return False
+            return False, None
         if (user.username):
             return (True, user)
     except User.DoesNotExist:
-        return False
+        return False, None
 
 @csrf_exempt
 def register_api(request):
@@ -415,47 +400,44 @@ def register_api(request):
             userprofile = UserProfile.objects.get(user=user)
             userprofile.is_third_party_user = True
             userprofile.save()
-        refresh = RefreshToken.for_user(user)
-        access = str(refresh.access_token)
+        qr_code_string = setup_2fa(user)
         return JsonResponse(
             {
                 'type': 'success',
-                'tokens': {
-                    'refresh': str(refresh),
-                    'access': access,
-                }
+                'user': {
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email,
+                    'first_name': user.first_name,
+                    'last_name': user.last_name
+                },
+                'qr_code': f"data:image/png;base64,{qr_code_string}",
             })
     except json.JSONDecodeError as e:
         logger.error(f"JSON decode error: {e}")
         return JsonResponse({'type': 'error', 'message': 'Invalid JSON data'}, status=400)
     except Exception as e:
-        return JsonResponse({'type': 'error', 'message': 'Am oasch'}, status=400)
+        return JsonResponse({'type': 'error', 'message': str(e)}, status=400)
     
 
 @csrf_exempt
 def api_callback(request):
     data = json.loads(request.body) #request.GET.get('code')
     code = data.get('code')
-
     try:
         access_token_response = exchange_code_for_token(code)
-
         user_info = get_user_info(access_token_response['access_token'])
-        
         session_data = create_user_session(user_info)
+
         isValid, user =check_registration(request, session_data)
-        logger.debug("HAS TO BE VALID! = ", isValid)
         if (isValid):
-            refresh = RefreshToken.for_user(user)
-            access = str(refresh.access_token)
+
             return JsonResponse(
                 {
-                    'type': 'success', 
-                    'data': session_data,
-                    'tokens': {
-                        'refresh': str(refresh),
-                        'access': access,
-                    },
+                    'type': 'success',
+                    'message': 'User registered successfully.',
+                    'session_data': session_data,
+
                 }, status=200)
         else: 
             return JsonResponse({'type': 'registration', 'data': session_data})
