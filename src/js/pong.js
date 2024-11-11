@@ -625,10 +625,12 @@ function setupCloseWebsocket(socket) {
 		socket.close();
 		homeButton.removeEventListener('click', closeSocket);
 		logoutButton.removeEventListener('click', closeSocket);
+        window.removeEventListener('popstate', closeSocket);
 	}
 
 	homeButton.addEventListener('click', closeSocket)
 	logoutButton.addEventListener('click', closeSocket);
+    window.addEventListener('popstate', closeSocket);
 }
 
 
