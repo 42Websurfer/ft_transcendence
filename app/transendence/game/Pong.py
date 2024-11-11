@@ -252,7 +252,7 @@ class GameLogicManager(Entity):
 				forward.normalize()
 				forward.scale(50)
 				forward = forward.add(self.starter.position)
-				self.ball.set_pos(dir.x, dir.y)
+				self.ball.set_pos(forward.x, forward.y)
 				thread_local.pong_game.send_entity_move(self.ball)
 		if self.ball.physics.velocity.sqr_length() < pow(30, 2):
 			self.ball.physics.velocity.scale(1.0002)
@@ -309,7 +309,7 @@ class PongGame:
 		self.game_thread = threading.Thread(target=self.game_loop)
 		self.game_thread.start()
 
-		for player, i in enumerate(self.players):
+		for i, player in enumerate(self.players):
 			asyncio.run_coroutine_threadsafe(player.assign_player(self.gameLogic.sections[i].player), self.event_loop)
 			asyncio.run_coroutine_threadsafe(getCurrentState(self.world, player), self.event_loop)
 
@@ -328,17 +328,17 @@ class PongGame:
 		print('We have a winner! Stop game thread, and asyncio thread')
 		self.stop()
 		print('Start of DB save')
-		if self.player1.match_type == 'match':
+		if self.players[0].match_type == 'match':
 			match_data = {}
-			match_data['home'] = GameStatsUser.objects.get(username=self.player1.user.username)
-			match_data['away'] = GameStatsUser.objects.get(username=self.player2.user.username)
-			match_data['home_score'] = self.player1.player_c.score
-			match_data['away_score'] = self.player2.player_c.score
-			set_online_match(match_data, self.player1.lobby_id)
+			match_data['home'] = GameStatsUser.objects.get(username=self.players[0].user.username)
+			match_data['away'] = GameStatsUser.objects.get(username=self.players[1].user.username)
+			match_data['home_score'] = self.players[0].player_c.score
+			match_data['away_score'] = self.players[1].player_c.score
+			set_online_match(match_data, self.players[0].lobby_id)
 			print('Data successfully saved into DB!')
-		elif self.player1.match_type == 'tournament':
+		elif self.players[0].match_type == 'tournament':
 			print('Start save tournament data!')
-			(async_to_sync)(set_match_data)(self.player1.lobby_id, self.player1.match_id, self.player1.player_c.score, self.player2.player_c.score, 'finished')
+			(async_to_sync)(set_match_data)(self.players[0].lobby_id, self.players[0].match_id, self.players[0].player_c.score, self.players[1].player_c.score, 'finished')
 			print('Tournament data saved!')		
 
 	def game_loop(self):
@@ -346,21 +346,21 @@ class PongGame:
 		thread_local.asyncio_thread = self.asyncio_thread
 		thread_local.game_thread = self.game_thread
 		thread_local.event_loop = self.event_loop
-		thread_local.host = self.player1
+		thread_local.host = self.players[0]
 		thread_local.world = self.world
 		iter = 0
 		while not self.stop_thread:
 			self.world.update()
 			time.sleep(0.016)
 			if iter == 1000:
-				print('game running on', self.player1.group_name)
+				print('game running on', self.players[0].group_name)
 				iter = 0
 			iter += 1
-		print('game loop stopped of group', self.player1.group_name)
+		print('game loop stopped of group', self.players[0].group_name)
 		self.event_loop.call_soon_threadsafe(self.event_loop.stop)
 		print('asyncio event_loop ordered to stop')
-		(async_to_sync)(self.player1.close)()
-		(async_to_sync)(self.player2.close)()
+		for player in self.players:
+			(async_to_sync)(player.close)()
 
 	def asyncio_tasks_thread(self):
 		asyncio.set_event_loop(self.event_loop)
@@ -371,8 +371,8 @@ class PongGame:
 	Some big and commonly used sends defined here to make code more readable
 	"""
 	def send_entity_move(self, entity):
-		asyncio.run_coroutine_threadsafe(self.player1.channel_layer.group_send(
-			self.player1.group_name,
+		asyncio.run_coroutine_threadsafe(self.players[0].channel_layer.group_send(
+			self.players[0].group_name,
 			{
 				'type': 'move_entity',
 				'id': entity.id,
@@ -382,8 +382,8 @@ class PongGame:
 			self.event_loop)
 		
 	def send_entity_set_pos(self, entity):
-		asyncio.run_coroutine_threadsafe(self.player1.channel_layer.group_send(
-			self.player1.group_name,
+		asyncio.run_coroutine_threadsafe(self.players[0].channel_layer.group_send(
+			self.players[0].group_name,
 			{
 				'type': 'set_entity_pos',
 				'id': entity.id,
@@ -433,7 +433,7 @@ class GamesHandler:
 		if self.game and self.players.__len__() < self.game.playerCount or self.players.__len__() < 2:
 			if self.players.__len__() == 0:
 				if consumer.match_type == 'multiple':
-					self.game = PongGame(consumer.match_id)
+					self.game = PongGame(8)
 				else:
 					self.game = PongGame(2)
 			self.players.append(consumer)
