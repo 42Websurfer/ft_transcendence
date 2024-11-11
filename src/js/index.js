@@ -428,7 +428,8 @@ export async function showSection(section, lobbyId, pushState = true)
     
     
     }
-    if (pushState && section != 'waiting')
+    const currentState = history.state
+    if (pushState && section != 'waiting' && (!currentState || currentState.section != section))
         history.pushState({ section, lobbyId }, '', `/${section}${lobbyId ? `?lobbyId=${lobbyId}` : ''}`);
 
 }
