@@ -165,7 +165,7 @@ class AiPlayer extends Player {
 			console.log('AI: no target!')
 			return;
 		}
-		if (this.target.x > canvas.width * 0.75) {
+		if (this.target.x > canvas.width * 0.67) {
 			if (this.target.y > this.position.y + 20) {
 				this.keyDown({ key: this.keyBinds.down });
 			} else if (this.target.y < this.position.y - 20) {
