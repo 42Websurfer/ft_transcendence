@@ -33,7 +33,7 @@ export function renderMenuTournament(lobbyId = null) {
         try {
             const token = localStorage.getItem('access_token'); 
 
-            const response = await fetch(`/tm/join_tournament_lobby/${lobby_id}/`, {
+            const response = await fetch(`/api/tm/join_tournament_lobby/${lobby_id}/`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -67,7 +67,7 @@ export function renderMenuTournament(lobbyId = null) {
         try {
             const token = localStorage.getItem('access_token'); 
 
-            const response = await fetch(`/tm/create/tournament`, {
+            const response = await fetch(`/api/tm/create/tournament`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,

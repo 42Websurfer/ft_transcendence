@@ -56,7 +56,7 @@ async function handleUsernameFormSubmit(session_data)
         
         const token = localStorage.getItem('access_token'); 
     
-        const response = await fetch('/register_api/', {
+        const response = await fetch('/api/register_api/', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,

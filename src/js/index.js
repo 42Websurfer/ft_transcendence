@@ -10,7 +10,7 @@ let ws;
 async function checkAuthentication() {
     const token = localStorage.getItem('access_token'); 
     try {
-        const response = await fetch('/checkauth/', {
+        const response = await fetch('/api/checkauth/', {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -101,7 +101,7 @@ export async function handleFriendRequest(url) {
     try {
         const token = localStorage.getItem('access_token'); 
 
-        const response = await fetch(`${url}`, {
+        const response = await fetch(`/api${url}`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -447,7 +447,7 @@ window.addEventListener('popstate', (event) => {
 
 async function sendCodeToBackend(code) {
     try {        
-        const response = await fetch(`/callback/`, {
+        const response = await fetch(`/api/callback/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

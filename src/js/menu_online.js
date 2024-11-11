@@ -30,7 +30,7 @@ export function renderMenuOnline(lobbyId = null) {
         try {
             const token = localStorage.getItem('access_token'); 
 
-            const response = await fetch(`/tm/join_online_lobby/${lobby_id}/`, {
+            const response = await fetch(`/api/tm/join_online_lobby/${lobby_id}/`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -65,7 +65,7 @@ export function renderMenuOnline(lobbyId = null) {
         try {
             const token = localStorage.getItem('access_token'); 
 
-            const response = await fetch(`/tm/create/match`, {
+            const response = await fetch(`/api/tm/create/match`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,

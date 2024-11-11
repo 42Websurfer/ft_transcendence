@@ -37,7 +37,7 @@ export async function handleLogoutSubmit(ws, wsBool)
 {
     const token = localStorage.getItem('access_token'); 
 
-    const response = await fetch('/logout/', {
+    const response = await fetch('/api/logout/', {
         method: 'GET',
         headers: {
             'Authorization': `Bearer ${token}`,
@@ -79,7 +79,7 @@ export async function fetch_get(url)
     const token = localStorage.getItem('access_token'); 
 
     try {
-        const response = await fetch(url, {
+        const response = await fetch('/api' + url, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,

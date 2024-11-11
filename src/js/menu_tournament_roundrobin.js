@@ -356,7 +356,7 @@ export function renderMenuTournamentRoundRobin(lobbyId) {
         
         const token = localStorage.getItem('access_token'); 
 
-        fetch(`/tm/get_tournament_lobby_data/${lobbyId}/`, {
+        fetch(`/api/tm/get_tournament_lobby_data/${lobbyId}/`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -435,7 +435,7 @@ export function renderMenuTournamentRoundRobin(lobbyId) {
         try {
             const token = localStorage.getItem('access_token'); 
 
-            const response = await fetch(`/tm/start_tournament/${lobbyId}/`, {
+            const response = await fetch(`/api/tm/start_tournament/${lobbyId}/`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,

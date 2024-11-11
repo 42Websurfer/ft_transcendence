@@ -68,7 +68,7 @@ export function renderMenuMultiplayer(lobbyId = null) {
         try {
             const token = localStorage.getItem('access_token'); 
 
-            const response = await fetch(`/tm/bc_get_score/`, {
+            const response = await fetch(`/api/tm/bc_get_score/`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -108,7 +108,7 @@ export function renderMenuMultiplayer(lobbyId = null) {
     
                 const token = localStorage.getItem('access_token'); 
         
-                const response = await fetch('/tm/bc_update_score/', {
+                const response = await fetch('/api/tm/bc_update_score/', {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -144,7 +144,7 @@ export function renderMenuMultiplayer(lobbyId = null) {
         try {
             const token = localStorage.getItem('access_token'); 
 
-            const response = await fetch(`/tm/bc_delete_score/`, {
+            const response = await fetch(`/api/tm/bc_delete_score/`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -203,7 +203,7 @@ async function handleFormSubmit(event) {
 
     const token = localStorage.getItem('access_token'); 
 
-    const response = await fetch('/tm/test_set_online_match/', {
+    const response = await fetch('/api/tm/test_set_online_match/', {
 		method: 'POST',
         headers: {
             'Authorization': `Bearer ${token}`,
