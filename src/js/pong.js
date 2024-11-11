@@ -5,6 +5,8 @@ const PLAYER_MOVE_SPEED = 20;
 const BALL_MOVE_SPEED = 15;
 
 export function renderPong(match_id) {
+    history.pushState({ section: 'pong', lobbyId }, '', `/pong${lobbyId ? `?lobbyId=${lobbyId}` : ''}`);
+
 	const app = document.getElementById('app');
 	if (app)
 	{

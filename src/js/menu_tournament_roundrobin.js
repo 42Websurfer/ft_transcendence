@@ -236,6 +236,8 @@ let g_socket;
 
 export function renderMenuTournamentRoundRobin(lobbyId) {
 
+    history.pushState({ section: 'menu_tournament_roundrobin', lobbyId }, '', `/menu_tournament_roundrobin${lobbyId ? `?lobbyId=${lobbyId}` : ''}`);
+
     const app = document.getElementById('app');
 
     app.innerHTML = `

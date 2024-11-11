@@ -4,8 +4,8 @@ import { sendAuthCode } from './auth_register.js';
 import { renderAuth2FARegister } from './auth_2fa_register.js';
 
 export async function renderAuth42(session_data) {
-    console.log('SESSION_DATA: ', session_data);
-	console.log('Username42 will be registered');
+    history.pushState({ section: 'auth_42', lobbyId }, '', `/auth_42${lobbyId ? `?lobbyId=${lobbyId}` : ''}`);
+    
     const app = document.getElementById('app');
     app.innerHTML = `
 	<div class="login">

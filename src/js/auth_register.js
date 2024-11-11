@@ -2,8 +2,8 @@ import { getCookie, displayMessages } from './utils.js';
 import { showSection } from './index.js';
 import { renderAuth2FARegister } from './auth_2fa_register.js';
 
-export function renderAuthRegister() {
-	history.pushState({ section: 'auth_register' }, '', `?section=auth_register`);
+export function renderAuthRegister(lobbyId = null) {
+    history.pushState({ section: 'auth_register', lobbyId }, '', `/auth_register${lobbyId ? `?lobbyId=${lobbyId}` : ''}`);
 	const app = document.getElementById('app');
 	app.innerHTML = `
 	<div class="login">

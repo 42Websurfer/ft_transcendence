@@ -230,7 +230,7 @@ function displayDashboardData(data)
 }
 
 
-export async function renderMenuDashboard() {
+export async function renderMenuDashboard(lobbyId = null) {
 
     //render waiting section
 
@@ -243,6 +243,7 @@ export async function renderMenuDashboard() {
     }
 
     console.log("response: ", response);
+    history.pushState({ section: 'menu_dashboard', lobbyId }, '', `/menu_dashboard${lobbyId ? `?lobbyId=${lobbyId}` : ''}`);
 
     const app = document.getElementById('app');
 

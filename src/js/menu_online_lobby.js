@@ -168,6 +168,7 @@ function closeWebsocket(socket) {
 let g_socket;
 
 export function renderMenuOnlineLobby(lobbyId) {
+    history.pushState({ section: 'menu_online_lobby', lobbyId }, '', `/menu_online_lobby${lobbyId ? `?lobbyId=${lobbyId}` : ''}`);
 
     const app = document.getElementById('app');
 

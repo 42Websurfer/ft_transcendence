@@ -467,10 +467,8 @@ function getAuthorizationCode() {
 	const authCode = urlParams.get('code');
 
 	if (authCode) {
-	  console.log('Authorization Code:', authCode);
 	  return (authCode);
 	} else {
-		console.error('Authorization code not found');
 		return (null);
 	}
 }
@@ -495,11 +493,9 @@ window.onload = async function() {
         }
         else if (response.type === 'error')
             showSection('login');
-        console.log('Response = ', response);
     }
     else
     {
-        console.log("NOPE NO CODE");
         initApp();
     }
 }
