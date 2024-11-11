@@ -353,7 +353,7 @@ export function renderMenuOnlineLobby(lobbyId) {
         try {
             const token = localStorage.getItem('access_token'); 
 
-            const response = await fetch(`/api/tm/start_game/${lobbyId}/`, {
+            const response = await fetch(`/api/tm/start_game/${lobbyId}/?type=match`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,
