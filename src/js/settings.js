@@ -1,8 +1,7 @@
 import { getCookie, displayMessages } from './utils.js';
 import { showSection } from './index.js';
 
-export async function renderSettings(lobbyId = null) {
-    history.pushState({ section: 'settings', lobbyId }, '', `/settings${lobbyId ? `?lobbyId=${lobbyId}` : ''}`);
+export async function renderSettings() {
 
 	const app = document.getElementById('app');
 	app.innerHTML = `

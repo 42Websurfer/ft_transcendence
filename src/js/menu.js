@@ -1,8 +1,7 @@
 import { getCookie, displayMessages } from './utils.js';
 import { selectedListItem, setSelectedListItem, handleFriendRequest, showSection } from './index.js';
 
-export function renderMenu(lobbyId = null) {
-    history.pushState({ section: 'menu', lobbyId }, '', `/menu${lobbyId ? `?lobbyId=${lobbyId}` : ''}`);
+export function renderMenu() {
     const app = document.getElementById('app');
 
     app.innerHTML = `

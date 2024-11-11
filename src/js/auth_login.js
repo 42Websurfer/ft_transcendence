@@ -3,8 +3,7 @@ import { showSection } from './index.js';
 import { sendAuthCode } from './auth_register.js';
 import { renderAuth2FALogin } from './auth_2fa_login.js';
 
-export async function renderAuthLogin(lobbyId) {
-    history.pushState({ section: 'auth_login', lobbyId }, '', `/auth_login${lobbyId ? `?lobbyId=${lobbyId}` : ''}`);
+export async function renderAuthLogin() {
 	
 	const app = document.getElementById('app');
 	app.innerHTML = `

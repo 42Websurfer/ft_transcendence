@@ -1,8 +1,7 @@
 import { getCookie, displayMessages } from './utils.js';
 import { selectedListItem, setSelectedListItem, handleFriendRequest, showSection } from './index.js';
 
-export function renderMenuMultiplayer(lobbyId = null) {
-    history.pushState({ section: 'menu_multiplayer', lobbyId }, '', `/menu_multiplayer${lobbyId ? `?lobbyId=${lobbyId}` : ''}`);
+export function renderMenuMultiplayer() {
 
     const app = document.getElementById('app');
 

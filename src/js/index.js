@@ -353,13 +353,13 @@ function initOnlineStatus() {
     };
 }
 
-export async function showSection(section, lobbyId)
+export async function showSection(section, lobbyId, pushState = true)
 {
     const isAuthenticated = await checkAuthentication();
     renderLoginLogoutButton(isAuthenticated, section);
     if (section === 'auth_register')
         import('./auth_register.js').then(module => {
-            module.renderAuthRegister();
+            module.renderAuthRegister(pushState);
         });
     else if (section === 'auth_login')
         import('./auth_login.js').then(module => {
@@ -426,8 +426,11 @@ export async function showSection(section, lobbyId)
         });
         section = 'auth_login';
     
-
+    
     }
+    if (pushState && section != 'waiting')
+        history.pushState({ section, lobbyId }, '', `/${section}${lobbyId ? `?lobbyId=${lobbyId}` : ''}`);
+
 }
 
 async function initApp() {
@@ -441,7 +444,7 @@ async function initApp() {
 
 window.addEventListener('popstate', (event) => {
     if (event.state && event.state.section) {
-        showSection(event.state.section, event.state.lobbyId);
+        showSection(event.state.section, event.state.lobbyId, false);
     }
 });
 

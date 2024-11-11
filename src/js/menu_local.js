@@ -1,8 +1,7 @@
 import { getCookie, displayMessages } from './utils.js';
 import { selectedListItem, setSelectedListItem, handleFriendRequest, showSection } from './index.js';
 
-export function renderMenuLocal(lobbyId = null) {
-    history.pushState({ section: 'menu_local', lobbyId }, '', `/menu_local${lobbyId ? `?lobbyId=${lobbyId}` : ''}`);
+export function renderMenuLocal() {
     const app = document.getElementById('app');
 
     app.innerHTML = `
