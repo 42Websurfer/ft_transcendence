@@ -18,9 +18,7 @@ def match_lobby_string(lobby_id):
 	return (f"match_{lobby_id}")
 
 def round_completed(matches, round):
-	logger.debug(f"Current round = {round}")
 	for index, match in enumerate(matches):
-		logger.debug(f"Current round: {round} | Loop match_round = {match['round']} | loop match_status = {match['status']}")
 		if index == len(matches) - 1 and match['status'] != 'pending':
 			return True, True
 		if match['round'] > round:
@@ -263,7 +261,6 @@ async def set_match_data(lobby_id, match_id, score_home, score_away, status):
 				'type': 'send_tournament_finished',
 			}
 		)
-		logger.debug(f"\n\nWHO WILL SAVE IT\n\n ")
 		await (sync_to_async)(safe_tournament_data)(lobby_id)
 	return True
 
@@ -271,7 +268,6 @@ def get_current_round(matches):
 	round = -1
 	start = -1
 	for index, match in enumerate(matches): 
-		logger.debug(match['status'])
 		if match['status'] == 'pending':
 			round = match['round']
 			start = index
@@ -317,7 +313,6 @@ def reset_match(lobby_id, match):
 	redis.set(lobby_id, json.dumps(results))
 
 async def update_match(lobby_id, match):
-	logger.debug(f"JEMAND HAT SICH DISCONNECTED")
 	if (match['status'] == 'freegame' or match['status'] == 'disconnected'):
 		return
 	if match['status'] == 'finished':
@@ -333,7 +328,6 @@ async def update_matches_disconnect(user_id, lobby_id):
 	if not matches:
 		return
 	for match in matches['matches']:
-		print('MATCH_ID FOR DISCONNECTING! = ', match['match_id'])
 		if (match['home'] == user_id):
 			await update_match(lobby_id, match)
 		elif (match['away'] == user_id):

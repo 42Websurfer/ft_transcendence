@@ -121,7 +121,6 @@ def get_tournament_lobby_data(request, lobby_id):
 		round = 0
 	status, tournament_finished = round_completed(tournament_dic['matches'], round)
 	if status and not tournament_finished:
-		logger.debug(f"Round completed")
 		(async_to_sync)(channel_layer.group_send)(
 			lobby_id,
 			{
@@ -129,7 +128,6 @@ def get_tournament_lobby_data(request, lobby_id):
 			}
 		)
 	elif status and tournament_finished:
-		logger.debug(f"Tournament completed") 
 		(async_to_sync)(channel_layer.group_send)(
 			lobby_id,
 			{
@@ -148,14 +146,12 @@ def start_tournament_round(request, lobby_id):
 	matches = tournament_matches['matches']
 	#find current round which should be started
 	round, start = get_current_round(matches)
-	logger.debug(f"We found the match in round: {round}")
 	if round != -1 or start != -1:
 		channel_layer = get_channel_layer()
 		for match in matches[start:]:
 			if match['round'] > round:
 				break
 			if match['status'] == 'pending':
-				logger.debug(f"We are sending match_id = {match['match_id']}")
 				(async_to_sync)(channel_layer.group_send)(
 					lobby_id,
 					{
@@ -312,12 +308,10 @@ def get_match_data(user_game_stats):
 			form += ('W')
 			if (match.winner == match.home): #user wins at home
 				if (not highest_win or abs(highest_win['score_home'] - highest_win['score_away']) < abs(match_data['score_home'] - match_data['score_away'])):
-					logger.debug(f"\n\nHighest_win = {match_data}\n\n")
 					highest_win = match_data
 			else: #(match.winner is match_data['away']): #user wins away
 				if (not highest_win or abs(highest_win['score_away'] - highest_win['score_home']) < abs(match_data['score_away'] - match_data['score_home'])):
 					highest_win = match_data
-					logger.debug(f"\n\nHighest_win = {match_data}\n\n")
 
 		else:
 			form += ('L')
@@ -334,18 +328,13 @@ def get_match_data(user_game_stats):
 @permission_classes([IsAuthenticated])
 def get_dashboard_data(request):
 	user = request.user
-	logger.debug(f"Username for dashboard: {user.username}")
 	try:
 		user_game_stats = GameStatsUser.objects.get(username=user.username)
 	except ObjectDoesNotExist:
 		return JsonResponse({'type': 'error', 'message': 'User does not exist in GameStats Object'})
-	logger.debug(f"user_game_stats = {user_game_stats}")
 
 	all_matches, highest_win, highest_loss, form = get_match_data(user_game_stats)
-	logger.debug(f"all_matches from the user: \n {all_matches}")
-	logger.debug(f"Highest_win = {highest_win}, \nhighest_loss = {highest_loss}\nForm = {form}")
 	tournament_data, tournaments_played = get_last_tournament_data(user_game_stats)
-	logger.debug(f"Tournament info\n {tournament_data}")
 
 	data = {
 		'type': 'success',
