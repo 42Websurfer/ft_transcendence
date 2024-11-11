@@ -72,7 +72,7 @@ async function getUserInformation() {
     try {
 		const token = localStorage.getItem('access_token'); 
 
-        const response = await fetch(`/get_user_information/`, {
+        const response = await fetch(`/api/get_user_information/`, {
             method: 'GET',
 			headers: {
 				'Authorization': `Bearer ${token}`,
@@ -93,7 +93,7 @@ async function handleSettingsFormSubmit(event) {
 	
     const token = localStorage.getItem('access_token'); 
 	
-    const response = await fetch('/settings/', {
+    const response = await fetch('/api/settings/', {
 		method: 'POST',
         headers: {
             'Authorization': `Bearer ${token}`,

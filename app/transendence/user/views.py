@@ -28,7 +28,6 @@ User = get_user_model()
 def check_auth(request):
     try: 
         if request.user.is_authenticated:
-            logger.debug("user is authenticated")
             return JsonResponse({
                 'authenticated': True,
                 'user': {
@@ -40,7 +39,6 @@ def check_auth(request):
                 }
             })
         else:
-            logger.debug("user is not authenticated")
             return JsonResponse({'authenticated': False})
     except Exception as e:
         return JsonResponse({'authenticated': False})
@@ -53,9 +51,7 @@ def user_login(request):
         username = data.get('username')
         password = data.get('password')
         if User.objects.filter(username=username).exists():
-            logger.debug("WO FAILST DU JUNGE")
             user = authenticate(username=username, password=password)
-            logger.debug("WO FAILST DU JUNGE2")
             if user is not None:
                 return JsonResponse({
                     'success': 'User logged in successfully.',
@@ -175,7 +171,6 @@ def update_user_information(request):
         username = data.get('username')
         avatar = data = request.FILES.get('avatar')
         user = User.objects.get(id=request.user.id)
-        logger.debug(f"Is 42? : {user.userprofile.is_third_party_user}")
         if user.userprofile.is_third_party_user:
             if user.email != email:
                 return JsonResponse({'type': 'error', 'message': 'Third party user cannot change email'})
@@ -368,7 +363,6 @@ def check_registration(request, session_data):
         user = User.objects.get(email=session_data.get('email'))
         userprofile = UserProfile.objects.get(user=user)
         if (not userprofile.is_third_party_user):
-            logger.debug("Email already registered")
             return False, None
         if (user.username):
             return (True, user)
@@ -466,8 +460,6 @@ def get_user_info(access_token):
 
     headers = {'Authorization': f'Bearer {access_token}'}
     response = requests.get('https://api.intra.42.fr/v2/me', headers=headers)
-
-    # logger.debug(f"\n\n\nUSERINFO_response_json: {response.json()}\n\n\n")
 
     if response.status_code == 200:
         return response.json()

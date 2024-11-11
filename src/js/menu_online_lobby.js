@@ -159,10 +159,12 @@ function closeWebsocket(socket) {
 		socket.close();
 		homeButton.removeEventListener('click', closeSocket);
 		logoutButton.removeEventListener('click', closeSocket);
+        window.removeEventListener('popstate', closeSocket);
 	}
 
 	homeButton.addEventListener('click', closeSocket)
 	logoutButton.addEventListener('click', closeSocket);
+    window.addEventListener('popstate', closeSocket);
 }
 
 let g_socket;
@@ -264,7 +266,7 @@ export function renderMenuOnlineLobby(lobbyId) {
     } else {
         const token = localStorage.getItem('access_token'); 
 
-        fetch(`/tm/get_online_lobby_data/${lobbyId}/`, {
+        fetch(`/api/tm/get_online_lobby_data/${lobbyId}/`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -351,7 +353,7 @@ export function renderMenuOnlineLobby(lobbyId) {
         try {
             const token = localStorage.getItem('access_token'); 
 
-            const response = await fetch(`/tm/start_game/${lobbyId}/`, {
+            const response = await fetch(`/api/tm/start_game/${lobbyId}/`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,

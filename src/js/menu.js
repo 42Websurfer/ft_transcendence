@@ -2,7 +2,6 @@ import { getCookie, displayMessages } from './utils.js';
 import { selectedListItem, setSelectedListItem, handleFriendRequest, showSection } from './index.js';
 
 export function renderMenu() {
-
     const app = document.getElementById('app');
 
     app.innerHTML = `
@@ -151,7 +150,7 @@ export function renderMenu() {
                 return;
             const token = localStorage.getItem('access_token');
             
-            const response = await fetch(`/send_friend_request/${username}/`, {
+            const response = await fetch(`/api/send_friend_request/${username}/`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,

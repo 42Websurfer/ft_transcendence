@@ -2,7 +2,6 @@ import { getCookie, displayMessages } from './utils.js';
 import { selectedListItem, setSelectedListItem, handleFriendRequest, showSection } from './index.js';
 
 export function renderMenuLocal() {
-
     const app = document.getElementById('app');
 
     app.innerHTML = `

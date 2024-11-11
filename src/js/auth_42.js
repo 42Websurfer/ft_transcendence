@@ -4,8 +4,7 @@ import { sendAuthCode } from './auth_register.js';
 import { renderAuth2FARegister } from './auth_2fa_register.js';
 
 export async function renderAuth42(session_data) {
-    console.log('SESSION_DATA: ', session_data);
-	console.log('Username42 will be registered');
+    
     const app = document.getElementById('app');
     app.innerHTML = `
 	<div class="login">
@@ -56,7 +55,7 @@ async function handleUsernameFormSubmit(session_data)
         
         const token = localStorage.getItem('access_token'); 
     
-        const response = await fetch('/register_api/', {
+        const response = await fetch('/api/register_api/', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,

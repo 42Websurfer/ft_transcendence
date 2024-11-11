@@ -5,6 +5,7 @@ const PLAYER_MOVE_SPEED = 20;
 const BALL_MOVE_SPEED = 15;
 
 export function renderPong(match_id) {
+
 	const app = document.getElementById('app');
 	if (app)
 	{
@@ -164,7 +165,7 @@ class AiPlayer extends Player {
 			console.log('AI: no target!')
 			return;
 		}
-		if (this.target.x > canvas.width * 0.75) {
+		if (this.target.x > canvas.width * 0.67) {
 			if (this.target.y > this.position.y + 20) {
 				this.keyDown({ key: this.keyBinds.down });
 			} else if (this.target.y < this.position.y - 20) {
@@ -624,10 +625,12 @@ function setupCloseWebsocket(socket) {
 		socket.close();
 		homeButton.removeEventListener('click', closeSocket);
 		logoutButton.removeEventListener('click', closeSocket);
+        window.removeEventListener('popstate', closeSocket);
 	}
 
 	homeButton.addEventListener('click', closeSocket)
 	logoutButton.addEventListener('click', closeSocket);
+    window.addEventListener('popstate', closeSocket);
 }
 
 

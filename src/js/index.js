@@ -10,7 +10,7 @@ let ws;
 async function checkAuthentication() {
     const token = localStorage.getItem('access_token'); 
     try {
-        const response = await fetch('/checkauth/', {
+        const response = await fetch('/api/checkauth/', {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -101,7 +101,7 @@ export async function handleFriendRequest(url) {
     try {
         const token = localStorage.getItem('access_token'); 
 
-        const response = await fetch(`${url}`, {
+        const response = await fetch(`/api${url}`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -353,13 +353,13 @@ function initOnlineStatus() {
     };
 }
 
-export async function showSection(section, lobbyId)
+export async function showSection(section, lobbyId, pushState = true)
 {
     const isAuthenticated = await checkAuthentication();
     renderLoginLogoutButton(isAuthenticated, section);
     if (section === 'auth_register')
         import('./auth_register.js').then(module => {
-            module.renderAuthRegister();
+            module.renderAuthRegister(pushState);
         });
     else if (section === 'auth_login')
         import('./auth_login.js').then(module => {
@@ -426,8 +426,12 @@ export async function showSection(section, lobbyId)
         });
         section = 'auth_login';
     
-
+    
     }
+    const currentState = history.state
+    if (pushState && section != 'waiting' && (!currentState || currentState.section != section))
+        history.pushState({ section, lobbyId }, '', `/${section}${lobbyId ? `?lobbyId=${lobbyId}` : ''}`);
+
 }
 
 async function initApp() {
@@ -441,13 +445,13 @@ async function initApp() {
 
 window.addEventListener('popstate', (event) => {
     if (event.state && event.state.section) {
-        showSection(event.state.section, event.state.lobbyId);
+        showSection(event.state.section, event.state.lobbyId, false);
     }
 });
 
 async function sendCodeToBackend(code) {
     try {        
-        const response = await fetch(`/callback/`, {
+        const response = await fetch(`/api/callback/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -467,10 +471,8 @@ function getAuthorizationCode() {
 	const authCode = urlParams.get('code');
 
 	if (authCode) {
-	  console.log('Authorization Code:', authCode);
 	  return (authCode);
 	} else {
-		console.error('Authorization code not found');
 		return (null);
 	}
 }
@@ -495,11 +497,9 @@ window.onload = async function() {
         }
         else if (response.type === 'error')
             showSection('login');
-        console.log('Response = ', response);
     }
     else
     {
-        console.log("NOPE NO CODE");
         initApp();
     }
 }
