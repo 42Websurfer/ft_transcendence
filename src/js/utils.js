@@ -176,3 +176,43 @@ export async function sendAuthCode(user) {
 	else
 		return result;
 }
+
+let countdown = 3;
+let countdownInterval;
+
+export function startGame() {
+	console.log('start the countdown!');
+	countdown = 3
+	let countdownDisplay = document.getElementById('countdownDisplay');
+	if (!countdownDisplay)
+		return;
+	countdownDisplay.textContent = countdown.toString();
+	countdownDisplay.style.display = 'block';
+	countdownInterval = setInterval(updateCountdown, 1000);
+}
+
+async function updateCountdown() {
+	
+	let countdownDisplay = document.getElementById('countdownDisplay');
+	if (!countdownDisplay)
+		return ;
+	if (countdown > 1) {
+		countdown--;
+		countdownDisplay.textContent = countdown.toString();
+	} else {
+		clearInterval(countdownInterval);
+		countdownDisplay.style.display = 'none';
+		
+		console.log('Game started!');
+	}
+}
+
+function disableSpanInsideButton(buttonId) {
+    const button = document.getElementById(buttonId);
+    if (button && button.disabled) {
+        const span = button.querySelector('span');
+        if (span) {
+            span.classList.add('disabled');
+        }
+    }
+}

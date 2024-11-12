@@ -1,4 +1,4 @@
-import { copyToClipboard, displayToast } from './utils.js';
+import { copyToClipboard, displayToast, startGame } from './utils.js';
 import { selectedListItem, setSelectedListItem, handleFriendRequest, showSection } from './index.js';
 import { renderPong } from './pong.js';
 
@@ -53,13 +53,15 @@ export function runWebsocket(socket) {
                 console.log("data: ", data);
                 console.log("matches: ", data.matches);
                 
-                displayMatches(data.matches);
+                displayMatches(data.matches, data.username);
             }
             else if (data.type === 'start_match')
             {
-                console.log('Looop_id = ', data.match_id);
                 if (data.match_id)
-                    renderPong(data.match_id)
+                {
+                    startGame();
+                    setTimeout(() => renderPong(data.match_id), 3000);
+                }
             }
         }
         catch (error) {
@@ -79,13 +81,12 @@ export function runWebsocket(socket) {
 
 }
 
-function displayMatches(matches)
+function displayMatches(matches, username)
 {
     const historicMatchesList = document.getElementById('historicMatches');
     if (historicMatchesList)
         historicMatchesList.innerHTML = '';
 
-    let username = matches.username;
 
     for (let index = 0; index < matches.length; index++) {
         
@@ -102,7 +103,7 @@ function displayMatches(matches)
 
         let result = "won";
 
-        if ((player_home === username && player_home < player_away) || (player_away === username && player_home > player_away))
+        if ((player_home === username && match.score_home < match.score_away) || (player_away === username && match.score_home > match.score_away))
             result = "lost";
 
         addMatchItem(historicMatchesList, player_home, player_away, score, result);
@@ -127,7 +128,7 @@ function addMatchItem(historicMatchesList, player_home, player_away, score, resu
 
     item = '<svg class="check-symbol" xmlns="http://www.w3.org/2000/svg" viewBox="2 1.5 20 20" fill="#4740a8" width="4em" height="4em" style="margin: 0; padding: 0;"><path d="M0 0h24v24H0z" fill="none"/><path d="M9 16.2l-3.5-3.5 1.4-1.4L9 13.4l7.1-7.1 1.4 1.4z"/></svg>';
     
-    if (result === "win")
+    if (result === "won")
         li.style.background = 'linear-gradient(to bottom, rgba(7, 136, 7, 0.5), rgba(7, 136, 7, 0.5) 100%)'; //grün
     else
         li.style.background = 'linear-gradient(to bottom, rgba(242, 7, 7, 0.5), rgba(242, 7, 7, 0.5) 100%)'; //rot
@@ -257,6 +258,7 @@ export function renderMenuOnlineLobby(lobbyId) {
 
     </div>
     `;
+    
     if (!g_socket) {
         const token = localStorage.getItem('access_token');
 
@@ -322,41 +324,4 @@ export function renderMenuOnlineLobby(lobbyId) {
             console.log('Error: ', error);
         }
     });
-
-    // COUNTDOWN TEST
-
-    let countdown = 3;
-    let countdownInterval;
-
-    function startGame() {
-        if (roundStartButton && roundStartButton.disabled)
-                disableSpanInsideButton('roundStartButton');
-
-        document.getElementById('countdownDisplay').style.display = 'block';
-
-        countdownInterval = setInterval(updateCountdown, 1000);
-    }
-
-    async function updateCountdown() {
-        document.getElementById('countdownDisplay').textContent = countdown.toString();
-        
-        if (countdown > 0) {
-            countdown--;
-        } else {
-            clearInterval(countdownInterval);
-            document.getElementById('countdownDisplay').style.display = 'none';
-            
-            console.log('Game started!');
-        }
-    }
-
-    function disableSpanInsideButton(buttonId) {
-        const button = document.getElementById(buttonId);
-        if (button && button.disabled) {
-            const span = button.querySelector('span');
-            if (span) {
-                span.classList.add('disabled');
-            }
-        }
-    }
 }

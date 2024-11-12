@@ -440,8 +440,6 @@ export async function showSection(section, lobbyId, pushState = true)
             module.renderAuthLogin();    
         });
         section = 'auth_login';
-    
-    
     }
     const currentState = history.state
     if (pushState && section != 'waiting' && (!currentState || currentState.section != section))
