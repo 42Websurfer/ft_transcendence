@@ -1,4 +1,4 @@
-import { getCookie, displayMessages } from './utils.js';
+import { getCookie, } from './utils.js';
 import { selectedListItem, setSelectedListItem, handleFriendRequest, showSection } from './index.js';
 
 export function renderMenuMultiplayer() {
@@ -20,7 +20,6 @@ export function renderMenuMultiplayer() {
     </div>
 
     <form id="registerForm"">
-        <div id="messages"></div>
         <input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
 
         <div class="login-instructions">
@@ -52,7 +51,6 @@ export function renderMenuMultiplayer() {
         <button class="signin-button btn btn-primary w-100 py-2" type="submit">Sign up</button>
         
     </form>
-    <div id="registerMessage" class="register-message"></div>
     <div id="registerLoader" class="loader"></div>
     `;
 

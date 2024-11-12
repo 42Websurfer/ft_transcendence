@@ -1,4 +1,4 @@
-import { displayMessages } from './utils.js';
+import { displayToast } from './utils.js';
 import { sendAuthCode } from './auth_register.js';
 
 export async function renderAuth2FARegister(input) {
@@ -17,7 +17,6 @@ export async function renderAuth2FARegister(input) {
 				<input id="authcode" style="width: 40%; margin-bottom: 0.4em;"></input>
 				<button id="sendCode" style="width: 40%;" class="signin-button btn btn-primary py-2" type="click">Send 2FA Code</button>
 			</div>
-			<div class="login-messages" id="messages" style="text-align: center; margin-top: 1em; animation: wiggle 0.5s ease-in-out;"></div>
 		</div>
 	</div>
 	`;
@@ -28,8 +27,8 @@ export async function renderAuth2FARegister(input) {
 	const sendCodeButton = document.getElementById('sendCode');
 	sendCodeButton.addEventListener('click', async function() {
 		let result = await sendAuthCode(input.user);
-		if (result.type === 'error')	
-			displayMessages(result);
+		if (result.type === 'error')
+			displayToast(result.message, 'error')	
 	});
 
 	const authcodeInput = document.getElementById('authcode');
@@ -40,7 +39,9 @@ export async function renderAuth2FARegister(input) {
 			{
 				let result = await sendAuthCode(input.user);
 				if (result.type === 'error')
-					displayMessages(result);
+					displayToast(result.message, 'error')
+				else if (result.type === 'success')
+					displayToast('You have successfully registered.', 'success');
 			}
         }
     });

@@ -1,4 +1,4 @@
-import { displayMessages } from './utils.js';
+import { displayToast } from './utils.js';
 import { sendAuthCode } from './auth_register.js';
 
 export async function renderAuth2FALogin(user) {
@@ -12,7 +12,6 @@ export async function renderAuth2FALogin(user) {
 				</div>
 			<input id="authcode" style="width: 100%; margin-bottom: 0.4em;"></input>
 			<button id="sendCode" class="signin-button btn btn-primary w-100 py-2" type="click">Send 2FA Code</button>
-			<div class="login-messages" id="messages" style="text-align: center; margin-top: 1em; animation: wiggle 0.5s ease-in-out;"></div>
 		</div>
 	</div>
 	`;
@@ -21,7 +20,7 @@ export async function renderAuth2FALogin(user) {
 	sendCodeButton.addEventListener('click', async function() {
 		let result = await sendAuthCode(user);
 		if (result.type === 'error')
-			displayMessages(result);
+			displayToast(result.message, 'error');
 	});
 
 	const authcodeInput = document.getElementById('authcode');
@@ -31,8 +30,10 @@ export async function renderAuth2FALogin(user) {
             if (code)
 			{
 				let result = await sendAuthCode(user);
-				if (result.type === 'error')
-					displayMessages(result);
+				if (result.type === 'success')
+					displayToast('You have successfully logged in.', 'success');
+				else if (result.type === 'error')
+					displayToast(result.message, 'error');
 			}
         }
     });

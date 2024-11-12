@@ -69,7 +69,6 @@ def user_login(request):
 
                     }, status=200)
                 else:
-                    logger.debug("HERE MUSST DU FALLEN nicht")
                     return JsonResponse({
                         'type': 'success',
                         'user': user_dic,

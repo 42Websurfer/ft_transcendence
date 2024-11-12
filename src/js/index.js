@@ -1,4 +1,4 @@
-import { handleLogoutSubmit, getCookie } from './utils.js';
+import { handleLogoutSubmit, displayToast } from './utils.js';
 import { renderAuth42 } from './auth_42.js';
 import { renderWaiting } from './waiting.js';
 import { renderAuth2FALogin } from './auth_2fa_login.js';
@@ -493,13 +493,19 @@ window.onload = async function() {
             return;
         }
         else if (response.type === 'pending')
+        {
+            displayToast('You need to setup 2FA.', 'warning');
             renderAuth2FARegister(response)
+        }
         else if (response.type === 'success')
         {
             renderAuth2FALogin(response.user)
         }
         else if (response.type === 'error')
+        {
+            displayToast(result.message, 'error')
             showSection('login');
+        }
     }
     else
     {

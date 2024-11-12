@@ -1,4 +1,4 @@
-import { getCookie, displayMessages } from './utils.js';
+import { getCookie, displayToast } from './utils.js';
 import { showSection } from './index.js';
 import { sendAuthCode } from './auth_register.js';
 import { renderAuth2FALogin } from './auth_2fa_login.js';
@@ -17,8 +17,6 @@ export async function renderAuthLogin() {
 					<p>Welcome, please sign in!</p>
 				</div>
 				
-				<div class="login-messages" id="messages" style="margin-bottom: 0.4em;"></div>
-
 				<div class="login-form-field form-floating">
 					<input type="text" name="login-username" class="form-control-new form-control" id="floatingInput" placeholder="Username" required>
 					<label for="floatingInput">Username</label>
@@ -75,9 +73,14 @@ async function handleLoginFormSubmit(event)
 
     const result = await response.json();
 	if (result.type === 'success')
+	{
 		renderAuth2FALogin(result.user);
+	}
 	else if (result.type === 'pending')
+	{
+		displayToast('You need to setup 2FA.', 'warning');
 		renderAuth2FARegister(result);
+	}
 	else if (result.type == 'error')
-    	displayMessages(result);
+		displayToast(result.message, 'error')
 }
