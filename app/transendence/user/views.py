@@ -53,22 +53,36 @@ def user_login(request):
         if User.objects.filter(username=username).exists():
             user = authenticate(username=username, password=password)
             if user is not None:
-                return JsonResponse({
-                    'success': 'User logged in successfully.',
-                    'user': {
+                user_dic = {
                         'id': user.id,
                         'username': user.username,
                         'email': user.email,
                         'first_name': user.first_name,
                         'last_name': user.last_name
-                    },
-                }, status=200)
+                    }
+                if not UserProfile.objects.get(user=user).verified_2fa:
+                    qr_code_string = setup_2fa(user)
+                    return JsonResponse({
+                        'type': 'pending',
+                        'user': user_dic,
+                        'qr_code': f"data:image/png;base64,{qr_code_string}",
+
+                    }, status=200)
+                else:
+                    logger.debug("HERE MUSST DU FALLEN nicht")
+                    return JsonResponse({
+                        'type': 'success',
+                        'user': user_dic,
+                    }, status=200)
+            
             else:
-                return JsonResponse({'error': 'Incorrect username or password.'}, status=400)
+                return JsonResponse({'type': 'error', 'message': 'Incorrect username or password.'}, status=400)
         else:
-            return JsonResponse({'error': 'Incorrect username or password.'}, status=400)
+            return JsonResponse({'type': 'error', 'message': 'Incorrect username or password.'}, status=400)
+    except UserProfile.DoesNotExist:
+        return JsonResponse({'type': 'error', 'message': 'User does not exists in UserProfile'}, status=404)
     except json.JSONDecodeError:
-        return JsonResponse({'error': 'Invalid JSON.'}, status=400)
+        return JsonResponse({'type': 'error', 'message': 'Invalid JSON.'}, status=400)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -91,6 +105,8 @@ def verify_2fa_code(request):
         
         if totp.verify(otp_code):
             refresh = RefreshToken.for_user(user)
+            user_profile.verified_2fa = True
+            user_profile.save()
 
             return JsonResponse({
                 'type': 'success',
@@ -417,27 +433,44 @@ def api_callback(request):
         user_info = get_user_info(access_token_response['access_token'])
         session_data = create_user_session(user_info)
 
-        isValid, user =check_registration(request, session_data)
+        isValid, user = check_registration(request, session_data)
         if (isValid):
-
-            return JsonResponse(
-                {
-                    'type': 'success',
-                    'message': 'User registered successfully.',
-                    'user': {
+            user_profile = UserProfile.objects.get(user=user)
+            user_dic = {
                         'id': user.id,
                         'username': user.username,
                         'email': user.email,
                         'first_name': user.first_name,
                         'last_name': user.last_name
-                    },
-                    'session_data': session_data,
+                    }
+            if not user_profile.verified_2fa:
+                qr_code_string = setup_2fa(user)
+                return JsonResponse(
+                    {
+                        'type': 'pending',
+                        'message': 'User registered successfully.',
+                        'user': user_dic,
+                        'session_data': session_data,
+                        'qr_code': f"data:image/png;base64,{qr_code_string}",
+                    }, status=200)
+            else:
+                return JsonResponse(
+                    {
+                        'type': 'success',
+                        'message': 'User registered successfully.',
+                        'user': user_dic,
+                        'session_data': session_data,
 
-                }, status=200)
+                    }, status=200)
         else: 
             return JsonResponse({'type': 'registration', 'data': session_data})
+    except User.DoesNotExist:
+        return JsonResponse({'type': 'error', 'message': 'User does not exists.'}, status=404)
+    except UserProfile.DoesNotExist:
+        return JsonResponse({'type': 'error', 'message': 'UserProfile does not exists.'}, status=404)
     except Exception as e:
         return JsonResponse({'type': 'error', 'message': str(e)}, status=500)
+
 
 def exchange_code_for_token(code):
     token_url = 'https://api.intra.42.fr/oauth/token'
