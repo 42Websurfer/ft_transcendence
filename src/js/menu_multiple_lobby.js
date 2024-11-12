@@ -1,5 +1,3 @@
-import { getCookie, displayMessages } from './utils.js';
-import { selectedListItem, setSelectedListItem, handleFriendRequest, showSection } from './index.js';
 import { renderPong } from './pong.js';
 
 export function runWebsocket(socket) {
