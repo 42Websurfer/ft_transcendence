@@ -20,12 +20,10 @@ async function checkAuthentication() {
         });
         if (response.status === 401)
         {
-            console.log('STATUS CODE 401')
             return false;
         }
         else if (response.status === 200)
         {
-            console.log("statusCODE 200")
             const result = await response.json();
             return result.authenticated;
         }
