@@ -1,4 +1,4 @@
-import { displayToast } from './utils.js';
+import { getCookie, displayMessages } from './utils.js';
 import { selectedListItem, setSelectedListItem, handleFriendRequest, showSection } from './index.js';
 import { renderPong } from './pong.js';
 
@@ -13,47 +13,36 @@ export function runWebsocket(socket) {
         try {
             const data = JSON.parse(event.data);
 
-            if (data.type === 'send_online_users')
+            if (data.type === 'user_list')
             {
                 const matchPlayers = document.getElementById("matchPlayers");
                 if (!matchPlayers) 
                     return;
 
                 matchPlayers.innerHTML = '';
-
-                const li = document.createElement('li');
-
-                li.innerHTML = `<span class="list-item-content"><span>${data.admin_username}</span><span style="color: red; font-size: 0.8em"> (*)</span></span>`;
-
-                matchPlayers.appendChild(li);
-
                 const startMatchButton = document.getElementById('startOnlineMatch');
 
-                if (data.member_id != -1)
-                {
-                    const li = document.createElement('li');
-                    console.log('user_id: ', data.user_id);
-                    console.log('admin_id: ', data.admin_id);
-                    
-                    if (data.user_id == data.admin_id)
-                        startMatchButton.style.display = 'block';
-                    li.className = 'friends-add-list-user';
-                    li.innerHTML = `<span class="list-item-content">${data.member_username}</span>`;
-    
-                    matchPlayers.appendChild(li);
-                }
-                else
-                    startMatchButton.style.display = 'none';
+				for (let user of data.users) {
+					const li = document.createElement('li');
+					if (user.role === 'admin') {
+						li.innerHTML = `<span class="list-item-content"><span>${user.username}</span><span style="color: red; font-size: 0.8em"> (*)</span></span>`;
+						if (data.users.length == 4 && data.username == user.username)
+							startMatchButton.style.display = 'block';
+					} else {
+						li.innerHTML = `<span class="list-item-content">${user.username}</span>`;
+					}
+					matchPlayers.append(li);
+				}
             }
             else if (data.type === 'match_list')
             {
-                if (!data.matches)
+                if (!data.winners)
                     return;
 
                 console.log("data: ", data);
                 console.log("matches: ", data.matches);
                 
-                displayMatches(data.matches);
+                displayWinners(data.winners);
             }
             else if (data.type === 'start_match')
             {
@@ -79,76 +68,17 @@ export function runWebsocket(socket) {
 
 }
 
-function displayMatches(matches)
+function displayWinners(winners)
 {
     const historicMatchesList = document.getElementById('historicMatches');
     if (historicMatchesList)
         historicMatchesList.innerHTML = '';
 
-    let username = matches.username;
-
-    for (let index = 0; index < matches.length; index++) {
-        
-        const match = matches[index];
-        
-        let player_home = match.player_home;
-        let player_away = match.player_away;
-        let score = '';
-
-        if (match.home == -1 || match.away == -1)
-            score = "-:-";
-        else
-            score = match.score_home + ":" + match.score_away;
-
-        let result = "won";
-
-        if ((player_home === username && player_home < player_away) || (player_away === username && player_home > player_away))
-            result = "lost";
-
-        addMatchItem(historicMatchesList, player_home, player_away, score, result);
-    }
-}
-
-function addMatchItem(historicMatchesList, player_home, player_away, score, result) {
-
-    if (!historicMatchesList)
-        return;
-
-    const li = document.createElement('li');
-
-    li.style = `
-        border: 1px solid #ccc;
-        border-radius: 0.6em;
-        margin-bottom: 0.6em;
-        width: 100%;
-    `;
-
-    let item;
-
-    item = '<svg class="check-symbol" xmlns="http://www.w3.org/2000/svg" viewBox="2 1.5 20 20" fill="#4740a8" width="4em" height="4em" style="margin: 0; padding: 0;"><path d="M0 0h24v24H0z" fill="none"/><path d="M9 16.2l-3.5-3.5 1.4-1.4L9 13.4l7.1-7.1 1.4 1.4z"/></svg>';
-    
-    if (result === "win")
-        li.style.background = 'linear-gradient(to bottom, rgba(7, 136, 7, 0.5), rgba(7, 136, 7, 0.5) 100%)'; //grün
-    else
-        li.style.background = 'linear-gradient(to bottom, rgba(242, 7, 7, 0.5), rgba(242, 7, 7, 0.5) 100%)'; //rot
-
-    let free_color_home = '';
-    let free_color_away = '';
-    if (player_home[0] === "Free from play")
-        free_color_home = ' color: grey;';
-    if (player_away[0] === "Free from play")
-        free_color_away = ' color: grey;';
-
-    li.innerHTML = `
-    <div class="tournament-match">
-        <div class="tournament-match-item" style="width: 38%;${free_color_home}">${player_home}</div>
-        <div class="tournament-match-item" style="font-size: 1em; width: 12%;">${score}</div>
-        <div class="tournament-match-item" style="width: 38%;${free_color_away}">${player_away}</div>
-        <div class="tournament-match-item" style="width: 12%;">${item}</div>
-    </div>
-    `;
-
-    historicMatchesList.appendChild(li);
+	for (let winner of winners) {
+		const li = document.createElement('li');
+		li.innerHTML = `${winner}`
+		historicMatchesList.appendChild(li);
+	}
 }
 
 function closeWebsocket(socket) {
@@ -169,7 +99,7 @@ function closeWebsocket(socket) {
 
 let g_socket;
 
-export function renderMenuOnlineLobby(lobbyId) {
+export function renderMultiplayerLobby(lobbyId) {
 
     const app = document.getElementById('app');
 
@@ -260,13 +190,13 @@ export function renderMenuOnlineLobby(lobbyId) {
     if (!g_socket) {
         const token = localStorage.getItem('access_token');
 
-        g_socket = new WebSocket(`ws://${window.location.host}/ws/match/${lobbyId}/?token=${token}`);
+        g_socket = new WebSocket(`ws://${window.location.host}/ws/multiple/${lobbyId}/?token=${token}`);
         runWebsocket(g_socket);
         closeWebsocket(g_socket);
     } else {
         const token = localStorage.getItem('access_token'); 
 
-        fetch(`/api/tm/get_lobby_data/${lobbyId}/?type=match`, {
+        fetch(`/api/tm/get_lobby_data/${lobbyId}/?type=multiple`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -275,14 +205,13 @@ export function renderMenuOnlineLobby(lobbyId) {
         }).then((response) => response.json())
         .then((data) => {
             if (data.type === 'error') {
-                displayToast(data.message, 'error')
+                console.log(data.message);
             }
         }).catch((error) => console.log("Error:", error));
     }
 
     function copyToClipboard() {
         var copyText = document.getElementById("lobbyId");
-
 
         console.log("lobbyID: ", lobbyId);
         console.log("copyText.textContent ", copyText.textContent);
@@ -313,7 +242,6 @@ export function renderMenuOnlineLobby(lobbyId) {
 
             document.body.removeChild(textarea);
         }
-
     }
 
     const copyLobbyIdButton = document.getElementById('copyLobbyIdButton');
@@ -353,7 +281,7 @@ export function renderMenuOnlineLobby(lobbyId) {
         try {
             const token = localStorage.getItem('access_token'); 
 
-            const response = await fetch(`/api/tm/start_game/${lobbyId}/?type=match`, {
+            const response = await fetch(`/api/tm/start_game/${lobbyId}/?type=multiple`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,

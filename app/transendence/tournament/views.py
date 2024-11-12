@@ -4,7 +4,7 @@ import string
 import redis
 import json
 import logging
-from .utils import get_current_round, get_longest_winstreak, tournament_string, round_completed, set_match_data, match_lobby_string
+from .utils import get_current_round, get_longest_winstreak, tournament_string, round_completed, set_match_data, match_lobby_string, multiple_lobby_string
 from channels.layers import get_channel_layer
 from django.core.exceptions import ObjectDoesNotExist
 from .models import GameStatsUser, OnlineMatch, TournamentResults
@@ -22,22 +22,25 @@ def lobby_name_generator():
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def create_lobby(request, match_type):
+def create_lobby(request):
 	user = request.user
+	type = request.GET.get('type')
 	if redis.sismember('user_lobbies', user.id):
 		return JsonResponse({
 			'type': 'error',
 			'message': 'You can\'t create multiple lobbies'
 		})
 	lobby_id = lobby_name_generator()
-	if match_type == 'match':
+	if type == 'match':
 		redis.set(match_lobby_string(lobby_id), "")
-	elif match_type == 'tournament':
+	elif type == 'tournament':
 		redis.set(lobby_id, "")
+	elif type == 'multiple':
+		redis.set(multiple_lobby_string(lobby_id), "")
 	else:
 		return JsonResponse({
 			'type': 'error',
-			'message': 'Key "match_type" missing in request!'
+			'message': 'Query "type" missing in request!'
 		})
 	redis.sadd('user_lobbies', user.id)
 	return JsonResponse({
@@ -67,37 +70,66 @@ def join_match_lobby(request, lobby_id):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def join_lobby(request, lobby_id):
-	if redis.exists(lobby_id):
-		return(JsonResponse({'type': 'success'}))
-	elif redis.exists(tournament_string(lobby_id)):
-		return(JsonResponse({'type': 'error', 'message': 'Tournament already started.'}))
-	else: 
-		return(JsonResponse({'type': 'error', 'message': 'Lobby does not exist.'}))
+	type = request.GET.get('type')
+	if type == 'tournament':
+		if redis.exists(tournament_string(lobby_id)):
+			return(JsonResponse({'type': 'error', 'message': 'Tournament already started.'}))
+		elif redis.exists(lobby_id):
+			return(JsonResponse({'type': 'success'}))
+	elif type == 'multiple':
+		if redis.exists(multiple_lobby_string(lobby_id)):
+			data = redis.get(multiple_lobby_string(lobby_id))
+			if data:
+				data = json.loads(data)
+				if data['status'] == 'pending':
+					return(JsonResponse({'type': 'success'}))
+				else:
+					return(JsonResponse({'type': 'error', 'message': 'Match already started.'}))
+	return(JsonResponse({'type': 'error', 'message': 'Lobby does not exist.'}))
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def get_online_lobby_data(request, lobby_id):
-	online_match_json = redis.get(match_lobby_string(lobby_id))
-	if (not online_match_json):
-		return (JsonResponse({'type': 'error', 'message': 'No data in redis.'}))
-	channel_layer = get_channel_layer()
-	(async_to_sync)(channel_layer.group_send)(
-		match_lobby_string(lobby_id),
-		{
-			'type': 'send_online_match_list',
-		}
-	)
-	(async_to_sync)(channel_layer.group_send)(
-		match_lobby_string(lobby_id),	
-		{
-			'type': 'send_online_lobby_user',
-		}
-	)
+def get_lobby_data(request, lobby_id):
+	type = request.GET.get('type')
+	if type == 'match':
+		online_match_json = redis.get(match_lobby_string(lobby_id))
+		if (not online_match_json):
+			return (JsonResponse({'type': 'error', 'message': 'No data in redis.'}))
+		channel_layer = get_channel_layer()
+		(async_to_sync)(channel_layer.group_send)(
+			match_lobby_string(lobby_id),
+			{
+				'type': 'send_online_match_list',
+			}
+		)
+		(async_to_sync)(channel_layer.group_send)(
+			match_lobby_string(lobby_id),	
+			{
+				'type': 'send_online_lobby_user',
+			}
+		)
+	elif type == 'tournament':
+		return get_tournament_lobby_data(lobby_id)
+	elif type == 'multiple':
+		multiple_data_json = redis.get(multiple_lobby_string(lobby_id))
+		if (not multiple_data_json):
+			return (JsonResponse({'type': 'error', 'message': 'No data in redis.'}))
+		channel_layer = get_channel_layer()
+		(async_to_sync)(channel_layer.group_send)(
+			match_lobby_string(lobby_id),
+			{
+				'type': 'send_multiple_match_list',
+			}
+		)
+		(async_to_sync)(channel_layer.group_send)(
+			match_lobby_string(lobby_id),	
+			{
+				'type': 'send_multiple_lobby_users',
+			}
+		)
 	return (JsonResponse({'type': 'success'}))
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def get_tournament_lobby_data(request, lobby_id):
+def get_tournament_lobby_data(lobby_id):
 	tournament = redis.get(tournament_string(lobby_id))
 	if tournament is None:
 		return JsonResponse({'type': 'error', 'message': 'Tournament not found.'})
@@ -239,13 +271,23 @@ async def set_tournament_match(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def start_game_loop(request, lobby_id):
-	channel_layer = get_channel_layer()	
-	(async_to_sync)(channel_layer.group_send)(
-		match_lobby_string(lobby_id),
-		{
-			'type': 'send_online_start_match',
-		}
-	)
+	type = request.GET.get('type')
+	if type == 'match':
+		channel_layer = get_channel_layer()	
+		(async_to_sync)(channel_layer.group_send)(
+			match_lobby_string(lobby_id),
+			{
+				'type': 'send_online_start_match',
+			}
+		)
+	elif type == 'multiple':
+		channel_layer = get_channel_layer()	
+		(async_to_sync)(channel_layer.group_send)(
+			multiple_lobby_string(lobby_id),
+			{
+				'type': 'send_multiple_start_match',
+			}
+		)
 	return (JsonResponse({'type': 'success'}))
 
 

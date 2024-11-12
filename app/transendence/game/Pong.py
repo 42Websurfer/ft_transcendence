@@ -60,7 +60,7 @@ class Player(Entity):
 		self.add_component(Mesh, self.mesh)
 		self.add_component(Physics, self.physics)
 		self.score = 0
-		self.start_pos = None
+		self.start_pos: Vector = None
 		self.goal_height = 0
 
 	def move(self, x_add, y_add):
@@ -102,13 +102,9 @@ class Player(Entity):
 
 	def handle_remote_movement(self, input):
 		if input == 1:
-			dir = Vector(self.up.x, self.up.y)
-			dir.scale(PLAYER_MOVE_SPEED)
-			self.physics.velocity = dir
+			self.physics.velocity = self.up.dup().scale(PLAYER_MOVE_SPEED)
 		elif input == 2:
-			dir = Vector(self.up.x, self.up.y)
-			dir.scale(-PLAYER_MOVE_SPEED)
-			self.physics.velocity = dir
+			self.physics.velocity = self.up.dup().scale(-PLAYER_MOVE_SPEED)
 		elif input == 0:
 			self.physics.set_velocity(0, 0)
 
@@ -141,10 +137,9 @@ class PlayerSection:
 		self.player.position = self.goal.position
 		self.player.rotate(self.goal.rotation)
 		if self.player.up.dot(Vector(0, -1)) < 0:
-			self.player.rotate(180)
+			self.player.rotate(self.player.rotation + 180)
 
-		
-		forward = Vector(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2).sub(self.player.position)
+		forward = VECTOR_CENTER.sub(self.player.position)
 		forward.normalize()
 		forward.scale(75)
 		forward = forward.add(self.player.position)
@@ -160,9 +155,9 @@ class GameLogicManager(Entity):
 		self.round_running = False
 		self.winner = None
 		self.counter = time.time()
-		self.starter = None
+		self.starter: Player = None
 	
-	def buildDynamicField(self, world, playerCount):
+	def buildDynamicField(self, world: World, playerCount):
 		if playerCount == 2:
 			self.sections.append(PlayerSection(0, CANVAS_HEIGHT * .5, 0, CANVAS_HEIGHT))
 			self.sections.append(PlayerSection(CANVAS_WIDTH, CANVAS_HEIGHT * .5, 0, CANVAS_HEIGHT))
@@ -173,11 +168,9 @@ class GameLogicManager(Entity):
 			rotationStep = 360 / playerCount
 			rot = (rotationStep) / 2
 			point2 = point1.dup().rotate(rotationStep)
-			for i in range(playerCount):
-				ba = point2.sub(point1)
-				ba.scale(0.5)
-				midpoint = ba.add(point1)
-				midpoint = midpoint.add(VECTOR_CENTER)
+			for _ in range(playerCount):
+				ba = point2.sub(point1).scale(0.5)
+				midpoint = ba.add(point1).add(VECTOR_CENTER)
 				self.sections.append(PlayerSection(midpoint.x, midpoint.y, rot + 90, ba.length() * 2))
 				point1.rotate(rotationStep)
 				point2.rotate(rotationStep)
@@ -244,8 +237,8 @@ class GameLogicManager(Entity):
 		if not self.round_running:
 			if time.time() - self.counter >= 3.0:
 				if self.starter:
-					dir = VECTOR_CENTER.sub(self.starter.position)
-					dir.y = 0
+					# rework this so it works with player in any orientation
+					dir = VECTOR_CENTER.sub(self.starter.start_pos)
 					dir.normalize()
 					dir.scale(BALL_MOVE_SPEED)
 					self.ball.physics.set_velocity_v(dir)
@@ -254,13 +247,13 @@ class GameLogicManager(Entity):
 				self.ball.last_hit = self.starter
 				self.round_running = True
 			elif self.starter:
-				dir = VECTOR_CENTER.sub(self.starter.position)
-				dir.y = 0
-				dir.normalize()
-				dir.scale(50)
-				dir = self.starter.position.add(dir)
-				self.ball.set_pos(dir.x, dir.y)
-				thread_local.pong_game.send_entity_move(self.ball)
+				forward = VECTOR_CENTER.sub(self.starter.start_pos)
+				forward.normalize()
+				forward.scale(50)
+				forward = forward.add(self.starter.position)
+				if self.ball.position.x != forward.x or self.ball.position.y != forward.y:
+					self.ball.set_pos(forward.x, forward.y)
+					thread_local.pong_game.send_entity_move(self.ball)
 		if self.ball.physics.velocity.sqr_length() < pow(30, 2):
 			self.ball.physics.velocity.scale(1.0002)
 		#this check is to reset the round when the ball somehow escapes the play area
@@ -285,10 +278,10 @@ thread_local = threading.local()
 
 #all the stuff for one pong game
 class PongGame:
-	def __init__(self, player1, player2):
+	def __init__(self, playerCount):
+		self.playerCount = playerCount
 		self.stop_thread = False
-		self.player1 = player1
-		self.player2 = player2
+		self.players = []
 		self.world = World()
 		self.world.addSystem(CollisionSystem())
 		self.world.addSystem(MovementSystem())
@@ -299,12 +292,15 @@ class PongGame:
 		self.asyncio_thread = None
 		self.game_thread = None
 
+	def add_consumers(self, consumers):
+		self.players = consumers
+
 
 	def start_game(self):
 
 		print('Starting threads and game!')
 
-		self.gameLogic.buildDynamicField(self.world, 2)
+		self.gameLogic.buildDynamicField(self.world, self.playerCount)
 
 		self.event_loop = asyncio.new_event_loop()
 		self.asyncio_thread = threading.Thread(target=self.asyncio_tasks_thread)
@@ -313,11 +309,10 @@ class PongGame:
 		self.game_thread = threading.Thread(target=self.game_loop)
 		self.game_thread.start()
 
-		asyncio.run_coroutine_threadsafe(self.player1.assign_player(self.gameLogic.sections[0].player), self.event_loop)
-		asyncio.run_coroutine_threadsafe(self.player2.assign_player(self.gameLogic.sections[1].player), self.event_loop)
+		for i, player in enumerate(self.players):
+			asyncio.run_coroutine_threadsafe(player.assign_player(self.gameLogic.sections[i].player), self.event_loop)
+			asyncio.run_coroutine_threadsafe(getCurrentState(self.world, player), self.event_loop)
 
-		asyncio.run_coroutine_threadsafe(getCurrentState(self.world, self.player1), self.event_loop)
-		asyncio.run_coroutine_threadsafe(getCurrentState(self.world, self.player2), self.event_loop)
 
 	def stop(self):
 		self.stop_thread = True
@@ -333,17 +328,17 @@ class PongGame:
 		print('We have a winner! Stop game thread, and asyncio thread')
 		self.stop()
 		print('Start of DB save')
-		if self.player1.match_type == 'match':
+		if self.players[0].match_type == 'match':
 			match_data = {}
-			match_data['home'] = GameStatsUser.objects.get(username=self.player1.user.username)
-			match_data['away'] = GameStatsUser.objects.get(username=self.player2.user.username)
-			match_data['home_score'] = self.player1.player_c.score
-			match_data['away_score'] = self.player2.player_c.score
-			set_online_match(match_data, self.player1.lobby_id)
+			match_data['home'] = GameStatsUser.objects.get(username=self.players[0].user.username)
+			match_data['away'] = GameStatsUser.objects.get(username=self.players[1].user.username)
+			match_data['home_score'] = self.players[0].player_c.score
+			match_data['away_score'] = self.players[1].player_c.score
+			set_online_match(match_data, self.players[0].lobby_id)
 			print('Data successfully saved into DB!')
-		elif self.player1.match_type == 'tournament':
+		elif self.players[0].match_type == 'tournament':
 			print('Start save tournament data!')
-			(async_to_sync)(set_match_data)(self.player1.lobby_id, self.player1.match_id, self.player1.player_c.score, self.player2.player_c.score, 'finished')
+			(async_to_sync)(set_match_data)(self.players[0].lobby_id, self.players[0].match_id, self.players[0].player_c.score, self.players[1].player_c.score, 'finished')
 			print('Tournament data saved!')		
 
 	def game_loop(self):
@@ -351,21 +346,21 @@ class PongGame:
 		thread_local.asyncio_thread = self.asyncio_thread
 		thread_local.game_thread = self.game_thread
 		thread_local.event_loop = self.event_loop
-		thread_local.host = self.player1
+		thread_local.host = self.players[0]
 		thread_local.world = self.world
 		iter = 0
 		while not self.stop_thread:
 			self.world.update()
 			time.sleep(0.016)
 			if iter == 1000:
-				print('game running on', self.player1.group_name)
+				print('game running on', self.players[0].group_name)
 				iter = 0
 			iter += 1
-		print('game loop stopped of group', self.player1.group_name)
+		print('game loop stopped of group', self.players[0].group_name)
 		self.event_loop.call_soon_threadsafe(self.event_loop.stop)
 		print('asyncio event_loop ordered to stop')
-		(async_to_sync)(self.player1.close)()
-		(async_to_sync)(self.player2.close)()
+		for player in self.players:
+			(async_to_sync)(player.close)()
 
 	def asyncio_tasks_thread(self):
 		asyncio.set_event_loop(self.event_loop)
@@ -376,8 +371,8 @@ class PongGame:
 	Some big and commonly used sends defined here to make code more readable
 	"""
 	def send_entity_move(self, entity):
-		asyncio.run_coroutine_threadsafe(self.player1.channel_layer.group_send(
-			self.player1.group_name,
+		asyncio.run_coroutine_threadsafe(self.players[0].channel_layer.group_send(
+			self.players[0].group_name,
 			{
 				'type': 'move_entity',
 				'id': entity.id,
@@ -387,8 +382,8 @@ class PongGame:
 			self.event_loop)
 		
 	def send_entity_set_pos(self, entity):
-		asyncio.run_coroutine_threadsafe(self.player1.channel_layer.group_send(
-			self.player1.group_name,
+		asyncio.run_coroutine_threadsafe(self.players[0].channel_layer.group_send(
+			self.players[0].group_name,
 			{
 				'type': 'set_entity_pos',
 				'id': entity.id,
@@ -435,13 +430,18 @@ class GamesHandler:
 
 	async def add_consumer(self, consumer):
 		print('GamesHandler.add_consumer() called')
-		if self.players.__len__() < 2:
+		if self.game and self.players.__len__() < self.game.playerCount or self.players.__len__() < 2:
+			if self.players.__len__() == 0:
+				if consumer.match_type == 'multiple':
+					self.game = PongGame(4)
+				else:
+					self.game = PongGame(2)
 			self.players.append(consumer)
 		else:
 			print('too many players!!! disconnect consumer')
 			await consumer.close()
 			return
-		if self.players.__len__() == 2:
+		if self.players.__len__() == self.game.playerCount:
 			print('init PongGame class!')
 			if self.players[0].match_type == 'tournament':
 				tournament_matches = redis.get(tournament_string(self.players[0].lobby_id))
@@ -453,7 +453,7 @@ class GamesHandler:
 						self.players[0] = self.players[1]
 						self.players[1] = temp
 				
-			self.game = PongGame(self.players[0], self.players[1])
+			self.game.add_consumers(self.players)
 			self.game.start_game()
 	
 	async def remove_consumer(self, consumer):
@@ -462,7 +462,7 @@ class GamesHandler:
 			self.players.remove(consumer)
 		else:
 			print('no consumers in this lobby?')
-		if self.game is not None and self.players.__len__() <= 1:
+		if self.game is not None and self.players.__len__() < self.game.playerCount:
 			print('Stopping Game!')
 			self.game.stop()
 			for player in self.players:

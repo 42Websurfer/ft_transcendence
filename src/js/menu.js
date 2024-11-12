@@ -1,9 +1,8 @@
-import { getCookie, displayMessages } from './utils.js';
+import { getCookie, displayMessages, displayToast} from './utils.js';
 import { selectedListItem, setSelectedListItem, handleFriendRequest, showSection } from './index.js';
 
 export function renderMenu() {
     const app = document.getElementById('app');
-
     app.innerHTML = `
     <div class="menu">
         <div class="menu-friends">

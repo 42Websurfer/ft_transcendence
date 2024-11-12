@@ -4,7 +4,7 @@ from channels.layers import get_channel_layer
 from asgiref.sync import sync_to_async
 from django.contrib.auth import get_user_model
 from .Pong import *
-from tournament.utils import match_lobby_string, tournament_string
+from tournament.utils import match_lobby_string, tournament_string, multiple_lobby_string
 
 class MyConsumer(AsyncWebsocketConsumer):
 	
@@ -32,6 +32,13 @@ class MyConsumer(AsyncWebsocketConsumer):
 			if self.lobby_id is None or not redis.exists(match_lobby_string(self.lobby_id)):
 				await self.close()
 				return
+		elif self.match_type == 'multiple':
+			if self.lobby_id is None or not redis.exists(multiple_lobby_string(self.lobby_id)):
+				await self.close()
+				return
+		else:
+			await self.close()
+			return
 
 		await self.channel_layer.group_add(
 			self.group_name,

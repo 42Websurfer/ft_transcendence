@@ -5,7 +5,7 @@ from asgiref.sync import sync_to_async
 from .models import Tournament as TournamentModel
 import redis
 from .utils import sort_group_tournament
-from .utils import create_user_structure, tournament_string, update_matches_disconnect, match_lobby_string
+from .utils import create_user_structure, tournament_string, update_matches_disconnect, match_lobby_string, multiple_lobby_string
 
 redis = redis.Redis(host='redis', port=6379, db=0)
 
@@ -28,7 +28,7 @@ class Tournament(AsyncWebsocketConsumer):
 			if (not left_user):
 				tournament_data = redis.get(self.group_name)
 				if redis.exists(self.group_name) and tournament_data:
-					redis.sadd('user_lobbies', self.user.id) # frage?
+					redis.sadd('user_lobbies', self.user.id)
 					results = json.loads(tournament_data)
 					results.append(create_user_structure(self.user.id, 'member', user.username))
 					redis.set(self.group_name, json.dumps(results))
@@ -151,15 +151,130 @@ class Tournament(AsyncWebsocketConsumer):
 		}
 		await self.send(text_data=json.dumps(data))
 
-class OnlineMatch(AsyncWebsocketConsumer): 
+class MultipleLobby(AsyncWebsocketConsumer):
 	async def connect(self):
 		self.user = self.scope["user"]
-		self.match_name = match_lobby_string(self.scope['url_route']['kwargs']['match_name'])
-		self.lobby_id = self.scope['url_route']['kwargs']['match_name']
+		self.lobby_id = self.scope['url_route']['kwargs']['lobby_id']
+		self.match_name = multiple_lobby_string(self.lobby_id)
 		if (self.user.is_authenticated):
 			User = get_user_model()
 			user = await sync_to_async(User.objects.get)(id=self.user.id)
 			match_data = redis.get(self.match_name)
+			lobby_data = None
+
+			if (redis.exists(self.match_name) and match_data):
+				redis.sadd('user_lobbies', user.id)
+				lobby_data = json.loads(match_data)
+				if len(lobby_data['users']) >= 4:
+					await self.close()
+					return
+				lobby_data['users'].append({'username': self.user.username, 'role': 'member'})
+			elif redis.exists(self.match_name):
+				lobby_data = {'users': [{'username': self.user.username, 'role': 'admin'}], 'winners': ['felix', 'nsassenb'], 'status': 'pending'}
+			else:
+				print('INVALID LOBBY ALARM!')
+				await self.close()
+				return
+			
+			await self.channel_layer.group_add(
+				self.match_name, 
+				self.channel_name
+			)
+			await self.accept()
+			redis.set(self.match_name, json.dumps(lobby_data))
+
+			await self.channel_layer.group_send(
+				self.match_name,
+				{
+					'type': 'send_multiple_lobby_users',
+				}
+			)
+			await self.channel_layer.group_send(
+				self.match_name,
+				{
+					'type': 'send_multiple_match_list',
+				}
+			)
+
+	async def disconnect(self, close_code):
+		if (self.user.is_authenticated):
+			await self.channel_layer.group_discard(
+				self.match_name,
+				self.channel_name
+			)
+			data = redis.get(self.match_name)
+			if not data:
+				return
+			data = json.loads(data)
+			users: list = data['users']	
+			admin_disconnected = False
+	
+			for i, user in enumerate(users):
+				if user['username'] == self.user.username:
+					if user['role'] == 'admin':
+						admin_disconnected = True
+					users.pop(i)
+			
+			redis.srem('user_lobbies', self.user.id) # frage?
+			if (admin_disconnected and users):
+				users[0]['role'] = 'admin'
+				if data['status'] == 'started':
+					await self.channel_layer.group_send(
+					self.match_name,
+					{
+						'type': 'close_connection',
+					})
+			if users and data['status'] == 'pending':
+				data['users'] = users
+				redis.set(self.match_name, json.dumps(data))
+			elif not users:
+				redis.delete(self.match_name)
+				return
+					
+			#update all games again the disconnected user!
+			await self.channel_layer.group_send(
+				self.match_name,
+				{
+					'type': 'send_multiple_lobby_users'
+				}
+			)
+
+	async def send_multiple_lobby_users(self, event):
+		data = redis.get(self.match_name)
+		if not data:
+			return
+		data = json.loads(data)
+		await self.send(json.dumps({'type': 'user_list', 'users': data['users'], 'username': self.user.username}))
+
+	async def send_multiple_match_list(self, event):
+		data = redis.get(self.match_name)
+		if not data:
+			return
+		data = json.loads(data)
+		await self.send(json.dumps({'type': 'match_list', 'winners': data['winners']}))
+
+	async def send_multiple_start_match(self, event):
+		data = {
+			'type': 'start_match',
+			'match_id': self.match_name + '_loop',
+		}
+		await self.send(json.dumps(data))
+
+	async def close_connection(self, event):
+		redis.srem('online_lobbies', self.user.id)
+		await self.close()
+
+
+class OnlineMatch(AsyncWebsocketConsumer): 
+	async def connect(self):
+		self.user = self.scope["user"]
+		self.lobby_id = self.scope['url_route']['kwargs']['match_name']
+		self.match_name = match_lobby_string(self.lobby_id)
+		if (self.user.is_authenticated):
+			User = get_user_model()
+			user = await sync_to_async(User.objects.get)(id=self.user.id)
+			match_data = redis.get(self.match_name)
+			lobby_data = None
 			if (redis.exists(self.match_name) and match_data):
 				redis.sadd('user_lobbies', user.id)
 				lobby_data = json.loads(match_data)
@@ -262,5 +377,4 @@ class OnlineMatch(AsyncWebsocketConsumer):
 
 	async def close_connection(self, event):
 		redis.srem('online_lobbies', self.user.id)
-		print('USER ID:', self.user.id)
 		await self.close()

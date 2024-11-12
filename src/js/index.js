@@ -396,6 +396,10 @@ export async function showSection(section, lobbyId, pushState = true)
             import('./menu_multiplayer.js').then(module => {
                 module.renderMenuMultiplayer();
             });
+		else if (section === 'menu_multiple_lobby')
+			import('./menu_multiple_lobby.js').then(module => {
+				module.renderMultiplayerLobby(lobbyId);
+			});
         else if (section === 'menu_dashboard')
             import('./menu_dashboard.js').then(module => {
                 module.renderMenuDashboard();

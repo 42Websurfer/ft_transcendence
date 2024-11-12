@@ -17,6 +17,9 @@ def tournament_string(lobby_id):
 def match_lobby_string(lobby_id):
 	return (f"match_{lobby_id}")
 
+def multiple_lobby_string(lobby_id):
+	return (f"multiple_{lobby_id}")
+
 def round_completed(matches, round):
 	for index, match in enumerate(matches):
 		if index == len(matches) - 1 and match['status'] != 'pending':
