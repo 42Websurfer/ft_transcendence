@@ -89,28 +89,47 @@ def join_lobby(request, lobby_id):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def get_online_lobby_data(request, lobby_id):
-	online_match_json = redis.get(match_lobby_string(lobby_id))
-	if (not online_match_json):
-		return (JsonResponse({'type': 'error', 'message': 'No data in redis.'}))
-	channel_layer = get_channel_layer()
-	(async_to_sync)(channel_layer.group_send)(
-		match_lobby_string(lobby_id),
-		{
-			'type': 'send_online_match_list',
-		}
-	)
-	(async_to_sync)(channel_layer.group_send)(
-		match_lobby_string(lobby_id),	
-		{
-			'type': 'send_online_lobby_user',
-		}
-	)
+def get_lobby_data(request, lobby_id):
+	type = request.GET.get('type')
+	if type == 'match':
+		online_match_json = redis.get(match_lobby_string(lobby_id))
+		if (not online_match_json):
+			return (JsonResponse({'type': 'error', 'message': 'No data in redis.'}))
+		channel_layer = get_channel_layer()
+		(async_to_sync)(channel_layer.group_send)(
+			match_lobby_string(lobby_id),
+			{
+				'type': 'send_online_match_list',
+			}
+		)
+		(async_to_sync)(channel_layer.group_send)(
+			match_lobby_string(lobby_id),	
+			{
+				'type': 'send_online_lobby_user',
+			}
+		)
+	elif type == 'tournament':
+		return get_tournament_lobby_data(lobby_id)
+	elif type == 'multiple':
+		multiple_data_json = redis.get(multiple_lobby_string(lobby_id))
+		if (not multiple_data_json):
+			return (JsonResponse({'type': 'error', 'message': 'No data in redis.'}))
+		channel_layer = get_channel_layer()
+		(async_to_sync)(channel_layer.group_send)(
+			match_lobby_string(lobby_id),
+			{
+				'type': 'send_multiple_match_list',
+			}
+		)
+		(async_to_sync)(channel_layer.group_send)(
+			match_lobby_string(lobby_id),	
+			{
+				'type': 'send_multiple_lobby_users',
+			}
+		)
 	return (JsonResponse({'type': 'success'}))
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def get_tournament_lobby_data(request, lobby_id):
+def get_tournament_lobby_data(lobby_id):
 	tournament = redis.get(tournament_string(lobby_id))
 	if tournament is None:
 		return JsonResponse({'type': 'error', 'message': 'Tournament not found.'})

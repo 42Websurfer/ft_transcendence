@@ -137,10 +137,9 @@ class PlayerSection:
 		self.player.position = self.goal.position
 		self.player.rotate(self.goal.rotation)
 		if self.player.up.dot(Vector(0, -1)) < 0:
-			self.player.rotate(180)
+			self.player.rotate(self.player.rotation + 180)
 
-		
-		forward = Vector(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2).sub(self.player.position)
+		forward = VECTOR_CENTER.sub(self.player.position)
 		forward.normalize()
 		forward.scale(75)
 		forward = forward.add(self.player.position)
@@ -169,7 +168,7 @@ class GameLogicManager(Entity):
 			rotationStep = 360 / playerCount
 			rot = (rotationStep) / 2
 			point2 = point1.dup().rotate(rotationStep)
-			for i in range(playerCount):
+			for _ in range(playerCount):
 				ba = point2.sub(point1).scale(0.5)
 				midpoint = ba.add(point1).add(VECTOR_CENTER)
 				self.sections.append(PlayerSection(midpoint.x, midpoint.y, rot + 90, ba.length() * 2))
@@ -252,8 +251,7 @@ class GameLogicManager(Entity):
 				forward.normalize()
 				forward.scale(50)
 				forward = forward.add(self.starter.position)
-				self.ball.set_pos(forward.x, forward.y)
-				thread_local.pong_game.send_entity_move(self.ball)
+				self.ball.move(self.ball.position.x - forward.x, self.ball.position.y - forward.y)
 		if self.ball.physics.velocity.sqr_length() < pow(30, 2):
 			self.ball.physics.velocity.scale(1.0002)
 		#this check is to reset the round when the ball somehow escapes the play area
@@ -433,7 +431,7 @@ class GamesHandler:
 		if self.game and self.players.__len__() < self.game.playerCount or self.players.__len__() < 2:
 			if self.players.__len__() == 0:
 				if consumer.match_type == 'multiple':
-					self.game = PongGame(8)
+					self.game = PongGame(4)
 				else:
 					self.game = PongGame(2)
 			self.players.append(consumer)

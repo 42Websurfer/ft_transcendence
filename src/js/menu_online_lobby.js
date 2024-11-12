@@ -266,7 +266,7 @@ export function renderMenuOnlineLobby(lobbyId) {
     } else {
         const token = localStorage.getItem('access_token'); 
 
-        fetch(`/api/tm/get_online_lobby_data/${lobbyId}/`, {
+        fetch(`/api/tm/get_lobby_data/${lobbyId}/?type=match`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,

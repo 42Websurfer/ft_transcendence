@@ -196,7 +196,7 @@ export function renderMultiplayerLobby(lobbyId) {
     } else {
         const token = localStorage.getItem('access_token'); 
 
-        fetch(`/api/tm/get_multiple_lobby_data/${lobbyId}/`, {
+        fetch(`/api/tm/get_lobby_data/${lobbyId}/?type=multiple`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
