@@ -356,6 +356,7 @@ function initOnlineStatus() {
 
 export async function showSection(section, lobbyId, pushState = true)
 {
+
     const isAuthenticated = await checkAuthentication();
     renderLoginLogoutButton(isAuthenticated, section);
     if (section === 'auth_register')
@@ -371,6 +372,15 @@ export async function showSection(section, lobbyId, pushState = true)
             module.renderAuth42();    
         });
     if (isAuthenticated) {
+        const settingsButton = document.getElementById('settings-button')
+        if (settingsButton)
+        {
+            if (section == 'menu')
+                settingsButton.style.display = 'block';
+            else 
+                settingsButton.style.display = 'none';
+        }
+
         if (!wsBool)
         {
             initOnlineStatus();
