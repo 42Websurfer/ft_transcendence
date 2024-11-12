@@ -219,7 +219,7 @@ export function renderMenuOnlineLobby(lobbyId) {
                             <p style="color: white; margin-bottom: 0.2em">Lobby-ID</p>
                         </div>
                         <div style="display: flex; flex-direction: row; justify-content: center;">
-                            <p id="lobbyId" style="color: #4740a8; margin: 0 0.4em;">${lobbyId}</p>
+                            <p id="copyLobbyId" style="color: #4740a8; margin: 0 0.4em;">${lobbyId}</p>
                             <button id="copyLobbyIdButton"><span class="button-text">&#x2398;</span></button>
                         </div>
                     </div>

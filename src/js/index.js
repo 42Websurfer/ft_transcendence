@@ -385,16 +385,16 @@ export async function showSection(section, lobbyId, pushState = true)
                 module.renderMenuLocal(lobbyId);
             });
         else if (section === 'menu_online')
-            import('./menu_online.js').then(module => {
-                module.renderMenuOnline();
+            import('./menu_lobby.js').then(module => {
+                module.renderMenuLobby('online');
             });
         else if (section === 'menu_tournament')
-            import('./menu_tournament.js').then(module => {
-                module.renderMenuTournament();
+            import('./menu_lobby.js').then(module => {
+                module.renderMenuLobby('tournament');
             });
         else if (section === 'menu_multiplayer')
-            import('./menu_multiplayer.js').then(module => {
-                module.renderMenuMultiplayer();
+            import('./menu_lobby.js').then(module => {
+                module.renderMenuLobby('multiple');
             });
 		else if (section === 'menu_multiple_lobby')
 			import('./menu_multiple_lobby.js').then(module => {
@@ -408,7 +408,7 @@ export async function showSection(section, lobbyId, pushState = true)
             import('./menu_online_lobby.js').then(module => {
                 module.renderMenuOnlineLobby(lobbyId);
             });
-        else if (section === 'menu_tournament_roundrobin')
+        else if (section === 'menu_tournament_lobby')
             import('./menu_tournament_roundrobin.js').then(module => {
                 module.renderMenuTournamentRoundRobin(lobbyId);
             });

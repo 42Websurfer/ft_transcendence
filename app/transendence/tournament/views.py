@@ -31,7 +31,7 @@ def create_lobby(request):
 			'message': 'You can\'t create multiple lobbies'
 		})
 	lobby_id = lobby_name_generator()
-	if type == 'match':
+	if type == 'online':
 		redis.set(match_lobby_string(lobby_id), "")
 	elif type == 'tournament':
 		redis.set(lobby_id, "")
@@ -50,7 +50,7 @@ def create_lobby(request):
 			'role': 'admin',
 		}
 	})
-
+#Not used anymore, now we have one join_lobby!
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def join_match_lobby(request, lobby_id):
@@ -86,6 +86,18 @@ def join_lobby(request, lobby_id):
 					return(JsonResponse({'type': 'success'}))
 				else:
 					return(JsonResponse({'type': 'error', 'message': 'Match already started.'}))
+	elif type == 'online':
+		user = request.user
+		if (redis.exists(match_lobby_string(lobby_id))):
+			lobby_data_json = redis.get(match_lobby_string(lobby_id))
+			if not lobby_data_json: 
+				return (JsonResponse({'type': 'error', 'message': 'No data in redis.'}))
+			lobby_data = json.loads(lobby_data_json)
+			member_username = str(lobby_data.get('member_username'))
+			if (member_username == "" or member_username == user.username):
+				return(JsonResponse({'type': 'success'}))
+			else: 
+				return (JsonResponse({'type': 'error', 'message': 'Lobby already full.'}))
 	return(JsonResponse({'type': 'error', 'message': 'Lobby does not exist.'}))
 
 @api_view(['GET'])

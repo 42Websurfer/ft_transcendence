@@ -807,19 +807,7 @@ body {
     width: 110%;
 }
 
-#tournamentLobbyId {
-    font-size: 1.6em;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    height: 2em;
-    width: 110%;
-    font-family: 'Courier New', Courier, monospace;
-    text-align: left;
-    padding-left: 0.6em;
-    color: #000000;
-}
-
-#onlineLobbyId {
+#lobbyId {
     font-size: 1.6em;
     border: 1px solid #ccc;
     border-radius: 4px;
