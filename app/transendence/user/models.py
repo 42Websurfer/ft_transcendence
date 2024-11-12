@@ -9,7 +9,7 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     is_third_party_user = models.BooleanField(default=False)  # Feld hinzufügen
     otp_secret = models.CharField(max_length=32, blank=True, null=True)  # OTP-Secret speichern
-
+    verified_2fa=models.BooleanField(default=False)
     def __str__(self):
         return self.user.username
 
