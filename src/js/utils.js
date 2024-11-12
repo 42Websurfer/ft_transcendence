@@ -91,3 +91,24 @@ export async function fetch_get(url)
         return ({"type": "error", "message": error});
     }
 }
+
+export function displayToast(message, level = undefined) {
+	console.log('create toast element!');
+	const toastContainer = document.getElementById('tc');
+
+	const toastHTML = `
+	<div class="toast ${level ? level == 'success' ? 'bg-success bg-gradient' : level == 'warning' ? 'bg-warning bg-gradient' : level == 'error' ? 'bg-danger bg-gradient' : 'bg-info bg-gradient'  : ''}" role="alert" aria-live="assertive" aria-atomic="true">
+		<div class="d-flex">
+			<div class="toast-body font-main text-white">
+				${message}
+			</div>
+			<button type="button" class="btn-close btn-close-black me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+		</div>
+	</div>`;
+	const toastElement = document.createElement('div');
+	toastElement.innerHTML = toastHTML;
+	toastContainer.appendChild(toastElement);
+
+	var a = new bootstrap.Toast(toastElement.querySelector('.toast'));
+	a.show();
+}
