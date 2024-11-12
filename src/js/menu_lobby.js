@@ -52,7 +52,7 @@ export function renderMenuLobby(type) {
                 if (response.type === 'success')
                 {
                     displayToast('You have successfully joined a lobby', 'success');
-                    showSection('menu_online_lobby', lobbyId);
+                    showSection(`menu_${type}_lobby`, lobbyId);
                 }
                 else if (response.type === 'error')
                     displayToast(response.message, 'error')

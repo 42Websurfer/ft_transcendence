@@ -16,6 +16,46 @@ export function getCookie(name) {
     return cookieValue;
 }
 
+function showCopyMessage() {
+    var copyMessage = document.getElementById("copyMessage");
+    copyMessage.style.display = "block";
+    setTimeout(() => {
+        copyMessage.style.display = "none";
+    }, 2000);
+}
+
+export function copyToClipboard() {
+    var copyText = document.getElementById("copyLobbyId");
+
+    var textToCopy = copyText.tagName === 'INPUT' || copyText.tagName === 'TEXTAREA' ? copyText.value : copyText.textContent;
+
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            showCopyMessage();
+        }).catch(err => {
+            console.error("Failed to copy text: ", err);
+        });
+    } else {
+        const textarea = document.createElement('textarea');
+        textarea.value = textToCopy;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+
+        try {
+            document.execCommand('copy');
+            showCopyMessage();
+        } catch (err) {
+            console.error('Fallback: Oops, unable to copy', err);
+        }
+
+        document.body.removeChild(textarea);
+    }
+
+}
+
 // export function displayMessages(result) {
 //     const messagesContainer = document.getElementById('messages');
 //     messagesContainer.innerHTML = '';
