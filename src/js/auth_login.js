@@ -1,7 +1,8 @@
-import { getCookie, displayMessages } from './utils.js';
+import { getCookie, displayToast } from './utils.js';
 import { showSection } from './index.js';
 import { sendAuthCode } from './auth_register.js';
 import { renderAuth2FALogin } from './auth_2fa_login.js';
+import { renderAuth2FARegister } from './auth_2fa_register.js';
 
 export async function renderAuthLogin() {
 	
@@ -16,8 +17,6 @@ export async function renderAuthLogin() {
 					<p>Welcome, please sign in!</p>
 				</div>
 				
-				<div class="login-messages" id="messages" style="margin-bottom: 0.4em;"></div>
-
 				<div class="login-form-field form-floating">
 					<input type="text" name="login-username" class="form-control-new form-control" id="floatingInput" placeholder="Username" required>
 					<label for="floatingInput">Username</label>
@@ -49,7 +48,7 @@ export async function renderAuthLogin() {
 async function signIn42API(callback)
 {
 	try {
-		const oauthUrl = 'https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-330f52eb5555dbbd02b4e50dcee66a4aa0cc7a20b5ae12c9a296a28fb3325425&redirect_uri=http%3A%2F%2Flocalhost%3A8090%2Ffrontend%2F&response_type=code';
+		const oauthUrl = 'https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-fb637ad0b8bbb1367103db0f18b4b34529f896099d78f83e11d23e36076333e2&redirect_uri=http%3A%2F%2Flocalhost%3A8090%2F&response_type=code';
 		window.location.href = oauthUrl;
 
 	} catch (error) {
@@ -73,8 +72,15 @@ async function handleLoginFormSubmit(event)
     });
 
     const result = await response.json();
-	if (result.success)
-		renderAuth2FALogin(result.user);	
-	if (!result.success)
-    	displayMessages(result);
+	if (result.type === 'success')
+	{
+		renderAuth2FALogin(result.user);
+	}
+	else if (result.type === 'pending')
+	{
+		displayToast('You need to setup 2FA.', 'warning');
+		renderAuth2FARegister(result);
+	}
+	else if (result.type == 'error')
+		displayToast(result.message, 'error')
 }

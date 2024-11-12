@@ -1,4 +1,4 @@
-import { getCookie, displayMessages } from './utils.js';
+import { displayToast } from './utils.js';
 import { selectedListItem, setSelectedListItem, handleFriendRequest, showSection } from './index.js';
 
 export function renderMenuOnline() {
@@ -19,7 +19,6 @@ export function renderMenuOnline() {
             <div class="tournament-enter-lobby">
                 <input type="text" id="onlineLobbyId" placeholder="Enter a lobby-id and hit enter...">
             </div>
-            <div id="joinMessage" class="join-message" style="top: 19.2em;"></div>
         </div>
         
     </div>
@@ -38,7 +37,7 @@ export function renderMenuOnline() {
             });
             return await response.json();
         } catch (error) {
-            return { error: 'Failed to tournament create request.' };
+            return {'type': 'request_error', 'message': 'Failed to tournament joind request.' };
         }
     };
 
@@ -48,14 +47,14 @@ export function renderMenuOnline() {
         if (event.key === 'Enter') {
             const lobbyId = onlineLobbyInput.value.trim();
             if (lobbyId) {
-                console.log(`Trying to enter lobby with id: ${lobbyId}`);
                 const response = await joinOnlineLobby(lobbyId);
                 if (response.type === 'success')
-                    showSection('menu_online_lobby', lobbyId);
-                else
                 {
-                    displayErrorMessage(response.message);
+                    displayToast('You have successfully joined a lobby', 'success');
+                    showSection('menu_online_lobby', lobbyId);
                 }
+                else if (response.type === 'error')
+                    displayToast(response.message, 'error')
             }
         }
     });
@@ -73,29 +72,21 @@ export function renderMenuOnline() {
             });            
             return await response.json();
         } catch (error) {
-            return { error: 'Failed to tournament create request.' };
+            return { 'type': 'request_error', 'message': 'Failed to tournament create request.' };
         }
 
     }
 
-    function displayErrorMessage(message) {
-        const joinMessage = document.getElementById('joinMessage');
-        if (!joinMessage)
-            return;
-        joinMessage.textContent = message;
-        joinMessage.style.color = 'red';
-        joinMessage.style.animation = 'none';
-        joinMessage.offsetHeight;
-        joinMessage.style.animation = 'wiggle 0.5s ease-in-out';
-    }
-
+   
     const createLobbyButton = document.getElementById('onlineItemLobby');
     createLobbyButton.addEventListener('click', async () => {
         const response = await createOnlineLobby();
         if (response?.type === 'error') {
-            displayErrorMessage(response.message);
+            displayToast(response.message, 'error');
             return;
         }
+        else if (response.type === 'success')
+            displayToast('You have successfully created a lobby', 'success');
         showSection('menu_online_lobby', response.lobby.id);
     });
 

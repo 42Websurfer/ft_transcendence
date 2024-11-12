@@ -1,4 +1,4 @@
-import { getCookie, displayMessages } from './utils.js';
+import { displayToast, getCookie } from './utils.js';
 import { showSection } from './index.js';
 import { renderAuth2FARegister } from './auth_2fa_register.js';
 
@@ -43,7 +43,6 @@ export function renderAuthRegister() {
 				<button class="signin-button btn btn-primary w-100 py-2" type="submit">Sign up</button>
 				
 			</form>
-			<div id="registerMessage" class="register-message"></div>
 		</div>
 	</div>
 	`;
@@ -93,42 +92,17 @@ async function handleFormSubmit(event) {
 
     const response = await fetch('/api/register/', {
 		method: 'POST',
-        /* headers: {
-            'Authorization': `Bearer ${token}`,
-           // 'Content-Type': 'application/json'
-        }, */
-        body: formData//JSON.stringify(data)
+        body: formData
     });
 	
     const result = await response.json();
-	console.log("result: ", result);
-
-	const registerMessage = document.getElementById('registerMessage');
 	
 	if (result.type === 'success')
 	{
 		registerMessage.textContent = '';
 
 		renderAuth2FARegister(result) 
-
-		// const registerLoader = document.getElementById('registerLoader');
-		// registerLoader.style.display = 'block';
-		// //Implement qr code!
-		// const qrcode = document.getElementById('qrcode');
-		// qrcode.src = result.qr_code;
-		// const codeButton = document.getElementById('sendCode');
-		// codeButton.addEventListener('click', function() {
-		// 	sendAuthCode(result.user);
-		// });
-
-		//setTimeout(() => showSection('menu'), 2000);
 	}
-	else
-	{
-		registerMessage.textContent = result.message;
-		registerMessage.style.color = 'red';
-		registerMessage.style.animation = 'none';
-		registerMessage.offsetHeight;
-		registerMessage.style.animation = 'wiggle 0.5s ease-in-out';
-	}
+	else if (result.type === 'error')
+		displayToast(result.message, 'error');
 }

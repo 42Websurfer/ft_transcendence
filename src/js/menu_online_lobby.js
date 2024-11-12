@@ -1,4 +1,4 @@
-import { getCookie, displayMessages } from './utils.js';
+import { displayToast } from './utils.js';
 import { selectedListItem, setSelectedListItem, handleFriendRequest, showSection } from './index.js';
 import { renderPong } from './pong.js';
 
@@ -275,7 +275,7 @@ export function renderMenuOnlineLobby(lobbyId) {
         }).then((response) => response.json())
         .then((data) => {
             if (data.type === 'error') {
-                console.log(data.message);
+                displayToast(data.message, 'error')
             }
         }).catch((error) => console.log("Error:", error));
     }

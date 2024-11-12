@@ -1,4 +1,4 @@
-import { getCookie, displayMessages } from './utils.js';
+import { getCookie, displayToast } from './utils.js';
 import { showSection } from './index.js';
 import { sendAuthCode } from './auth_register.js';
 import { renderAuth2FARegister } from './auth_2fa_register.js';
@@ -14,8 +14,6 @@ export async function renderAuth42(session_data) {
             <div class="login-instructions">
                 <p>Welcome, please enter a username!</p>
             </div>
-            
-            <div class="login-messages" id="messages"></div>
 
             <div class="login-form-field form-floating">
                 <input type="text" name="login-username" class="form-control-new form-control" id="usernameInput" placeholder="Username" required>
@@ -44,7 +42,7 @@ async function handleUsernameFormSubmit(session_data)
     let username = '';
     if (!usernameElement)
     {
-        displayMessages({'error': 'Please enter a username'});
+        displayToast('Please enter a username', 'error');
         return ;
     }
     

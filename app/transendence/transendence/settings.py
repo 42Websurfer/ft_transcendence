@@ -163,9 +163,9 @@ CHANNEL_LAYERS = {
     },
 }
 
-CLIENT_ID = 'u-s4t2ud-330f52eb5555dbbd02b4e50dcee66a4aa0cc7a20b5ae12c9a296a28fb3325425'
-CLIENT_SECRET = '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'
-REDIRECT_URI = 'http://localhost:8090/frontend/'
+CLIENT_ID = 'u-s4t2ud-fb637ad0b8bbb1367103db0f18b4b34529f896099d78f83e11d23e36076333e2'
+CLIENT_SECRET = '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'
+REDIRECT_URI = 'http://localhost:8090/'
 
 MEDIA_ROOT = '/workspaces/media/'
 MEDIA_URL = '/media/'

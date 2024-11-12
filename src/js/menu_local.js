@@ -1,4 +1,4 @@
-import { getCookie, displayMessages } from './utils.js';
+import { getCookie, } from './utils.js';
 import { selectedListItem, setSelectedListItem, handleFriendRequest, showSection } from './index.js';
 
 export function renderMenuLocal() {
