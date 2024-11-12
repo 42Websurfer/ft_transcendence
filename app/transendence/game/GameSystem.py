@@ -216,13 +216,13 @@ class CollisionSystem(System):
 					other_mesh = other_ent.get_component(Mesh)
 					if not other_mesh:
 						continue
-					steps = math.ceil(ent_phys.velocity.length() / max(ent_mesh.width * 0.5, ent_mesh.height * 0.5))
+					steps = max(1, math.ceil(ent_phys.velocity.length() / max(ent_mesh.width * 0.5, ent_mesh.height * 0.5)))
 					for i in range(steps):
 						t = i / steps
 						current_pos = current_ent.position.add(ent_phys.velocity.dup().scale(t))
 						other_pos = other_ent.position
 						ab = other_pos.sub(current_pos)
-						threshold = max(ent_mesh.width, ent_mesh.height, other_mesh.width, other_mesh.height)
+						threshold = max(ent_mesh.width, ent_mesh.height, other_mesh.width, other_mesh.height) * 0.5
 						if ab.length() < threshold:
 							step_transform = Transform(current_pos.x, current_pos.y, current_ent.rotation)
 							o_closest = other_mesh.get_closest_point(other_ent, current_pos)

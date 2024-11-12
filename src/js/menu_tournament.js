@@ -66,7 +66,7 @@ export function renderMenuTournament() {
         try {
             const token = localStorage.getItem('access_token'); 
 
-            const response = await fetch(`/api/tm/create/?type=multiple`, {
+            const response = await fetch(`/api/tm/create/?type=tournament`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,

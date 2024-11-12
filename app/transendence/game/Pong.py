@@ -2,7 +2,7 @@ import threading, time, asyncio
 from .GameSystem import *
 from functools import partial
 from tournament.models import GameStatsUser
-from tournament.utils import set_online_match, set_match_data, tournament_string
+from tournament.utils import set_online_match, set_match_data, tournament_string, set_winner_multiple
 from asgiref.sync import async_to_sync
 import redis
 import json
@@ -10,7 +10,7 @@ import json
 # Constants
 PLAYER_MOVE_SPEED = 20
 GAME_WINNING_SCORE = 2
-BALL_MOVE_SPEED = 15
+BALL_MOVE_SPEED = 20
 CANVAS_WIDTH = 1280
 CANVAS_HEIGHT = 780
 VECTOR_CENTER = Vector(CANVAS_WIDTH * 0.5, CANVAS_HEIGHT * 0.5)
@@ -73,16 +73,16 @@ class Player(Entity):
 			if (len == 0):
 				len = 0.00001
 			ab.scale((len + self.mesh.height * 0.5) / len)
-			if len > self.goal_height * 0.5:
+			if len > self.goal_height * 0.5 - self.mesh.height * 0.5:
 				return
 
-		# Check if the mesh is still inside the canvas
-		transformed_points = [p.dup().rotate(self.rotation).add(new_pos) for p in self.mesh.points]
-		for point in transformed_points:
-			if point.x < 0 or point.x > CANVAS_WIDTH:
-				return
-			if point.y < 0 or point.y > CANVAS_HEIGHT:
-				return
+		# # Check if the mesh is still inside the canvas
+		# transformed_points = [p.dup().rotate(self.rotation).add(new_pos) for p in self.mesh.points]
+		# for point in transformed_points:
+		# 	if point.x < 0 or point.x > CANVAS_WIDTH:
+		# 		return
+		# 	if point.y < 0 or point.y > CANVAS_HEIGHT:
+		# 		return
 		if self.position.x != new_pos.x or self.position.y != new_pos.y:
 			self.position = new_pos
 			#send new position to everyone
@@ -123,7 +123,7 @@ class Wall(Entity):
 	def __init__(self, x, y, rot, height):
 		super().__init__(x, y)
 		self.height = height
-		self.mesh = Box(10, height, True)
+		self.mesh = Box(10, height)
 		self.rotate(rot)
 		self.add_component(Mesh, self.mesh)
 
@@ -163,10 +163,15 @@ class GameLogicManager(Entity):
 			self.sections.append(PlayerSection(CANVAS_WIDTH, CANVAS_HEIGHT * .5, 0, CANVAS_HEIGHT))
 			world.addEntity(Wall(CANVAS_WIDTH * .5, 0, 90, CANVAS_WIDTH))
 			world.addEntity(Wall(CANVAS_WIDTH * .5, CANVAS_HEIGHT, 90, CANVAS_WIDTH))
+		elif playerCount == 4:
+			self.sections.append(PlayerSection(CANVAS_WIDTH * 0.5 - CANVAS_HEIGHT * 0.5, CANVAS_HEIGHT * 0.5, 0, CANVAS_HEIGHT))
+			self.sections.append(PlayerSection(CANVAS_WIDTH * 0.5, 0, 90, CANVAS_HEIGHT))
+			self.sections.append(PlayerSection(CANVAS_WIDTH * 0.5 + CANVAS_HEIGHT * 0.5, CANVAS_HEIGHT * 0.5, 180, CANVAS_HEIGHT))
+			self.sections.append(PlayerSection(CANVAS_WIDTH * 0.5, CANVAS_HEIGHT, 270, CANVAS_HEIGHT))
 		else:
 			point1 = Vector(0, -CANVAS_HEIGHT / 2)
 			rotationStep = 360 / playerCount
-			rot = (rotationStep) / 2
+			rot = rotationStep * 0.5
 			point2 = point1.dup().rotate(rotationStep)
 			for _ in range(playerCount):
 				ba = point2.sub(point1).scale(0.5)
@@ -177,8 +182,7 @@ class GameLogicManager(Entity):
 				rot += rotationStep
 		world.addEntity(self.ball)
 		for section in self.sections:
-			section.goal.on_trigger = self.create_goal_function(section)
-		
+			section.goal.on_collision = self.create_goal_function(section)
 			world.addEntity(section.player)
 			world.addEntity(section.goal)
 
@@ -257,7 +261,7 @@ class GameLogicManager(Entity):
 		if self.ball.physics.velocity.sqr_length() < pow(30, 2):
 			self.ball.physics.velocity.scale(1.0002)
 		#this check is to reset the round when the ball somehow escapes the play area
-		if self.ball.position.sub(Vector(CANVAS_WIDTH//2, CANVAS_HEIGHT//2)).sqr_length() > (CANVAS_WIDTH*1.5)**2:
+		if self.ball.position.sub(VECTOR_CENTER).sqr_length() > (CANVAS_WIDTH*1.5)**2:
 			self.reset_ball()
 
 
@@ -266,13 +270,20 @@ async def getCurrentState(world, consumer):
 		print('Sending ent id:', ent.id)
 		await consumer.client_create_entity(
 			{
-				'type': 'client_create_entity',
 				'id': ent.id,
 				'entType': type(ent).__name__,
 				'transform': ent.serialize(),
 				'height': 0 if not hasattr(ent, 'height') else ent.height
 			}
 		)
+	await consumer.client_create_entity(
+		{
+			'id': -1,
+			'entType': 'complete',
+			'transform': Transform(0, 0, 0).serialize(),
+			'heigth': 0
+		}
+	)
 
 thread_local = threading.local()
 
@@ -327,8 +338,8 @@ class PongGame:
 			), thread_local.event_loop)
 		print('We have a winner! Stop game thread, and asyncio thread')
 		self.stop()
-		print('Start of DB save')
 		if self.players[0].match_type == 'match':
+			print('Start of DB save')
 			match_data = {}
 			match_data['home'] = GameStatsUser.objects.get(username=self.players[0].user.username)
 			match_data['away'] = GameStatsUser.objects.get(username=self.players[1].user.username)
@@ -339,7 +350,12 @@ class PongGame:
 		elif self.players[0].match_type == 'tournament':
 			print('Start save tournament data!')
 			(async_to_sync)(set_match_data)(self.players[0].lobby_id, self.players[0].match_id, self.players[0].player_c.score, self.players[1].player_c.score, 'finished')
-			print('Tournament data saved!')		
+			print('Tournament data saved!')
+		elif self.players[0].match_type == 'multiple':
+			consumer = next(filter(lambda f: f.player_c == self.gameLogic.winner, self.players), None)
+			if consumer is not None:
+				set_winner_multiple(self.players[0].lobby_id, consumer.user.username)
+
 
 	def game_loop(self):
 		thread_local.pong_game = self

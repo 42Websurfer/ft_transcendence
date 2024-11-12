@@ -225,6 +225,14 @@ def safe_tournament_data(lobby_id):
 	#1. safe tournament_id in Tournament object
 	#2. Tournament_results!
 
+def set_winner_multiple(lobby_id, winner_name):
+	data = redis.get(multiple_lobby_string(lobby_id))
+	if data is None:
+		return
+	data = json.loads(data)
+	data['winners'].append(winner_name)
+	redis.set(multiple_lobby_string(lobby_id), json.dumps(data))
+
 async def set_match_data(lobby_id, match_id, score_home, score_away, status):
 	tournament = redis.get(tournament_string(lobby_id))
 	if tournament is None:
