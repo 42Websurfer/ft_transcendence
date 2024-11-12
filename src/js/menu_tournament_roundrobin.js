@@ -1,4 +1,4 @@
-import { getCookie, displayMessages, fetch_get } from './utils.js';
+import { getCookie, fetch_get } from './utils.js';
 import { selectedListItem, setSelectedListItem, handleFriendRequest, showSection } from './index.js';
 import { renderPong } from './pong.js';
 
@@ -481,9 +481,7 @@ export function renderMenuTournamentRoundRobin(lobbyId) {
         countdownInterval = setInterval(updateCountdown, 1000);
         const response = fetch_get(`/tm/start_tournament_round/${lobbyId}`)
         if (response.type === 'error')
-            console.log(response.message)
-        else 
-            console.log("Start round was successfull!! ");
+            console.log(response.message);
     }
 
     async function updateCountdown() {

@@ -1,4 +1,4 @@
-import { getCookie, displayMessages } from './utils.js';
+import { displayToast, getCookie } from './utils.js';
 import { selectedListItem, setSelectedListItem, handleFriendRequest, showSection } from './index.js';
 
 export function renderMenuTournament() {
@@ -23,7 +23,6 @@ export function renderMenuTournament() {
             <div class="tournament-enter-lobby">
                 <input type="text" id="tournamentLobbyId" placeholder="Enter a lobby-id and hit enter...">
             </div>
-            <div id="joinMessage" class="join-message"></div>
         </div> 
     </div>
     `;
@@ -41,7 +40,7 @@ export function renderMenuTournament() {
             });
             return await response.json();
         } catch (error) {
-            return { error: 'Failed to tournament create request.' };
+            return {'type': 'request_error', 'message': 'Failed to tournament joind request.' };
         }
     };
 
@@ -53,10 +52,13 @@ export function renderMenuTournament() {
                 console.log(`Trying to enter lobby with id: ${lobbyId}`);
                 const response = await joinTournamentLobby(lobbyId);
                 if (response.type === 'success')
-                    showSection('menu_tournament_roundrobin', lobbyId);
-                else
                 {
-                    displayErrorMessage(response.message)
+                    displayToast('You have successfully joined a lobby', 'success');
+                    showSection('menu_tournament_roundrobin', lobbyId);
+                }
+                else if (response.type === 'error')
+                {
+                    displayToast(response.message, 'error');
                 }
             }
         }
@@ -66,7 +68,7 @@ export function renderMenuTournament() {
         try {
             const token = localStorage.getItem('access_token'); 
 
-            const response = await fetch(`/api/tm/create/?type=multiple`, {
+            const response = await fetch(`/api/tm/create/?type=tournament`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -75,19 +77,8 @@ export function renderMenuTournament() {
             });            
             return await response.json();
         } catch (error) {
-            return { error: 'Failed to tournament create request.' };
+            return {'type': 'request_error', 'message': 'Failed to tournament joind request.' };
         }
-
-    }
-
-    function displayErrorMessage(message)
-    {
-        const joinMessage = document.getElementById('joinMessage');
-        joinMessage.textContent = message;
-        joinMessage.style.color = 'red';
-        joinMessage.style.animation = 'none';
-        joinMessage.offsetHeight;
-        joinMessage.style.animation = 'wiggle 0.5s ease-in-out';
 
     }
 
@@ -95,9 +86,12 @@ export function renderMenuTournament() {
     tournamentRRButton.addEventListener('click', async () => {
         const response = await createTournamentLobby();
         if (response.type === 'error')
-            displayErrorMessage(response.message)
-        else
+            displayToast(response.message, 'error');
+        else if (response.type === 'success')
+        {
+            displayToast('You have successfully created a lobby', 'success');
             showSection('menu_tournament_roundrobin', response.lobby.id);
+        }
     });
 
 }

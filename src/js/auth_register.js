@@ -80,13 +80,6 @@ async function handleFormSubmit(event) {
     for (let [key, value] of formData.entries()) {
         console.log(`${key}: ${value}`);
     }
-	const data = {
-        email: formData.get('register-email'),
-        password: formData.get('register-password'),
-        firstname: formData.get('register-firstname'),
-        lastname: formData.get('register-lastname'),
-		username: formData.get('register-username')
-    };
 	
     const token = localStorage.getItem('access_token'); 
 

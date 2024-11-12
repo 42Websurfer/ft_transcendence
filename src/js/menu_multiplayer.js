@@ -1,4 +1,4 @@
-import { getCookie, displayMessages, displayToast } from './utils.js';
+import { getCookie, displayToast } from './utils.js';
 import { selectedListItem, setSelectedListItem, handleFriendRequest, showSection } from './index.js';
 
 export function renderMenuMultiplayer() {
@@ -19,7 +19,6 @@ export function renderMenuMultiplayer() {
             <div class="tournament-enter-lobby">
                 <input type="text" id="onlineLobbyId" placeholder="Enter a lobby-id and hit enter...">
             </div>
-            <div id="joinMessage" class="join-message" style="top: 19.2em;"></div>
         </div>
         
     </div>
@@ -38,7 +37,7 @@ export function renderMenuMultiplayer() {
             });
             return await response.json();
         } catch (error) {
-            return { error: 'Failed to tournament create request.' };
+            return {'type': 'request_error', 'message': 'Failed to tournament joind request.' };
         }
     };
 
@@ -51,8 +50,11 @@ export function renderMenuMultiplayer() {
                 console.log(`Trying to enter lobby with id: ${lobbyId}`);
                 const response = await joinMultipleLobby(lobbyId);
                 if (response.type === 'success')
+                {
+                    displayToast('You have successfully joined a lobby', 'success');
                     showSection('menu_multiple_lobby', lobbyId);
-                else
+                }
+                else if (response.type === 'error')
 					displayToast(response.message, response.type)
             }
         }
@@ -71,7 +73,7 @@ export function renderMenuMultiplayer() {
             });            
             return await response.json();
         } catch (error) {
-            return { error: 'Failed to tournament create request.' };
+            return {'type': 'request_error', 'message': 'Failed to tournament joind request.' };
         }
 
     }
@@ -83,6 +85,8 @@ export function renderMenuMultiplayer() {
 			displayToast(response.message, response.type)
             return;
         }
+        else if (response.type === 'success')
+            displayToast('You have successfully created a lobby', 'success');
         showSection('menu_multiple_lobby', response.lobby.id);
     });
 

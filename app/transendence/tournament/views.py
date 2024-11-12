@@ -44,6 +44,7 @@ def create_lobby(request):
 		})
 	redis.sadd('user_lobbies', user.id)
 	return JsonResponse({
+		'type': 'success',
 		'lobby': {
 			'id': lobby_id,
 			'role': 'admin',
