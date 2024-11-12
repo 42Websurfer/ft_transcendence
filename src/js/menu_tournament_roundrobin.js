@@ -1,4 +1,4 @@
-import { getCookie, fetch_get } from './utils.js';
+import { getCookie, fetch_get, copyToClipboard } from './utils.js';
 import { selectedListItem, setSelectedListItem, handleFriendRequest, showSection } from './index.js';
 import { renderPong } from './pong.js';
 
@@ -314,7 +314,7 @@ export function renderMenuTournamentRoundRobin(lobbyId) {
                             <p style="color: white; margin-bottom: 0.2em">Lobby-ID</p>
                         </div>
                         <div style="display: flex; flex-direction: row; justify-content: center;">
-                            <p id="lobbyId" style="color: #4740a8; margin: 0 0.4em;">${lobbyId}</p>
+                            <p id="copyLobbyId" style="color: #4740a8; margin: 0 0.4em;">${lobbyId}</p>
                             <button id="copyLobbyIdButton"><span class="button-text">&#x2398;</span></button>
                         </div>
                     </div>
@@ -372,54 +372,11 @@ export function renderMenuTournamentRoundRobin(lobbyId) {
         }).catch((error) => console.log("Error:", error));
     }
 
-    function copyToClipboard() {
-        var copyText = document.getElementById("lobbyId");
-
-
-        console.log("lobbyID: ", lobbyId);
-        console.log("copyText.textContent ", copyText.textContent);
-
-        var textToCopy = copyText.tagName === 'INPUT' || copyText.tagName === 'TEXTAREA' ? copyText.value : copyText.textContent;
-
-        if (navigator.clipboard && window.isSecureContext) {
-            navigator.clipboard.writeText(textToCopy).then(() => {
-                showCopyMessage();
-            }).catch(err => {
-                console.error("Failed to copy text: ", err);
-            });
-        } else {
-            const textarea = document.createElement('textarea');
-            textarea.value = textToCopy;
-            textarea.style.position = 'fixed';
-            textarea.style.opacity = '0';
-            document.body.appendChild(textarea);
-            textarea.focus();
-            textarea.select();
-
-            try {
-                document.execCommand('copy');
-                showCopyMessage();
-            } catch (err) {
-                console.error('Fallback: Oops, unable to copy', err);
-            }
-
-            document.body.removeChild(textarea);
-        }
-
-    }
-
     const copyLobbyIdButton = document.getElementById('copyLobbyIdButton');
     copyLobbyIdButton.addEventListener('click', () => {
         copyToClipboard();
     });
 
-    function showCopyMessage() {
-        var copyMessage = document.getElementById("copyMessage");
-        copyMessage.style.display = "block";
-        setTimeout(() => {
-            copyMessage.style.display = "none";
-        }, 2000);
-    }
 
     const controlsButton = document.getElementById('controlsButton');
     const controlsModal = document.getElementById('controlsModal');
