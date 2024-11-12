@@ -251,7 +251,9 @@ class GameLogicManager(Entity):
 				forward.normalize()
 				forward.scale(50)
 				forward = forward.add(self.starter.position)
-				self.ball.move(self.ball.position.x - forward.x, self.ball.position.y - forward.y)
+				if self.ball.position.x != forward.x or self.ball.position.y != forward.y:
+					self.ball.set_pos(forward.x, forward.y)
+					thread_local.pong_game.send_entity_move(self.ball)
 		if self.ball.physics.velocity.sqr_length() < pow(30, 2):
 			self.ball.physics.velocity.scale(1.0002)
 		#this check is to reset the round when the ball somehow escapes the play area
