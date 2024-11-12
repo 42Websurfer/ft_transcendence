@@ -311,7 +311,6 @@ export async function renderMenuDashboard() {
                         </thead>
                         <tbody id="tournamentStandingsTableBody" class="tournament-table-body"></tbody>
                     </table>
-                    <button id="test123">UPDATE</button>
                 </div>
                 <div id="" class="grid-item item7">
                     <p class="graph-title" style="margin-bottom: 0.8em;">General information</p>
@@ -513,20 +512,4 @@ export async function renderMenuDashboard() {
     });
 
     displayDashboardData(response);
-
-    const addButton = document.getElementById('test123');
-
-    addButton.addEventListener('click', () => {
-        displayGamesChart([31, 2]);
-        displayGoalsChart([31, 2]);
-        displayGeneralInformation("fheid", "42", "4", "2", "19", "2024-10-18 12:15");
-        displayForm("WLWLWWLLW");
-
-        const matches = [{"player_home": "fheid", "player_away": "fwechsle", "score_home": 4, "score_away": 0, "date": "2024-10-18 12:15", "winner": "fheid"}];
-        displayMatches(matches, "fheid");
-
-        const tournament = [{"rank": "1", "player": "fwechslefwechsle", "games": 4, "wins": 4, "losses": 0, "goals": 28, "goals_against": 0, "diff": 28, "points": 12}];
-        displayTournament(tournament);
-    });
-
 }

@@ -97,7 +97,7 @@ export function displayToast(message, level = undefined) {
 	const toastContainer = document.getElementById('tc');
 
 	const toastHTML = `
-	<div class="toast ${level ? level == 'success' ? 'bg-success bg-gradient' : level == 'warning' ? 'bg-warning bg-gradient' : level == 'error' ? 'bg-danger bg-gradient' : 'bg-info bg-gradient'  : ''}" role="alert" aria-live="assertive" aria-atomic="true">
+	<div class="toast ${level ? level == 'success' ? 'bg-success bg-gradient' : level == 'warning' ? 'bg-warning bg-gradient' : level == 'error' ? 'bg-danger bg-gradient' : 'bg-info bg-gradient'  : ''}" data-bs-delay="3000" role="alert" aria-live="assertive" aria-atomic="true">
 		<div class="d-flex">
 			<div class="toast-body font-main text-white">
 				${message}
