@@ -216,3 +216,19 @@ function disableSpanInsideButton(buttonId) {
         }
     }
 }
+
+// export function dynamicFetch(uri, method, content_type, token) {
+
+//     fetch(`/api/tm/get_lobby_data/${lobbyId}/?type=match`, {
+//         method: 'GET',
+//         headers: {
+//             'Authorization': `Bearer ${token}`,
+//             'Content-Type': 'application/json'
+//         },
+//     }).then((response) => response.json())
+//     .then((data) => {
+//         if (data.type === 'error') {
+//             displayToast(data.message, 'error')
+//         }
+//     }).catch((error) => console.log("Error:", error));
+// }
