@@ -1,6 +1,5 @@
 import { getCookie, displayToast } from './utils.js';
 import { showSection } from './index.js';
-import { sendAuthCode } from './auth_register.js';
 import { renderAuth2FALogin } from './auth_2fa_login.js';
 import { renderAuth2FARegister } from './auth_2fa_register.js';
 

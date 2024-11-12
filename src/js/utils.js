@@ -112,3 +112,27 @@ export function displayToast(message, level = undefined) {
 	var a = new bootstrap.Toast(toastElement.querySelector('.toast'));
 	a.show();
 }
+
+export async function sendAuthCode(user) {
+	const input_code = document.getElementById('authcode');
+	const code = input_code.value.trim();
+	if (!code)
+		return ({'type': 'error', 'message': 'You have to enter a code.'});
+	const response = await fetch('/api/verify_2fa_code/', {
+		method: 'POST',
+    	headers: {
+           'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({'user': user, 'otp_code': code})
+    });
+	const result = await response.json()
+	if (result.type === 'success')
+	{
+		localStorage.setItem('access_token', result.tokens.access);  
+        localStorage.setItem('refresh_token', result.tokens.refresh);	
+		showSection('menu');
+		return result;
+	}
+	else
+		return result;
+}
