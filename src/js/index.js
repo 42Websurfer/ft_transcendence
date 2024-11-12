@@ -2,6 +2,7 @@ import { handleLogoutSubmit, getCookie } from './utils.js';
 import { renderAuth42 } from './auth_42.js';
 import { renderWaiting } from './waiting.js';
 import { renderAuth2FALogin } from './auth_2fa_login.js';
+import { renderAuth2FARegister } from './auth_2fa_register.js';
 
 let wsBool;
 wsBool = false;
@@ -491,6 +492,8 @@ window.onload = async function() {
             renderAuth42(response);
             return;
         }
+        else if (response.type === 'pending')
+            renderAuth2FARegister(response)
         else if (response.type === 'success')
         {
             renderAuth2FALogin(response.user)

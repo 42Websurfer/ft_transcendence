@@ -2,7 +2,7 @@ import { displayMessages } from './utils.js';
 import { sendAuthCode } from './auth_register.js';
 
 export async function renderAuth2FALogin(user) {
-	
+	console.log("We are rendering auth2falogin");
 	const app = document.getElementById('app');
 	app.innerHTML = `
 	<div class="login">
