@@ -162,7 +162,23 @@ def register(request):
             }, status=201)
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON.'}, status=400)
-            
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user(request, user_id):
+    try:
+        user = User.objects.get(pk=user_id)
+        data = {
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'first_name': user.first_name,
+            'last_name': user.last_name
+        }
+        return JsonResponse(data)
+    except User.DoesNotExist:
+        return JsonResponse({'type': 'error', 'message': 'User not found'}, status=404)
+    
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_user_information(request):

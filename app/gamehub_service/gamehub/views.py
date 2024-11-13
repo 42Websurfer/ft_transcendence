@@ -47,10 +47,14 @@ def gamestatsuser(request):
 			return JsonResponse({'status': 'error', 'message': 'GameStatsUser not found'}, status=404)
 	return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
 
-@api_view(['GET'])
+
+
 @permission_classes([IsAuthenticated])
+@api_view(['GET'])
 def create_lobby(request):
+	logger.debug("ARE WE IN THIS FUNCTION?!")
 	user = request.user
+	logger.debug(f"User_id = {user.id}")
 	type = request.GET.get('type')
 	if redis.sismember('user_lobbies', user.id):
 		return JsonResponse({

@@ -13,17 +13,33 @@ services:
     labels:
       - 'devcontainer.local_folder=/home/fheid/transcendence'
       - 'devcontainer.config_file=/home/fheid/transcendence/.devcontainer/devcontainer.json'
-  user_service: 
+  user-service: 
     build: 
       context: ./../app/user_service/
       dockerfile: Dockerfile.django
-    container_name: user_service
+    container_name: user-service
     env_file:
       - ./.env
     volumes:
       - ./../app/user_service/:/app/
     expose:
       - 8002
+    networks: 
+      - trans_net
+    depends_on:
+      - user_db
+      - redis
+  gamehub-service: 
+    build: 
+      context: ./../app/gamehub_service/
+      dockerfile: Dockerfile.django
+    container_name: gamehub-service
+    env_file:
+      - ./.env
+    volumes:
+      - ./../app/gamehub_service/:/app/
+    expose:
+      - 8003
     networks: 
       - trans_net
     depends_on:
@@ -59,8 +75,9 @@ services:
       - ./conf/nginx:/etc/nginx/conf.d
       - ./../src:/var/www/html/frontend/
     depends_on:
-      - user_service
+      - user-service
       - application
+      - gamehub-service
     networks:
       - trans_net
     expose:
@@ -105,7 +122,19 @@ services:
       - 8001
     networks: 
       - trans_net
-
+  daphne_gamehub:
+    build: 
+      context: ./../app/gamehub_service/
+      dockerfile: Dockerfile.daphne
+    container_name: gamehub_service_daphne
+    env_file:
+      - ./.env
+    volumes:
+      - ./../app/gamehub_service/:/app/
+    expose:
+      - 8003
+    networks: 
+      - trans_net
 networks: 
   trans_net: 
     driver: bridge

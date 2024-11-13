@@ -18,6 +18,7 @@ urlpatterns = [
     path('register_api/', views.register_api, name='register_api'),
     path('settings/', views.update_user_information, name='settings'),
     path('verify_2fa_code/', views.verify_2fa_code, name='verify_2fa_code'),
+    path('user/<str:user_id>/', views.get_user, name='user'),
   
 ]
 
