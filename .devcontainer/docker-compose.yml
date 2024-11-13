@@ -13,23 +13,6 @@ services:
     labels:
       - 'devcontainer.local_folder=/home/fheid/transcendence'
       - 'devcontainer.config_file=/home/fheid/transcendence/.devcontainer/devcontainer.json'
-  user_service: 
-    build: 
-      context: ./../app/user_service/
-      dockerfile: Dockerfile.django
-    container_name: user_service
-    env_file:
-      - ./.env
-    volumes:
-      - ./../app/user_service/:/app/
-    expose:
-      - 8002
-    networks: 
-      - trans_net
-    depends_on:
-      - database
-      - redis
-    
   database:
     container_name: django_db
     image: postgres:latest
@@ -41,26 +24,12 @@ services:
       - postgres_data:/var/lib/postgresql/data
     expose:
       - 5432
-  user_db:
-    container_name: user_db
-    image: postgres:latest
-    env_file:
-      - .env
-    networks:
-      - trans_net
-    volumes:
-      - user_db:/var/lib/postgresql/data
-    expose:
-      - 5432
   nginx:
     container_name: nginx
     image: nginx
     volumes:
       - ./conf/nginx:/etc/nginx/conf.d
       - ./../src:/var/www/html/frontend/
-    depends_on:
-      - user_service
-      - application
     networks:
       - trans_net
     expose:
@@ -92,24 +61,10 @@ services:
       - trans_net
     ports:
       - "5000:5000"
-  daphne_user:
-    build: 
-      context: ./../app/user_service/
-      dockerfile: Dockerfile.daphne
-    container_name: user_service_daphne
-    env_file:
-      - ./.env
-    volumes:
-      - ./../app/user_service/:/app/
-    expose:
-      - 8001
-    networks: 
-      - trans_net
 
 networks: 
   trans_net: 
     driver: bridge
 volumes:
   postgres_data:
-  user_db:
   redis_data:

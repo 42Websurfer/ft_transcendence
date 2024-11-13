@@ -48,7 +48,7 @@ async function handleUsernameFormSubmit(session_data)
 
     try {
         
-        const response = await fetch('/api/user/register_api/', {
+        const response = await fetch('/api/register_api/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
