@@ -3,7 +3,7 @@ import { showSection } from './index.js';
 import { startGame } from './utils.js';
 
 const PLAYER_MOVE_SPEED = 20;
-const BALL_MOVE_SPEED = 15;
+const BALL_MOVE_SPEED = 20;
 const VECTOR_CENTER = new Vector(canvas.width * 0.5, canvas.height * 0.5);
 
 export function renderPong(match_id) {
@@ -85,28 +85,28 @@ class Player extends Entity{
 	move(xAdd, yAdd){
 		let newPos = this.position.add(new Vector(xAdd, yAdd));
 
-		/**
-		 * Check if the new player position is still in range of its goal
-		 * if not dont allow the move
-		 */
+		// /**
+		//  * Check if the new player position is still in range of its goal
+		//  * if not dont allow the move
+		//  */
 		if (this.startPos !== undefined){
 			let ab = newPos.sub(this.startPos);
 			let len = ab.length();
 			ab.scale((len + this.mesh.height * 0.5) / len);
-			if (len > this.goalHeight * 0.5)
+			if (len > (this.goalHeight * 0.5) - this.mesh.height * 0.5)
 				return;
 		}
-		/**
-		 * Check if the mesh is still inside the canvas
-		 * if not dont allow the move
-		 */
-		let transformedPoints = this.mesh.points.map(p => p.dup().rotate(this.rotation).add(newPos));
-		for (let point of transformedPoints) {
-			if (point.x < 0 || point.x > canvas.width)
-				return;
-			if (point.y < 0 || point.y > canvas.height)
-				return;
-		}
+		// /**
+		//  * Check if the mesh is still inside the canvas
+		//  * if not dont allow the move
+		//  */
+		// let transformedPoints = this.mesh.points.map(p => p.dup().rotate(this.rotation).add(newPos));
+		// for (let point of transformedPoints) {
+		// 	if (point.x < 0 || point.x > canvas.width)
+		// 		return;
+		// 	if (point.y < 0 || point.y > canvas.height)
+		// 		return;
+		// }
 		this.position = newPos;
 	}
 
@@ -193,7 +193,7 @@ class Wall extends Entity{
 	constructor(x, y, rot, height){
 		super(x, y);
 		this.height = height;
-		let m = new Box(10, this.height, true);
+		let m = new Box(10, this.height);
 		this.rotate(rot);
 		this.addComponent(Mesh, m);
 	}
@@ -256,18 +256,26 @@ class PongLocalManager extends Entity{
 			world.addEntity(new Wall(canvas.width * .5, 0, 90, canvas.width));
 			world.addEntity(new Wall(canvas.width * .5, canvas.height, 90, canvas.width));
 			return;
-		}
-		let point1 = new Vector(0, -canvas.height / 2);
-		let rotationStep = 360 / playerCount;
-		let rot = (rotationStep) / 2;
-		let point2 = point1.dup().rotate(rotationStep);
-		for (let i = 0; i < playerCount; i++) {
-			let ba = point2.sub(point1).scale(0.5);
-			let midpoint = ba.add(point1).add(VECTOR_CENTER);
-			this.sections.push(new PlayerSection(midpoint.x, midpoint.y, rot + 90, ba.length() * 2));
-			point1.rotate(rotationStep);
-			point2.rotate(rotationStep);
-			rot += rotationStep;
+		} else if (playerCount == 4) {
+			this.sections.push(new PlayerSection(canvas.width * 0.5 - canvas.height * 0.5, canvas.height * 0.5, 0, canvas.height));
+			this.sections.push(new PlayerSection(canvas.width * 0.5, 0, 90, canvas.height));
+			this.sections.push(new PlayerSection(canvas.width * 0.5 + canvas.height * 0.5, canvas.height * 0.5, 180, canvas.height));
+			this.sections.push(new PlayerSection(canvas.width * 0.5, canvas.height, 270, canvas.height));
+			this.sections[0].player.keyBinds = {up: 'w', down: 's'};
+			this.sections[1].player.keyBinds = {up: 'ArrowUp', down: 'ArrowDown'};
+		} else {
+			let point1 = new Vector(0, -canvas.height / 2);
+			let rotationStep = 360 / playerCount;
+			let rot = (rotationStep) / 2;
+			let point2 = point1.dup().rotate(rotationStep);
+			for (let i = 0; i < playerCount; i++) {
+				let ba = point2.sub(point1).scale(0.5);
+				let midpoint = ba.add(point1).add(VECTOR_CENTER);
+				this.sections.push(new PlayerSection(midpoint.x, midpoint.y, rot + 90, ba.length() * 2));
+				point1.rotate(rotationStep);
+				point2.rotate(rotationStep);
+				rot += rotationStep;
+			}
 		}
 	}
 
@@ -277,7 +285,7 @@ class PongLocalManager extends Entity{
 
 		this.sections.forEach( section => {
 			this.updatePlayerScore(section.player);
-			section.goal.onTrigger = (other) =>{
+			section.goal.onCollision = (other) =>{
 				if (other instanceof Ball){
 					if (other.lastHit){
 						if (other.lastHit != section.player){
@@ -317,6 +325,31 @@ class PongLocalManager extends Entity{
 		this.winner = this.playerHasWon();
 		if (this.winner) {
 			console.log('we have a winner', this.winner);
+			let displayMsg = document.getElementById('countdownDisplay');
+			if (displayMsg) {
+				let section = this.sections.find((value) => value.player == this.winner);
+				let idx = this.sections.indexOf(section);
+				displayMsg.innerText = `localP${idx+1} won!\nPress space to restart!`;
+				displayMsg.style.display = 'block';
+			}
+
+			const restartGame = (event) => {
+				if (event.key == ' ') {
+					console.log("RESTART LOCAL GAME!");
+					this.winner = undefined;
+					for (let section of this.sections) {
+						section.player.score = 0;
+						this.updatePlayerScore(section.player);
+					}
+					displayMsg.style.display = 'none';
+					window.removeEventListener('keydown', restartGame);
+					this.round_running = false;
+					this.counter = Date.now();
+					startRound();
+				}
+			}
+
+			window.addEventListener('keydown', restartGame)
 			return ;
 		}
 		this.round_running = false;
@@ -345,8 +378,9 @@ class PongLocalManager extends Entity{
 	}
 	
 	update() {
-		if (this.winner)
+		if (this.winner) {
 			return;
+		}
 		if (!this.round_running) {
 			if (Date.now() - this.counter >= 3000.0) {
 				let dir = VECTOR_CENTER.sub(this.starter.startPos);
@@ -392,6 +426,7 @@ class RemoteHandler extends Entity{
 		super(0, 0);
 		this.entities = {};
 		this.players = {};
+		this.complete = false;
 		window.addEventListener('keypress', sendMovementInput);
 		window.addEventListener('keyup', sendMovementInput);
 	}
@@ -404,6 +439,9 @@ class RemoteHandler extends Entity{
 			ent = new Ball(0,0);
 		} else if (type === 'Wall'){
 			ent = new Wall(0, 0, 0, Number(height));
+		} else if (type === 'complete'){
+			this.complete = true;
+			return;
 		} else {
 			ent = new Entity(0, 0);
 		}
@@ -537,7 +575,14 @@ function setupSocketHandlers(socket){
 			console.log(data);
 		if (data[0] === 'ne'){
 			manager.newEntity(data[2], data[1], {position: {x: data[3], y: data[4]}, rotation: data[5]}, data[6]);
-		} else if (data[0] === 'up'){
+			return;
+		}
+		if (!manager.complete) {
+			socket.send(JSON.stringify({type: 'incomplete'}));
+			console.warn('did not recieve all entities. Send request for resend!!!');
+			return;
+		} 
+		if (data[0] === 'up'){
 			manager.moveEntity(data[1], {position: {x: data[2], y: data[3]}, rotation: data[4]});
 		} else if (data[0] === 'sp'){
 			manager.setEntityPosition(data[1], {position: {x: data[2], y: data[3]}, rotation: data[4]});
@@ -579,6 +624,8 @@ function endGame() {
 		setTimeout(() => showSection('menu_online_lobby', lobbyId), 2000);
 	} else if (matchType === 'tournament') {
 		setTimeout(() => showSection('menu_tournament_roundrobin', lobbyId), 2000);
+	} else if (matchType === 'multiple') {
+		setTimeout(() => showSection('menu_multiple_lobby', lobbyId))
 	} else {
 		// setTimeout(() => showSection('menu'), 2000);
 		showSection('menu');

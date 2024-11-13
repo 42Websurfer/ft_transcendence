@@ -156,13 +156,13 @@ def get_lobby_data(request, lobby_id):
 			return (JsonResponse({'type': 'error', 'message': 'No data in redis.'}))
 		channel_layer = get_channel_layer()
 		(async_to_sync)(channel_layer.group_send)(
-			match_lobby_string(lobby_id),
+			multiple_lobby_string(lobby_id),
 			{
 				'type': 'send_multiple_match_list',
 			}
 		)
 		(async_to_sync)(channel_layer.group_send)(
-			match_lobby_string(lobby_id),	
+			multiple_lobby_string(lobby_id),	
 			{
 				'type': 'send_multiple_lobby_users',
 			}

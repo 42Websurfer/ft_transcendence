@@ -1609,6 +1609,7 @@ body {
     border: 0.1em solid #000000;
     display: grid;
     grid-template-columns: 1fr auto 1fr;
+	grid-template-rows: 1fr 1fr;
     /* align-items: center; */
     overflow: hidden;
 }
