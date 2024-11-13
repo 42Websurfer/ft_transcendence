@@ -1,6 +1,5 @@
 import { getCookie, displayToast } from './utils.js';
 import { showSection } from './index.js';
-import { sendAuthCode } from './auth_register.js';
 import { renderAuth2FARegister } from './auth_2fa_register.js';
 
 export async function renderAuth42(session_data) {
@@ -37,7 +36,6 @@ export async function renderAuth42(session_data) {
 
 async function handleUsernameFormSubmit(session_data)
 {
-    console.log('WARUM WIRST DU GETRIGGERT?');
     const usernameElement = document.getElementById('usernameInput');
     let username = '';
     if (!usernameElement)
@@ -47,43 +45,26 @@ async function handleUsernameFormSubmit(session_data)
     }
     
     username = usernameElement.value.trim();
-    
 
     try {
         
-        const token = localStorage.getItem('access_token'); 
-    
         const response = await fetch('/api/register_api/', {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({'username': username, 'session_data': session_data})
         });
 
         const result = await response.json();
-        const registerMessage = document.getElementById('messages');
-        console.log("Response = ", result);
         if (result.type === 'success')
-        {
-            registerMessage.textContent = '';
             renderAuth2FARegister(result);
-        }
-        else
+        else if (result.type === 'error')
         {
-            registerMessage.textContent = result.message;
-            registerMessage.style.color = 'red';
-            registerMessage.style.animation = 'none';
-            registerMessage.offsetHeight;
-            registerMessage.style.animation = 'wiggle 0.5s ease-in-out';
+            displayToast(result.message, 'error');
         }
-
-        // if (result.success)
-        //     showSection('menu');
     }
     catch(error) {
         console.log("Error during fetch to register_api");
-        //showSection('auth_login')
     }
 }

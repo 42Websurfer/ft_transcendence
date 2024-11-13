@@ -1,4 +1,4 @@
-import { getCookie, displayMessages } from './utils.js';
+import { displayToast, getCookie } from './utils.js';
 import { showSection } from './index.js';
 
 export async function renderSettings() {
@@ -42,10 +42,8 @@ export async function renderSettings() {
 					<label for="floatingInput">Upload avatar</label>
 				</div>	
 				<button class="signin-button btn btn-primary w-100 py-2" type="submit">Update</button>	
-				<div id="settingsMessage" class="register-message"></div>
 			</form>
 		</div>
-		<div id="settingsLoader" class="loader"></div> 	
 	</div>
 	`;
     const inputEmail = document.getElementById('settings-email');
@@ -54,8 +52,8 @@ export async function renderSettings() {
     const inputUsername = document.getElementById('settings-username');
 
     const response = await getUserInformation();
-    if (response.error)
-        displayMessages(response);
+    if (response.type === 'error')
+        displayToast(response.message, 'error');
     else
     {
         inputEmail.value = response.email;
@@ -82,7 +80,7 @@ async function getUserInformation() {
         return await response.json();
     }
     catch(error){
-        return ({'error': 'Request for getting settings failed.'});
+		return {'type': 'request_error', 'message': 'Failed to tournament joind request.' };
     }
 }
 
@@ -97,32 +95,18 @@ async function handleSettingsFormSubmit(event) {
 		method: 'POST',
         headers: {
             'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
         },
-        body: formData//JSON.stringify(data)
+        body: formData
     });
 	
     const result = await response.json();
-	console.log("result: ", result);
-
-	const settingsMessage = document.getElementById('settingsMessage');
-	
+	console.log("result = ", result);
 	if (result.type === 'success')
 	{
-		settingsMessage.textContent = '';
-
-		const settingsLoader = document.getElementById('settingsLoader');
-		settingsLoader.style.display = 'block';
-
-		setTimeout(() => showSection('menu'), 2000);
+		displayToast('User data successfully updated.', 'success');		
+		showSection('menu')
 	}
-	else
-	{
-		settingsMessage.textContent = result.message;
-		settingsMessage.style.color = 'red';
-		settingsMessage.style.animation = 'none';
-		settingsMessage.offsetHeight;
-		settingsMessage.style.animation = 'wiggle 0.5s ease-in-out';
-	}
+	else if (result.type === 'error')
+		displayToast(result.message, 'error');
 
 }

@@ -1,5 +1,6 @@
 import {Vector, Plane, World, Entity, Mesh, Physics, Box, Circle, RenderSystem, CollisionSystem, MovementSystem, canvas, drawText, strokeText, drawLine, ctx} from './GameSystem.js';
 import { showSection } from './index.js';
+import { startGame } from './utils.js';
 
 const PLAYER_MOVE_SPEED = 20;
 const BALL_MOVE_SPEED = 20;
@@ -353,7 +354,7 @@ class PongLocalManager extends Entity{
 		}
 		this.round_running = false;
 		this.counter = Date.now();
-		startRound();
+		startGame();
 	}
 
 	playerHasWon() {
@@ -664,36 +665,6 @@ function setupCloseWebsocket(socket) {
 
 
 // COUNTDOWN TEST
-
-let countdown = 3;
-let countdownInterval;
-
-function startRound() {
-	console.log('start the countdown!');
-	countdown = 3
-	let countdownDisplay = document.getElementById('countdownDisplay');
-	if (!countdownDisplay)
-		return;
-	countdownDisplay.textContent = countdown.toString();
-	countdownDisplay.style.display = 'block';
-	countdownInterval = setInterval(updateCountdown, 1000);
-}
-
-async function updateCountdown() {
-	
-	let countdownDisplay = document.getElementById('countdownDisplay');
-	if (!countdownDisplay)
-		return ;
-	if (countdown > 1) {
-		countdown--;
-		countdownDisplay.textContent = countdown.toString();
-	} else {
-		clearInterval(countdownInterval);
-		countdownDisplay.style.display = 'none';
-		
-		console.log('Game started!');
-	}
-}
 
 function displayDisconnect(name) {
 	clearInterval(countdownInterval);

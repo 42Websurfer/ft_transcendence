@@ -20,12 +20,10 @@ async function checkAuthentication() {
         });
         if (response.status === 401)
         {
-            console.log('STATUS CODE 401')
             return false;
         }
         else if (response.status === 200)
         {
-            console.log("statusCODE 200")
             const result = await response.json();
             return result.authenticated;
         }
@@ -356,6 +354,7 @@ function initOnlineStatus() {
 
 export async function showSection(section, lobbyId, pushState = true)
 {
+
     const isAuthenticated = await checkAuthentication();
     renderLoginLogoutButton(isAuthenticated, section);
     if (section === 'auth_register')
@@ -371,6 +370,15 @@ export async function showSection(section, lobbyId, pushState = true)
             module.renderAuth42();    
         });
     if (isAuthenticated) {
+        const settingsButton = document.getElementById('settings-button')
+        if (settingsButton)
+        {
+            if (section == 'menu')
+                settingsButton.style.display = 'block';
+            else 
+                settingsButton.style.display = 'none';
+        }
+
         if (!wsBool)
         {
             initOnlineStatus();
@@ -385,16 +393,16 @@ export async function showSection(section, lobbyId, pushState = true)
                 module.renderMenuLocal(lobbyId);
             });
         else if (section === 'menu_online')
-            import('./menu_online.js').then(module => {
-                module.renderMenuOnline();
+            import('./menu_lobby.js').then(module => {
+                module.renderMenuLobby('online');
             });
         else if (section === 'menu_tournament')
-            import('./menu_tournament.js').then(module => {
-                module.renderMenuTournament();
+            import('./menu_lobby.js').then(module => {
+                module.renderMenuLobby('tournament');
             });
         else if (section === 'menu_multiplayer')
-            import('./menu_multiplayer.js').then(module => {
-                module.renderMenuMultiplayer();
+            import('./menu_lobby.js').then(module => {
+                module.renderMenuLobby('multiple');
             });
 		else if (section === 'menu_multiple_lobby')
 			import('./menu_multiple_lobby.js').then(module => {
@@ -408,7 +416,7 @@ export async function showSection(section, lobbyId, pushState = true)
             import('./menu_online_lobby.js').then(module => {
                 module.renderMenuOnlineLobby(lobbyId);
             });
-        else if (section === 'menu_tournament_roundrobin')
+        else if (section === 'menu_tournament_lobby')
             import('./menu_tournament_roundrobin.js').then(module => {
                 module.renderMenuTournamentRoundRobin(lobbyId);
             });
@@ -430,8 +438,6 @@ export async function showSection(section, lobbyId, pushState = true)
             module.renderAuthLogin();    
         });
         section = 'auth_login';
-    
-    
     }
     const currentState = history.state
     if (pushState && section != 'waiting' && (!currentState || currentState.section != section))

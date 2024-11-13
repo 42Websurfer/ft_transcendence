@@ -8,7 +8,6 @@ export function renderAuthRegister() {
 	<div class="login">
 		<div class="login-container">
 			<form id="registerForm" enctype="multipart/form-data">
-				<div id="messages"></div>
 				<input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
 
 				<div class="login-instructions">
@@ -51,27 +50,6 @@ export function renderAuthRegister() {
     form.addEventListener('submit', handleFormSubmit);
 }
 
-export async function sendAuthCode(user) {
-	const input_code = document.getElementById('authcode');
-	const code = input_code.value; 
-	const response = await fetch('/api/verify_2fa_code/', {
-		method: 'POST',
-    	headers: {
-           'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({'user': user, 'otp_code': code})
-    });
-	const result = await response.json()
-	if (result.type === 'success')
-	{
-		localStorage.setItem('access_token', result.tokens.access);  
-        localStorage.setItem('refresh_token', result.tokens.refresh);	
-		showSection('menu');
-		return result;
-	}
-	else
-		return result;
-}
 
 async function handleFormSubmit(event) {
     event.preventDefault();
@@ -80,13 +58,6 @@ async function handleFormSubmit(event) {
     for (let [key, value] of formData.entries()) {
         console.log(`${key}: ${value}`);
     }
-	const data = {
-        email: formData.get('register-email'),
-        password: formData.get('register-password'),
-        firstname: formData.get('register-firstname'),
-        lastname: formData.get('register-lastname'),
-		username: formData.get('register-username')
-    };
 	
     const token = localStorage.getItem('access_token'); 
 
@@ -98,11 +69,7 @@ async function handleFormSubmit(event) {
     const result = await response.json();
 	
 	if (result.type === 'success')
-	{
-		registerMessage.textContent = '';
-
 		renderAuth2FARegister(result) 
-	}
 	else if (result.type === 'error')
 		displayToast(result.message, 'error');
 }

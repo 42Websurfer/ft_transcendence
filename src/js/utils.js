@@ -16,22 +16,62 @@ export function getCookie(name) {
     return cookieValue;
 }
 
-export function displayMessages(result) {
-    const messagesContainer = document.getElementById('messages');
-    messagesContainer.innerHTML = '';
-    if (result.type === 'error') {
-        const div = document.createElement('div');
-        div.classList.add('error');
-        div.textContent = result.message;
-        div.style.animation = 'wiggle 0.5s ease-in-out';
-        messagesContainer.appendChild(div);
-    } else if (result.type === 'success') {
-        const div = document.createElement('div');
-        div.classList.add('success');
-        div.textContent = result.message;
-        messagesContainer.appendChild(div);
-    }
+function showCopyMessage() {
+    var copyMessage = document.getElementById("copyMessage");
+    copyMessage.style.display = "block";
+    setTimeout(() => {
+        copyMessage.style.display = "none";
+    }, 2000);
 }
+
+export function copyToClipboard() {
+    var copyText = document.getElementById("copyLobbyId");
+
+    var textToCopy = copyText.tagName === 'INPUT' || copyText.tagName === 'TEXTAREA' ? copyText.value : copyText.textContent;
+
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            showCopyMessage();
+        }).catch(err => {
+            console.error("Failed to copy text: ", err);
+        });
+    } else {
+        const textarea = document.createElement('textarea');
+        textarea.value = textToCopy;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+
+        try {
+            document.execCommand('copy');
+            showCopyMessage();
+        } catch (err) {
+            console.error('Fallback: Oops, unable to copy', err);
+        }
+
+        document.body.removeChild(textarea);
+    }
+
+}
+
+// export function displayMessages(result) {
+//     const messagesContainer = document.getElementById('messages');
+//     messagesContainer.innerHTML = '';
+//     if (result.type === 'error') {
+//         const div = document.createElement('div');
+//         div.classList.add('error');
+//         div.textContent = result.message;
+//         div.style.animation = 'wiggle 0.5s ease-in-out';
+//         messagesContainer.appendChild(div);
+//     } else if (result.type === 'success') {
+//         const div = document.createElement('div');
+//         div.classList.add('success');
+//         div.textContent = result.message;
+//         messagesContainer.appendChild(div);
+//     }
+// }
 
 export async function handleLogoutSubmit(ws, wsBool)
 {
@@ -97,7 +137,7 @@ export function displayToast(message, level = undefined) {
 	const toastContainer = document.getElementById('tc');
 
 	const toastHTML = `
-	<div class="toast ${level ? level == 'success' ? 'bg-success bg-gradient' : level == 'warning' ? 'bg-warning bg-gradient' : level == 'error' ? 'bg-danger bg-gradient' : 'bg-info bg-gradient'  : ''}" role="alert" aria-live="assertive" aria-atomic="true">
+	<div class="toast ${level ? level == 'success' ? 'bg-success bg-gradient' : level == 'warning' ? 'bg-warning bg-gradient' : level == 'error' ? 'bg-danger bg-gradient' : 'bg-info bg-gradient'  : ''}" data-bs-delay="3000" role="alert" aria-live="assertive" aria-atomic="true">
 		<div class="d-flex">
 			<div class="toast-body font-main text-white">
 				${message}
@@ -111,4 +151,68 @@ export function displayToast(message, level = undefined) {
 
 	var a = new bootstrap.Toast(toastElement.querySelector('.toast'));
 	a.show();
+}
+
+export async function sendAuthCode(user) {
+	const input_code = document.getElementById('authcode');
+	const code = input_code.value.trim();
+	if (!code)
+		return ({'type': 'error', 'message': 'You have to enter a code.'});
+	const response = await fetch('/api/verify_2fa_code/', {
+		method: 'POST',
+    	headers: {
+           'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({'user': user, 'otp_code': code})
+    });
+	const result = await response.json()
+	if (result.type === 'success')
+	{
+		localStorage.setItem('access_token', result.tokens.access);  
+        localStorage.setItem('refresh_token', result.tokens.refresh);	
+		showSection('menu');
+		return result;
+	}
+	else
+		return result;
+}
+
+let countdown = 3;
+let countdownInterval;
+
+export function startGame() {
+	console.log('start the countdown!');
+	countdown = 3
+	let countdownDisplay = document.getElementById('countdownDisplay');
+	if (!countdownDisplay)
+		return;
+	countdownDisplay.textContent = countdown.toString();
+	countdownDisplay.style.display = 'block';
+	countdownInterval = setInterval(updateCountdown, 1000);
+}
+
+async function updateCountdown() {
+	
+	let countdownDisplay = document.getElementById('countdownDisplay');
+	if (!countdownDisplay)
+		return ;
+	if (countdown > 1) {
+		countdown--;
+		countdownDisplay.textContent = countdown.toString();
+	} else {
+		clearInterval(countdownInterval);
+		countdownDisplay.style.display = 'none';
+		
+		console.log('Game started!');
+	}
+}
+
+function disableSpanInsideButton(buttonId) {
+    const button = document.getElementById(buttonId);
+    if (button && button.disabled) {
+        const span = button.querySelector('span');
+        if (span) {
+            span.classList.add('disabled');
+        }
+    }
 }

@@ -166,19 +166,26 @@ def register(request):
 @permission_classes([IsAuthenticated])
 def get_user_information(request):
     user = request.user
-    return JsonResponse({
-        'type': 'success',
-        'email': user.email,
-        'firstname': user.first_name,
-        'lastname': user.last_name,
-        'username': user.username
-    })
+    if user:
+        return JsonResponse({
+            'type': 'success',
+            'email': user.email,
+            'firstname': user.first_name,
+            'lastname': user.last_name,
+            'username': user.username
+        })
+    else: 
+        return JsonResponse({'type': 'error', 'message': 'User does not exists.'})
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def update_user_information(request):
     try:
+        logger.debug("WO FAILST DU JUNGE")
         data = request.POST
+        logger.debug(f"data = {data}")
+        logger.debug("WO FAILST DU JUNGE1")
+
         email = data.get('email')
         password = data.get('password')
         firstname = data.get('firstname')
@@ -186,9 +193,11 @@ def update_user_information(request):
         username = data.get('username')
         avatar = data = request.FILES.get('avatar')
         user = User.objects.get(id=request.user.id)
+        logger.debug("WO FAILST DU JUNGE3")
+
         if user.userprofile.is_third_party_user:
             if user.email != email:
-                return JsonResponse({'type': 'error', 'message': 'Third party user cannot change email'})
+                return JsonResponse({'type': 'error', 'message': 'Third party user cannot change email'}, status=400)
         if username and user.username != username:
             if User.objects.filter(username=username).exists():
                 return JsonResponse({'type': 'error', 'message': 'This username already exists.'}, status=400)
@@ -208,9 +217,9 @@ def update_user_information(request):
             user.gamestatsuser.avatar = avatar
             user.gamestatsuser.save()
         user.save()
-        return (JsonResponse({'type': 'success'}))
+        return (JsonResponse({'type': 'success'}, status=200))
     except User.DoesNotExist:  
-        return JsonResponse({'type': 'error', 'message': 'User does not exist.'})
+        return JsonResponse({'type': 'error', 'message': 'User does not exist.'}, status=400)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

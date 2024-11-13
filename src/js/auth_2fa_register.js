@@ -1,5 +1,4 @@
-import { displayToast } from './utils.js';
-import { sendAuthCode } from './auth_register.js';
+import { displayToast, sendAuthCode } from './utils.js';
 
 export async function renderAuth2FARegister(input) {
 	
@@ -34,15 +33,11 @@ export async function renderAuth2FARegister(input) {
 	const authcodeInput = document.getElementById('authcode');
     authcodeInput.addEventListener('keydown', async (event) => {
         if (event.key === 'Enter') {
-            const code = authcodeInput.value.trim();
-            if (code)
-			{
-				let result = await sendAuthCode(input.user);
-				if (result.type === 'error')
-					displayToast(result.message, 'error')
-				else if (result.type === 'success')
-					displayToast('You have successfully registered.', 'success');
-			}
+			let result = await sendAuthCode(input.user);
+			if (result.type === 'error')
+				displayToast(result.message, 'error')
+			else if (result.type === 'success')
+				displayToast('You have successfully registered.', 'success');
         }
     });
 

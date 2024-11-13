@@ -1,5 +1,4 @@
-import { displayToast } from './utils.js';
-import { sendAuthCode } from './auth_register.js';
+import { displayToast, sendAuthCode } from './utils.js';
 
 export async function renderAuth2FALogin(user) {
 	console.log("We are rendering auth2falogin");
