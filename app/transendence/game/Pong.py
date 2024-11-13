@@ -1,6 +1,5 @@
 import threading, time, asyncio
 from .GameSystem import *
-from functools import partial
 from tournament.models import GameStatsUser
 from tournament.utils import set_online_match, set_match_data, tournament_string, set_winner_multiple
 from asgiref.sync import async_to_sync

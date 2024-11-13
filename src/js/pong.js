@@ -324,6 +324,31 @@ class PongLocalManager extends Entity{
 		this.winner = this.playerHasWon();
 		if (this.winner) {
 			console.log('we have a winner', this.winner);
+			let displayMsg = document.getElementById('countdownDisplay');
+			if (displayMsg) {
+				let section = this.sections.find((value) => value.player == this.winner);
+				let idx = this.sections.indexOf(section);
+				displayMsg.innerText = `localP${idx+1} won!\nPress space to restart!`;
+				displayMsg.style.display = 'block';
+			}
+
+			const restartGame = (event) => {
+				if (event.key == ' ') {
+					console.log("RESTART LOCAL GAME!");
+					this.winner = undefined;
+					for (let section of this.sections) {
+						section.player.score = 0;
+						this.updatePlayerScore(section.player);
+					}
+					displayMsg.style.display = 'none';
+					window.removeEventListener('keydown', restartGame);
+					this.round_running = false;
+					this.counter = Date.now();
+					startRound();
+				}
+			}
+
+			window.addEventListener('keydown', restartGame)
 			return ;
 		}
 		this.round_running = false;
@@ -352,8 +377,9 @@ class PongLocalManager extends Entity{
 	}
 	
 	update() {
-		if (this.winner)
+		if (this.winner) {
 			return;
+		}
 		if (!this.round_running) {
 			if (Date.now() - this.counter >= 3000.0) {
 				let dir = VECTOR_CENTER.sub(this.starter.startPos);
