@@ -20,6 +20,33 @@ redis = redis.Redis(host='redis', port=6379, db=0)
 def lobby_name_generator():
 	return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(4))
 
+@api_view(['PUT', 'POST'])
+def gamestatsuser(request):
+	data = json.loads(request.body)
+	if request.method == 'POST':
+		try:
+			uid = (int)(data.get('user_id'))
+			logger.debug(f"{type(uid)} + 'uid = ' {uid}")
+			username = data.get('username')
+			gamestatsuser = GameStatsUser.objects.create(user_id=uid, username=username)
+			if not gamestatsuser:
+				return JsonResponse({'type': 'error', 'message': 'Create GameStatsUser model failed.'}, status=400)
+			return JsonResponse({'type': 'success'}, status=200)
+		except Exception as e:
+			logger.debug(f"Error: {e}")
+			return JsonResponse({'type': 'error', 'message': 'Create GameStatsUser model failed.'}, status=400)
+	elif request.method == 'PUT':
+		user_id = data.get('user_id')
+		username = data.get('username')
+		try:
+			gamestatsuser = GameStatsUser.objects.get(user_id=user_id)
+			gamestatsuser.username = username
+			gamestatsuser.save()
+			return JsonResponse({'status': 'success'})
+		except GameStatsUser.DoesNotExist:
+			return JsonResponse({'status': 'error', 'message': 'GameStatsUser not found'}, status=404)
+	return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def create_lobby(request):

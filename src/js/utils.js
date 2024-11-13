@@ -77,7 +77,7 @@ export async function handleLogoutSubmit(ws, wsBool)
 {
     const token = localStorage.getItem('access_token'); 
 
-    const response = await fetch('/api/logout/', {
+    const response = await fetch('/api/user/logout/', {
         method: 'GET',
         headers: {
             'Authorization': `Bearer ${token}`,
@@ -158,7 +158,7 @@ export async function sendAuthCode(user) {
 	const code = input_code.value.trim();
 	if (!code)
 		return ({'type': 'error', 'message': 'You have to enter a code.'});
-	const response = await fetch('/api/verify_2fa_code/', {
+	const response = await fetch('/api/user/verify_2fa_code/', {
 		method: 'POST',
     	headers: {
            'Content-Type': 'application/json'
