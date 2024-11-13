@@ -61,7 +61,7 @@ async function handleFormSubmit(event) {
 	
     const token = localStorage.getItem('access_token'); 
 
-    const response = await fetch('/api/register/', {
+    const response = await fetch('/api/user/register/', {
 		method: 'POST',
         body: formData
     });

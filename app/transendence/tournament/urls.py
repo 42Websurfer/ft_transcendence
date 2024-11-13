@@ -15,5 +15,6 @@ urlpatterns = [
     path('get_dashboard/', views.get_dashboard_data, name='get_dashboard'),
     path('get_lobby_data/<str:lobby_id>/', views.get_lobby_data, name='get_lobby_data'),
     path('start_tournament_round/<str:lobby_id>/', views.start_tournament_round, name='start_tournament_round'),
+    path('gameStatsUser/', views.gamestatsuser, name='gameStatsUser'),
 
 ]

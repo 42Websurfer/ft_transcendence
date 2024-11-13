@@ -1,0 +1,15 @@
+Django>=3.2,<4.0
+setuptools
+django 
+psycopg2-binary
+whitenoise
+channels
+daphne
+channels_redis
+requests
+Pillow
+django-otp
+pyotp
+qrcode
+djangorestframework 
+djangorestframework-simplejwt

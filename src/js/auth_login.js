@@ -65,7 +65,7 @@ async function handleLoginFormSubmit(event)
         password: formData.get('login-password')
     };
 
-    const response = await fetch('/api/login/', {
+    const response = await fetch('/api/user/login/', {
         method: 'POST',
         body: JSON.stringify(data)
     });
