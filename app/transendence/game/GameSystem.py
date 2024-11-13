@@ -120,7 +120,7 @@ class Mesh(Component):
 		self.is_trigger = is_trigger
 		self.points = []
 
-	def get_closest_point(self, transform, point):
+	def get_closest_point(self, transform: Transform, point: Vector):
 		closest_point = None
 		smallest_dist = float('inf')
 

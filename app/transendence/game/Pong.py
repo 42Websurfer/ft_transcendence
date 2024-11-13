@@ -128,9 +128,9 @@ class Wall(Entity):
 		self.add_component(Mesh, self.mesh)
 
 class PlayerSection:
-	def __init__(self, x, y, rotation, height):
+	def __init__(self, x, y, rotation, height, ratio = 0.33):
 		self.goal = Wall(x, y, rotation, height)
-		self.player = Player(x, y, height * 0.33)
+		self.player = Player(x, y, height * ratio)
 		self.bind_player()
 
 	def bind_player(self):
@@ -292,20 +292,20 @@ class PongGame:
 	def __init__(self, playerCount):
 		self.playerCount = playerCount
 		self.stop_thread = False
-		self.players = []
 		self.world = World()
 		self.world.addSystem(CollisionSystem())
 		self.world.addSystem(MovementSystem())
 		self.gameLogic = GameLogicManager()
+		self.players = None
+		print(f'Got Players: {self.players}')
 
 		self.world.addEntity(self.gameLogic)
 		self.event_loop = None
 		self.asyncio_thread = None
 		self.game_thread = None
 
-	def add_consumers(self, consumers):
-		self.players = consumers
-
+	def set_players(self, group_name):
+		self.players = GamesHandler.game_players(group_name)
 
 	def start_game(self):
 
@@ -372,7 +372,7 @@ class PongGame:
 				print('game running on', self.players[0].group_name)
 				iter = 0
 			iter += 1
-		print('game loop stopped of group', self.players[0].group_name)
+		print('game loop stopped of group', self.players[0].group_name if len(self.players) != 0 else '[Removed]')
 		self.event_loop.call_soon_threadsafe(self.event_loop.stop)
 		print('asyncio event_loop ordered to stop')
 		for player in self.players:
@@ -439,10 +439,12 @@ class GamesHandler:
 		print('Number of handlers:', len(GamesHandler.game_sessions))
 
 	@staticmethod
-	def game_player_count(group_name):
+	def game_players(group_name):
 		if group_name in GamesHandler.game_sessions:
-			return len(GamesHandler.game_sessions[group_name].players)
-		return 0
+			print(f'Return Players: {GamesHandler.game_sessions[group_name].players}')
+			return GamesHandler.game_sessions[group_name].players
+		print(f'Return Players: {[]}')
+		return []
 
 	async def add_consumer(self, consumer):
 		print('GamesHandler.add_consumer() called')
@@ -468,20 +470,28 @@ class GamesHandler:
 						temp = self.players[0]
 						self.players[0] = self.players[1]
 						self.players[1] = temp
-				
-			self.game.add_consumers(self.players)
+			self.game.set_players(self.group_name)
 			self.game.start_game()
 	
 	async def remove_consumer(self, consumer):
 		print('GamesHandler.remove_consumer() called')
-		if self.players.__len__() >= 1 and consumer in self.players:
+		if self.players.__len__() > 0 and consumer in self.players:
 			self.players.remove(consumer)
+			print(f'\nPlayers after remove in GamesHandler: {self.players}\n')
+			print(f'\nPlayers after remove in PonGame: {self.game.players}\n')
 		else:
 			print('no consumers in this lobby?')
 		if self.game is not None and self.players.__len__() < self.game.playerCount:
 			print('Stopping Game!')
 			self.game.stop()
 			for player in self.players:
-				print('Closing consumer!!')
-				await player.disconnectedMsg({'id': consumer.player_c.id, 'uid': consumer.user.id})
+				if player.channel_layer.valid_channel_name(player.channel_name):
+					print('Closing consumer!!')
+					try:
+						await player.disconnectedMsg({'id': consumer.player_c.id, 'uid': consumer.user.id})
+					except Exception as e:
+						print(f'Error sending disconnect message: {e}')
+				else:
+					print('Player already disconnected!')
 				await player.close()
+			self.players.clear()
