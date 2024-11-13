@@ -41,6 +41,17 @@ services:
       - postgres_data:/var/lib/postgresql/data
     expose:
       - 5432
+  user_db:
+    container_name: user_db
+    image: postgres:latest
+    env_file:
+      - .env
+    networks:
+      - trans_net
+    volumes:
+      - user_db:/var/lib/postgresql/data
+    expose:
+      - 5432
   nginx:
     container_name: nginx
     image: nginx
@@ -100,4 +111,5 @@ networks:
     driver: bridge
 volumes:
   postgres_data:
+  user_db:
   redis_data:
