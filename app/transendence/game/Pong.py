@@ -164,10 +164,10 @@ class GameLogicManager(Entity):
 			world.addEntity(Wall(CANVAS_WIDTH * .5, 0, 90, CANVAS_WIDTH))
 			world.addEntity(Wall(CANVAS_WIDTH * .5, CANVAS_HEIGHT, 90, CANVAS_WIDTH))
 		elif playerCount == 4:
-			self.sections.append(PlayerSection(CANVAS_WIDTH * 0.5 - CANVAS_HEIGHT * 0.5, CANVAS_HEIGHT * 0.5, 0, CANVAS_HEIGHT))
-			self.sections.append(PlayerSection(CANVAS_WIDTH * 0.5, 0, 90, CANVAS_HEIGHT))
-			self.sections.append(PlayerSection(CANVAS_WIDTH * 0.5 + CANVAS_HEIGHT * 0.5, CANVAS_HEIGHT * 0.5, 180, CANVAS_HEIGHT))
-			self.sections.append(PlayerSection(CANVAS_WIDTH * 0.5, CANVAS_HEIGHT, 270, CANVAS_HEIGHT))
+			self.sections.append(PlayerSection(CANVAS_WIDTH * 0.5 - CANVAS_HEIGHT * 0.5, CANVAS_HEIGHT * 0.5, 0, CANVAS_HEIGHT, 0.22))
+			self.sections.append(PlayerSection(CANVAS_WIDTH * 0.5, 0, 90, CANVAS_HEIGHT, 0.22))
+			self.sections.append(PlayerSection(CANVAS_WIDTH * 0.5 + CANVAS_HEIGHT * 0.5, CANVAS_HEIGHT * 0.5, 180, CANVAS_HEIGHT, 0.22))
+			self.sections.append(PlayerSection(CANVAS_WIDTH * 0.5, CANVAS_HEIGHT, 270, CANVAS_HEIGHT, 0.22))
 		else:
 			point1 = Vector(0, -CANVAS_HEIGHT / 2)
 			rotationStep = 360 / playerCount
