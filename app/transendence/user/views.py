@@ -15,8 +15,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from user.utils import updateOnlineStatusChannel
-#TypeError: the JSON object must be str, bytes or bytearray, not Response
-#from tournament.models import GameStatsUser
+from tournament.models import GameStatsUser
 from .models import User, Friendship, UserProfile
 from .utils import setup_2fa
 logging.basicConfig(level=logging.DEBUG)
@@ -142,10 +141,10 @@ def register(request):
             user = User.objects.create_user(username=username, email=email, first_name=firstname, last_name=lastname)
             user.set_password(password)
             user.save()
-            # if avatar:
-            #     user_game_stats = GameStatsUser.objects.get(username=username)
-            #     user_game_stats.avatar = avatar
-            #     user_game_stats.save()
+            if avatar:
+                user_game_stats = GameStatsUser.objects.get(username=username)
+                user_game_stats.avatar = avatar
+                user_game_stats.save()
 
             qr_code_string = setup_2fa(user)
             return JsonResponse({
@@ -214,9 +213,9 @@ def update_user_information(request):
             user.first_name = firstname
         if lastname: 
             user.last_name = lastname
-        # if avatar:
-        #     user.gamestatsuser.avatar = avatar
-        #     user.gamestatsuser.save()
+        if avatar:
+            user.gamestatsuser.avatar = avatar
+            user.gamestatsuser.save()
         user.save()
         return (JsonResponse({'type': 'success'}, status=200))
     except User.DoesNotExist:  

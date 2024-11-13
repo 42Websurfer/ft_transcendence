@@ -18,6 +18,7 @@ from channels.routing import ProtocolTypeRouter, URLRouter
 from django.core.asgi import get_asgi_application
 import game.routing
 import tournament.routing
+import user.routing
 from .middleware import JWTAuthMiddleware
 
 
@@ -27,7 +28,8 @@ application = ProtocolTypeRouter({
         AuthMiddlewareStack(
             URLRouter(
                 game.routing.websocket_urlpatterns +
-                tournament.routing.websocket_urlpatterns
+                tournament.routing.websocket_urlpatterns +
+                user.routing.websocket_urlpatterns
             )
         )
     ),

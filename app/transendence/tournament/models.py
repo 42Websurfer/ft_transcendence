@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 class GameStatsUser(models.Model):
-    user_id = models.IntegerField(default=0)
+    user = models.OneToOneField(User, null=True, blank=True, on_delete=models.SET_NULL)
     username = models.CharField(max_length=16, null=True, blank=True)
     avatar = models.ImageField(upload_to='avatar/', default="defaults/default_avatar.jpg")
     wins = models.IntegerField(default=0)
@@ -13,6 +13,11 @@ class GameStatsUser(models.Model):
     tournament_wins = models.IntegerField(default=0)
     goals_against = models.IntegerField(default=0)
     goals_for = models.IntegerField(default = 0)
+
+    def save(self, *args, **kwargs):
+        if self.user and not self.username:
+            self.username = self.user.username
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return (f"Game statistic from {self.username}")
