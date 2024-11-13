@@ -84,12 +84,17 @@ class MyConsumer(AsyncWebsocketConsumer):
 
 
 	async def receive(self, text_data):
-		text_data_json = json.loads(text_data)
-		if isinstance(text_data_json, int):
-			if self.player_c is not None:
-				self.player_c.handle_remote_movement(text_data_json)
-			return
-		print(f"text:data: {text_data_json}")
+		try:
+			text_data_json = json.loads(text_data)
+			if isinstance(text_data_json, int):
+				if self.player_c is not None:
+					self.player_c.handle_remote_movement(text_data_json)
+				return
+			if text_data_json['type'] == 'incomplete':
+				await getCurrentState(thread_local.world, self)
+			print(f"text:data: {text_data}")
+		except:
+			print(f'text_data exept:', text_data)
 
 	#initPlayer 	ip;entid;uid;uname
 	async def init_players(self, event):

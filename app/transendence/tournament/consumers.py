@@ -170,7 +170,7 @@ class MultipleLobby(AsyncWebsocketConsumer):
 					return
 				lobby_data['users'].append({'username': self.user.username, 'role': 'member'})
 			elif redis.exists(self.match_name):
-				lobby_data = {'users': [{'username': self.user.username, 'role': 'admin'}], 'winners': ['felix', 'nsassenb'], 'status': 'pending'}
+				lobby_data = {'users': [{'username': self.user.username, 'role': 'admin'}], 'winners': [], 'status': 'pending'}
 			else:
 				print('INVALID LOBBY ALARM!')
 				await self.close()
