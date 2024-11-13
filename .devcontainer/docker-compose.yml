@@ -52,6 +52,18 @@ services:
       - user_db:/var/lib/postgresql/data
     expose:
       - 5432
+
+  postgres_exporter:
+    image: wrouesnel/postgres_exporter
+    environment:
+      DATA_SOURCE_NAME: "postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@user_db:5432/$POSTGRES_DB?sslmode=disable"
+    expose:
+      - 9187
+    networks:
+      - trans_net
+    depends_on:
+      - user_db
+
   nginx:
     container_name: nginx
     image: nginx
@@ -67,6 +79,17 @@ services:
       - 8090
     ports:
       - "8090:8090"
+
+  nginx_exporter:
+    image: nginx/nginx-prometheus-exporter:latest
+    command: -nginx.scrape-uri http://nginx:80/stub_status
+    expose:
+      - 9113
+    networks:
+      - trans_net
+    depends_on:
+      - nginx
+
   adminer: 
     container_name: adminer
     image: adminer
@@ -83,6 +106,17 @@ services:
       - 6379
     networks:
      - trans_net
+
+  redis_exporter:
+    image: oliver006/redis_exporter:latest
+    command: --redis.addr=redis:6379
+    expose:
+      - 9121
+    networks:
+      - trans_net
+    depends_on:
+      - redis
+
   blockchain:
     build: ./requirements/blockchain
     container_name: blockchain
@@ -103,7 +137,28 @@ services:
       - ./../app/user_service/:/app/
     expose:
       - 8001
+      - 8002
     networks: 
+      - trans_net
+  prometheus:
+    image: prom/prometheus:v2.21.0
+    ports:
+      - "9090:9090"
+    volumes:
+      - prometheus_data:/prometheus
+      - ./conf/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - trans_net
+
+  grafana:
+    image: grafana/grafana:7.5.7
+    ports:
+      - 3000:3000
+    restart: unless-stopped
+    volumes:
+      - ./conf/grafana:/etc/grafana/provisioning/datasources
+      - grafana-data:/var/lib/grafana
+    networks:
       - trans_net
 
 networks: 
@@ -113,3 +168,5 @@ volumes:
   postgres_data:
   user_db:
   redis_data:
+  prometheus_data:
+  grafana-data:
