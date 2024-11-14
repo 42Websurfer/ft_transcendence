@@ -11,7 +11,7 @@ from .models import GameStatsUser, OnlineMatch, TournamentResults
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from asgiref.sync import async_to_sync
-from .custom_permissions import IsInternalContainer
+from .custom_permissions import IsInternalContainer, IsInternalContainerFactory
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -102,37 +102,36 @@ def join_match_lobby(request, lobby_id):
 	
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
-@permission_classes([IsInternalContainer])
+@permission_classes([IsInternalContainerFactory(['daphne_gameloop'])])
 def update_match(request):
 	data = json.loads(request.body)
 	if data is None:
 		return HttpResponse(status=400)
 	if not data['lobby_id'] or not data['type']:
-		return HttpResponse(status=404)
-	if data.type == 'match':
-		if not data['home_username'] or not data['away_username'] or not data['home_score'] or not data['away_score']:
-			return HttpResponse(status=404)
+		return HttpResponse(status=400)
+	if data['type'] == 'match':
+		if data['home_username'] == None or data['away_username'] == None or data['home_score'] == None or data['away_score'] == None:
+			return HttpResponse(status=400)
 		if not isinstance(data['home_score'], int) or not isinstance(data['away_score'], int):
-			return HttpResponse(status=404)
+			return HttpResponse(status=400)
 		try:
 			data['home'] = GameStatsUser.objects.get(username=data['home_username'])
 			data['away'] = GameStatsUser.objects.get(username=data['away_username'])
 		except:
-			return HttpResponse(status=404)
-		set_online_match(data, data.lobby_id)
-	elif data.type == 'tournament':
+			return HttpResponse(status=400)
+		set_online_match(data, data['lobby_id'])
+	elif data['type'] == 'tournament':
 		if not data['match_id'] or not data['home_score'] or not data['away_score'] or not data['status']:
-			return HttpResponse(status=404)
+			return HttpResponse(status=400)
 		if not isinstance(data['home_score'], int) or not isinstance(data['away_score'], int):
-			return HttpResponse(status=404)
-		set_match_data(data.lobby_id, data.match_id, data.home_score, data.away_score, data.status)
-	elif data.type == 'multiple':
+			return HttpResponse(status=400)
+		set_match_data(data['lobby_id'], data['match_id'], data['home_score'], data['away_score'], data['status'])
+	elif data['type'] == 'multiple':
 		if not data['winner_username']:
-			return HttpResponse(status=404)
-		set_winner_multiple(data.lobby_id, data.winner_username)
+			return HttpResponse(status=400)
+		set_winner_multiple(data['lobby_id'], data.winner_username)
 	else:
-		return HttpResponse("", status=404)
+		return HttpResponse(status=400)
 	return HttpResponse(status=200)
 	
 

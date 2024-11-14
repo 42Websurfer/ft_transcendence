@@ -10,7 +10,6 @@ class MyConsumer(AsyncWebsocketConsumer):
 		# User = get_user_model()
 		self.group_name = self.scope['url_route']['kwargs']['group_name']
 		self.user = self.scope["user"]
-		
 		split = self.group_name.split('_')
 		self.match_type = split[0] if len(split) > 0 else None
 		self.lobby_id = split[1] if len(split) > 1 else None
