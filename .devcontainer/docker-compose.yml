@@ -51,7 +51,24 @@ services:
       - database
       - redis
       - user-service
-    
+  gameloop-service:
+    build: 
+      context: ./../app/gameloop_service/
+      dockerfile: Dockerfile.django
+    container_name: gameloop-service
+    env_file:
+      - ./.env
+    volumes:
+      - ./../app/gameloop_service/:/app/
+    expose:
+      - 8004
+    networks: 
+      - trans_net
+    depends_on:
+      - database
+      - redis
+      - user-service
+      - gamehub-service
   database:
     container_name: django_db
     image: postgres:latest
@@ -108,26 +125,39 @@ services:
     build: 
       context: ./../app/user_service/
       dockerfile: Dockerfile.daphne
-    container_name: user_service_daphne
+    container_name: daphne_user
     env_file:
       - ./.env
     volumes:
       - ./../app/user_service/:/app/
     expose:
-      - 8001
+      - 8002
     networks: 
       - trans_net
   daphne_gamehub:
     build: 
       context: ./../app/gamehub_service/
       dockerfile: Dockerfile.daphne
-    container_name: gamehub_service_daphne
+    container_name: daphne_gamehub
     env_file:
       - ./.env
     volumes:
       - ./../app/gamehub_service/:/app/
     expose:
       - 8003
+    networks: 
+      - trans_net
+  daphne_gameloop:
+    build: 
+      context: ./../app/gameloop_service/
+      dockerfile: Dockerfile.daphne
+    container_name: daphne_gameloop
+    env_file:
+      - ./.env
+    volumes:
+      - ./../app/gameloop_service/:/app/
+    expose:
+      - 8004
     networks: 
       - trans_net
 networks: 

@@ -1,10 +1,7 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
-from channels.layers import get_channel_layer
-from asgiref.sync import sync_to_async
-from django.contrib.auth import get_user_model
 from .Pong import *
-from tournament.utils import match_lobby_string, tournament_string, multiple_lobby_string
+from .utils import match_lobby_string, tournament_string, multiple_lobby_string
 
 class MyConsumer(AsyncWebsocketConsumer):
 	

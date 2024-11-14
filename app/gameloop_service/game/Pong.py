@@ -1,7 +1,6 @@
 import threading, time, asyncio
 from .GameSystem import *
-from tournament.models import GameStatsUser
-from tournament.utils import set_online_match, set_match_data, tournament_string, set_winner_multiple
+from .utils import tournament_string
 from asgiref.sync import async_to_sync
 import redis
 import json
@@ -340,20 +339,36 @@ class PongGame:
 		if self.players[0].match_type == 'match':
 			print('Start of DB save')
 			match_data = {}
-			match_data['home'] = GameStatsUser.objects.get(username=self.players[0].user.username)
-			match_data['away'] = GameStatsUser.objects.get(username=self.players[1].user.username)
+			match_data['home_username'] = self.players[0].user.username
+			match_data['away_username'] = self.players[1].user.username
 			match_data['home_score'] = self.players[0].player_c.score
 			match_data['away_score'] = self.players[1].player_c.score
-			set_online_match(match_data, self.players[0].lobby_id)
+			match_data['type'] = 'online'
+			# request to niko api
 			print('Data successfully saved into DB!')
 		elif self.players[0].match_type == 'tournament':
 			print('Start save tournament data!')
-			(async_to_sync)(set_match_data)(self.players[0].lobby_id, self.players[0].match_id, self.players[0].player_c.score, self.players[1].player_c.score, 'finished')
+			data = {
+				'type': 'tournament',
+				'lobby:id': self.players[0].lobby_id,
+				'match_id': self.players[0].match_id,
+				'home_score': self.players[0].player_c.score,
+				'away_score': self.players[1].player_c.score,
+				'status': 'finished',
+			}
+			#HIER API match/
+			#(async_to_sync)(set_match_data)(self.players[0].lobby_id, self.players[0].match_id, self.players[0].player_c.score, self.players[1].player_c.score, 'finished')
 			print('Tournament data saved!')
 		elif self.players[0].match_type == 'multiple':
 			consumer = next(filter(lambda f: f.player_c == self.gameLogic.winner, self.players), None)
 			if consumer is not None:
-				set_winner_multiple(self.players[0].lobby_id, consumer.user.username)
+				data = {
+					'type': 'multiple',
+					'lobby_id': self.players[0].lobby_id,
+					'winner_username': consumer.user.username,
+				}
+				#API MATCH
+				#set_winner_multiple(self.players[0].lobby_id, consumer.user.username)
 
 
 	def game_loop(self):

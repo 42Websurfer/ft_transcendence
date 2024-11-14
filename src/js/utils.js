@@ -181,7 +181,6 @@ let countdown = 3;
 let countdownInterval;
 
 export function startGame() {
-	console.log('start the countdown!');
 	countdown = 3
 	let countdownDisplay = document.getElementById('countdownDisplay');
 	if (!countdownDisplay)
