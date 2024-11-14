@@ -620,10 +620,11 @@ function endGame() {
 	manager.cleanup();
 	world.entities = [];
 	world.systems = [];
+	console.log("MATCH TYPE = ", matchType);
 	if (matchType === 'match') {
 		setTimeout(() => showSection('menu_online_lobby', lobbyId), 2000);
 	} else if (matchType === 'tournament') {
-		setTimeout(() => showSection('menu_tournament_roundrobin', lobbyId), 2000);
+		setTimeout(() => showSection('menu_tournament_lobby', lobbyId), 2000);
 	} else if (matchType === 'multiple') {
 		setTimeout(() => showSection('menu_multiple_lobby', lobbyId))
 	} else {
