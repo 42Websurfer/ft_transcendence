@@ -355,6 +355,7 @@ class PongGame:
 			data['status'] = 'finished'
 		elif self.players[0].match_type == 'multiple':
 			consumer = next(filter(lambda f: f.player_c == self.gameLogic.winner, self.players), None)
+			data['type'] = 'multiple'
 			if consumer is not None:
 				data['winner_username'] = consumer.user.username
 		requests.post('http://gamehub-service:8003/match/', json=data)

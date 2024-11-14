@@ -127,7 +127,7 @@ def update_match(request):
 	elif data['type'] == 'multiple':
 		if not data['winner_username']:
 			return HttpResponse(status=400)
-		set_winner_multiple(data['lobby_id'], data.winner_username)
+		set_winner_multiple(data['lobby_id'], data['winner_username'])
 	else:
 		return HttpResponse(status=400)
 	return HttpResponse(status=200)
