@@ -187,6 +187,8 @@ export function startGame() {
 		return;
 	countdownDisplay.textContent = countdown.toString();
 	countdownDisplay.style.display = 'block';
+	if (countdownInterval)
+		clearInterval(countdownInterval);
 	countdownInterval = setInterval(updateCountdown, 1000);
 }
 
@@ -200,6 +202,7 @@ async function updateCountdown() {
 		countdownDisplay.textContent = countdown.toString();
 	} else {
 		clearInterval(countdownInterval);
+		countdownInterval = undefined;
 		countdownDisplay.style.display = 'none';
 		
 		console.log('Game started!');

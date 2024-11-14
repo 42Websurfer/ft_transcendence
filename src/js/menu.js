@@ -149,7 +149,7 @@ export function renderMenu() {
                 return;
             const token = localStorage.getItem('access_token');
             
-            const response = await fetch(`/api/send_friend_request/${username}/`, {
+            const response = await fetch(`/api/user/send_friend_request/${username}/`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,
