@@ -515,9 +515,9 @@ let socket = undefined;
 
 function sendMovementInput(event) {
 	if (event.type == 'keypress') {
-		if (event.key == 'w') {
+		if (event.key == 'w' || event.key == 'ArrowUp') {
 			socket.send(0b01);
-		} else if (event.key == 's') {
+		} else if (event.key == 's' || event.key == 'ArrowDown') {
 			socket.send(0b10);
 		}
 	} else if (event.type == 'keyup' && (event.key == 's' || event.key == 'w')) {
