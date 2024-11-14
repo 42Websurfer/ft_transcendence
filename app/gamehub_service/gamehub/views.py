@@ -437,7 +437,7 @@ def get_dashboard_data(request):
 		'biggest_loss': highest_loss if highest_loss else None,
 		'form': form,
 		'tournaments_played': tournaments_played,
-		'registered': user_game_stats.user.date_joined.strftime('%d-%m-%Y %H:%M'),
+		'registered': user_game_stats.created_at.strftime('%d-%m-%Y %H:%M'),
 		'winstreak': get_longest_winstreak(form),
 		'avatar_url': user_game_stats.avatar.url,
 	}

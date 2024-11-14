@@ -17,7 +17,7 @@ def create_user_profile(sender, instance, created, **kwargs):
             'username': instance.username,
         }
         try:
-            response = requests.post('http://development:8000/tm/gameStatsUser/', json=data)
+            response = requests.post('http://gamehub-service:8003/gameStatsUser/', json=data)
             if response.status_code != 200: 
                 data = response.json()
                 print(data.get('message'))
@@ -38,7 +38,7 @@ def update_gamestatsuser(sender, instance, **kwargs):
                     'user_id': instance.pk,
                     'username': instance.username
                 }
-                response = requests.put('http://development:8000/tm/gameStatsUser/', json=data)
+                response = requests.put('http://gamehub-service:8003/gameStatsUser/', json=data)
 
                 if response.status_code != 200:
                     print('Failed to update GameStatsUser')

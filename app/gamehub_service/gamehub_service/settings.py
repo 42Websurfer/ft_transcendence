@@ -26,7 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', 'development', 'user_service', '127.0.0.1', '10.13.9.3', '10.13.9.2', '10.14.7.4', '10.14.7.3', '10.14.1.9', '10.14.3.9']
+ALLOWED_HOSTS = ['localhost', 'development', 'user_service', 'gamehub-service', '127.0.0.1', '10.13.9.3', '10.13.9.2', '10.14.7.4', '10.14.7.3', '10.14.1.9', '10.14.3.9']
 
 
 # Application definition
@@ -40,8 +40,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'gamehub',
     'channels',
-    'django_otp',
-    'django_otp.plugins.otp_totp',
     'rest_framework',
     'rest_framework_simplejwt',
 ]
@@ -55,9 +53,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
-    'django_otp.middleware.OTPMiddleware',
-    'gamehub_service.http_middleware.JWTAuthMiddleware',
-
 ]
 
 ROOT_URLCONF = 'gamehub_service.urls'
@@ -166,7 +161,7 @@ MEDIA_URL = '/media/'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'gamehub_service.custom_jwt_authentication.CustomJWTAuthentication', 
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
 }
 

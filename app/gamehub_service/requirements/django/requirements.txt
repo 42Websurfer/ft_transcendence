@@ -8,7 +8,5 @@ daphne
 channels_redis
 requests
 Pillow
-django-otp
-pyotp
 djangorestframework 
 djangorestframework-simplejwt

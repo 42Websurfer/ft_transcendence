@@ -27,7 +27,7 @@ services:
     networks: 
       - trans_net
     depends_on:
-      - user_db
+      - database
       - redis
   gamehub-service: 
     build: 
@@ -55,17 +55,6 @@ services:
       - trans_net
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    expose:
-      - 5432
-  user_db:
-    container_name: user_db
-    image: postgres:latest
-    env_file:
-      - .env
-    networks:
-      - trans_net
-    volumes:
-      - user_db:/var/lib/postgresql/data
     expose:
       - 5432
   nginx:
