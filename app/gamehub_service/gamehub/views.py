@@ -1,16 +1,17 @@
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 import random
 import string
 import redis
 import json
 import logging
-from .utils import get_current_round, get_longest_winstreak, tournament_string, round_completed, set_match_data, match_lobby_string, multiple_lobby_string
+from .utils import get_current_round, get_longest_winstreak, tournament_string, round_completed, set_match_data, set_online_match, match_lobby_string, multiple_lobby_string, set_winner_multiple
 from channels.layers import get_channel_layer
 from django.core.exceptions import ObjectDoesNotExist
 from .models import GameStatsUser, OnlineMatch, TournamentResults
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from asgiref.sync import async_to_sync
+from custom_permissions import IsInternalContainer
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -98,6 +99,42 @@ def join_match_lobby(request, lobby_id):
 			return (JsonResponse({'type': 'error', 'message': 'Lobby already full.'}))
 	else: 
 		return(JsonResponse({'type': 'error', 'message': 'Lobby does not exist.'}))
+	
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@permission_classes([IsInternalContainer])
+def update_match(request):
+	data = json.loads(request.body)
+	if data is None:
+		return HttpResponse(status=400)
+	if not data['lobby_id'] or not data['type']:
+		return HttpResponse(status=404)
+	if data.type == 'match':
+		if not data['home_username'] or not data['away_username'] or not data['home_score'] or not data['away_score']:
+			return HttpResponse(status=404)
+		if not isinstance(data['home_score'], int) or not isinstance(data['away_score'], int):
+			return HttpResponse(status=404)
+		try:
+			data['home'] = GameStatsUser.objects.get(username=data['home_username'])
+			data['away'] = GameStatsUser.objects.get(username=data['away_username'])
+		except:
+			return HttpResponse(status=404)
+		set_online_match(data, data.lobby_id)
+	elif data.type == 'tournament':
+		if not data['match_id'] or not data['home_score'] or not data['away_score'] or not data['status']:
+			return HttpResponse(status=404)
+		if not isinstance(data['home_score'], int) or not isinstance(data['away_score'], int):
+			return HttpResponse(status=404)
+		set_match_data(data.lobby_id, data.match_id, data.home_score, data.away_score, data.status)
+	elif data.type == 'multiple':
+		if not data['winner_username']:
+			return HttpResponse(status=404)
+		set_winner_multiple(data.lobby_id, data.winner_username)
+	else:
+		return HttpResponse("", status=404)
+	return HttpResponse(status=200)
+	
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

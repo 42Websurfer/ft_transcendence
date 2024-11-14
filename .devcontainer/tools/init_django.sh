@@ -14,7 +14,7 @@ pip install requests
 pip install Pillow
 pip install djangorestframework 
 pip install djangorestframework-simplejwt
-/workspaces/app/transendence/manage.py makemigrations-
+/workspaces/app/transendence/manage.py makemigrations
 /workspaces/app/transendence/manage.py migrate
 export PYTHONPATH=/workspaces/app/transendence
 daphne -p 8001 -b 0.0.0.0 transendence.asgi:application &
