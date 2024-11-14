@@ -192,6 +192,7 @@ services:
     expose:
       - 8004
     networks: 
+      - trans_net
   
   prometheus:
     image: prom/prometheus:v2.21.0

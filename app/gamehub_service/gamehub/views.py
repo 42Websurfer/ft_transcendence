@@ -53,9 +53,7 @@ def gamestatsuser(request):
 @permission_classes([IsAuthenticated])
 @api_view(['GET'])
 def create_lobby(request):
-	logger.debug("ARE WE IN THIS FUNCTION?!")
 	user = request.user
-	logger.debug(f"User_id = {user.id}")
 	type = request.GET.get('type')
 	if redis.sismember('user_lobbies', user.id):
 		return JsonResponse({
@@ -256,7 +254,6 @@ def start_tournament_round(request, lobby_id):
 		return (JsonResponse({'type': 'error', 'message': 'Tournament not found'}))
 	tournament_matches = json.loads(tournament_matches_json)
 	matches = tournament_matches['matches']
-	#find current round which should be started
 	round, start = get_current_round(matches)
 	if round != -1 or start != -1:
 		channel_layer = get_channel_layer()
@@ -276,7 +273,6 @@ def start_tournament_round(request, lobby_id):
 	else: 
 		return JsonResponse({'type': 'error', 'message': 'No round founded'})
 	return JsonResponse({'type': 'success'})
-	#send the match data from current round! with setting user1 and user2 and match_id
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
