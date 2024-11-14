@@ -11,7 +11,7 @@ from .models import GameStatsUser, OnlineMatch, TournamentResults
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from asgiref.sync import async_to_sync
-from custom_permissions import IsInternalContainer
+from .custom_permissions import IsInternalContainer
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
