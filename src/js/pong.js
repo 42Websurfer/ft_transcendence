@@ -610,16 +610,19 @@ function setupSocketHandlers(socket){
 	socket.onclose = () => {
 		console.log('GAME SOCKET CLOSED!');
 		clearInterval(intervalId);
+		manager?.cleanup();
 		world.entities = [];
 		world.systems = [];
+		manager = undefined;
 	}
 }
 
 function endGame() {
 	clearInterval(intervalId);
-	manager.cleanup();
+	manager?.cleanup();
 	world.entities = [];
 	world.systems = [];
+	manager = undefined;
 	if (matchType === 'match') {
 		setTimeout(() => showSection('menu_online_lobby', lobbyId), 2000);
 	} else if (matchType === 'tournament') {
