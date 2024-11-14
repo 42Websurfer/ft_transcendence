@@ -8,6 +8,11 @@ services:
       - ../:/workspaces/
     networks: 
       - trans_net
+    depends_on:
+      - database
+      - redis
+      - user-service
+      - gamehub-service 
     expose:
       - 8000
     labels:
@@ -45,6 +50,7 @@ services:
     depends_on:
       - database
       - redis
+      - user-service
     
   database:
     container_name: django_db
