@@ -119,11 +119,11 @@ def update_match(request):
 			return HttpResponse(status=400)
 		set_online_match(data, data['lobby_id'])
 	elif data['type'] == 'tournament':
-		if not data['match_id'] or not data['home_score'] or not data['away_score'] or not data['status']:
-			return HttpResponse(status=400)
+		if data['match_id'] == None or data['home_score'] == None or data['away_score'] == None or data['status'] == None:
+			return HttpResponse(status=401)
 		if not isinstance(data['home_score'], int) or not isinstance(data['away_score'], int):
-			return HttpResponse(status=400)
-		set_match_data(data['lobby_id'], data['match_id'], data['home_score'], data['away_score'], data['status'])
+			return HttpResponse(status=402)
+		(async_to_sync)(set_match_data)(data['lobby_id'], data['match_id'], data['home_score'], data['away_score'], data['status'])
 	elif data['type'] == 'multiple':
 		if not data['winner_username']:
 			return HttpResponse(status=400)
