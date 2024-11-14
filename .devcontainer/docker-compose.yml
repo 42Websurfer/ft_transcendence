@@ -28,7 +28,7 @@ services:
   postgres_exporter:
     image: wrouesnel/postgres_exporter
     environment:
-      DATA_SOURCE_NAME: "postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@user_db:5432/$POSTGRES_DB?sslmode=disable"
+      DATA_SOURCE_NAME: "postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@django_db:5432/$POSTGRES_DB?sslmode=disable"
     expose:
       - 9187
     networks:
