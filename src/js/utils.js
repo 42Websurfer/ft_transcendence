@@ -171,10 +171,8 @@ export async function sendAuthCode(user) {
 		localStorage.setItem('access_token', result.tokens.access);  
         localStorage.setItem('refresh_token', result.tokens.refresh);	
 		showSection('menu');
-		return result;
 	}
-	else
-		return result;
+	return result;
 }
 
 let countdown = 3;

@@ -30,7 +30,6 @@ async function checkAuthentication() {
 
     }
     catch(error) {
-        console.log("LOL EXCPETION")
         console.error(error);
         return false;
     }

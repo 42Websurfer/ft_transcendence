@@ -34,7 +34,7 @@ services:
     networks:
       - trans_net
     depends_on:
-      - user_db
+      - database
 
   nginx:
     container_name: nginx
