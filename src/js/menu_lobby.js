@@ -72,7 +72,7 @@ export function renderMenuLobby(type) {
             displayToast(response.message, 'error');
             return;
         }
-        else if (response.type === 'success')
+        else if (response?.type === 'success')
             displayToast('You have successfully created a lobby', 'success');
         showSection(`menu_${type}_lobby`, response.lobby.id);
     });

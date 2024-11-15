@@ -50,8 +50,8 @@ def gamestatsuser(request):
 
 
 
-@permission_classes([IsAuthenticated])
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def create_lobby(request):
 	user = request.user
 	type = request.GET.get('type')

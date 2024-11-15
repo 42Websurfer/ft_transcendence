@@ -134,7 +134,7 @@ def register(request):
             firstname = data.get('firstname')
             lastname = data.get('lastname')
             username = data.get('username')
-            avatar = data = request.FILES.get('avatar')
+            avatar = request.FILES.get('avatar')
             if User.objects.filter(email=email).exists():
                 return JsonResponse({'type': 'error', 'message': 'Email address already exists.'}, status=400)
             elif User.objects.filter(username=username).exists():
@@ -160,8 +160,8 @@ def register(request):
                 },
                 'qr_code': f"data:image/png;base64,{qr_code_string}",
             }, status=201)
-        except json.JSONDecodeError:
-            return JsonResponse({'error': 'Invalid JSON.'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -451,9 +451,9 @@ def register_api(request):
 
 @csrf_exempt
 def api_callback(request):
-    data = json.loads(request.body) #request.GET.get('code')
-    code = data.get('code')
     try:
+        data = json.loads(request.body) #request.GET.get('code')
+        code = data.get('code')
         access_token_response = exchange_code_for_token(code)
         user_info = get_user_info(access_token_response['access_token'])
         session_data = create_user_session(user_info)
@@ -494,7 +494,7 @@ def api_callback(request):
     except UserProfile.DoesNotExist:
         return JsonResponse({'type': 'error', 'message': 'UserProfile does not exists.'}, status=404)
     except Exception as e:
-        return JsonResponse({'type': 'error', 'message': str(e)}, status=500)
+        return JsonResponse({'type': 'error', 'message': str(e)}, status=400)
 
 
 def exchange_code_for_token(code):
