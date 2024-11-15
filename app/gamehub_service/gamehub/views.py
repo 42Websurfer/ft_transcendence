@@ -22,6 +22,7 @@ def lobby_name_generator():
 	return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(4))
 
 @api_view(['PUT', 'POST'])
+@permission_classes([IsInternalContainerFactory(['user-serivce'])])
 def gamestatsuser(request):
 	data = json.loads(request.body)
 	if request.method == 'POST':
