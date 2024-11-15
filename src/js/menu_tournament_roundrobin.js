@@ -146,18 +146,7 @@ function addRowToStandingsTable(rank, player, games, wins, losses, goals, diff, 
     `;
 
     if (status === "disconnected")
-    {
-        row.innerHTML = `
-        <td style="color: #b7b6bb;">${rank}</td>
-        <td style="color: #b7b6bb;">${player}</td>
-        <td style="color: #b7b6bb;">${games}</td>
-        <td style="color: #b7b6bb;">${wins}</td>
-        <td style="color: #b7b6bb;">${losses}</td>
-        <td style="color: #b7b6bb;">${goals}</td>
-        <td style="color: #b7b6bb;">${diff}</td>
-        <td style="color: #b7b6bb;">${points}</td>
-        `;
-    }
+		row.style.color = '#b7b6bb';
 
     tableBody.appendChild(row);
 }
