@@ -198,10 +198,7 @@ def get_user_information(request):
 @permission_classes([IsAuthenticated])
 def update_user_information(request):
     try:
-        logger.debug("WO FAILST DU JUNGE")
         data = request.POST
-        logger.debug(f"data = {data}")
-        logger.debug("WO FAILST DU JUNGE1")
 
         email = data.get('email')
         password = data.get('password')
@@ -451,9 +448,9 @@ def register_api(request):
 
 @csrf_exempt
 def api_callback(request):
-    data = json.loads(request.body) #request.GET.get('code')
-    code = data.get('code')
     try:
+        data = json.loads(request.body) #request.GET.get('code')
+        code = data.get('code')
         access_token_response = exchange_code_for_token(code)
         user_info = get_user_info(access_token_response['access_token'])
         session_data = create_user_session(user_info)
@@ -494,7 +491,7 @@ def api_callback(request):
     except UserProfile.DoesNotExist:
         return JsonResponse({'type': 'error', 'message': 'UserProfile does not exists.'}, status=404)
     except Exception as e:
-        return JsonResponse({'type': 'error', 'message': str(e)}, status=500)
+        return JsonResponse({'type': 'error', 'message': str(e)}, status=400)
 
 
 def exchange_code_for_token(code):
