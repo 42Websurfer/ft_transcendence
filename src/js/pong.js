@@ -450,8 +450,11 @@ class RemoteHandler extends Entity{
 		this.setEntityPosition(ent.id, transform);
 	}
 
-	addPlayer(entid, uid, uname) {
+	addPlayer(entid, uid, uname, sender_uid) {
 		this.players[entid] = {uid, uname};
+		if (uid === sender_uid) {
+			this.entities[entid].mesh.colour = '#ff6666'; //colour is bad
+		}
 		if (Object.keys(this.players).length >= 2) {
 			this.updatePlayerScore(entid, 0);
 		}
@@ -565,7 +568,7 @@ function setupSocketHandlers(socket){
 		//setPos 		sp;id;xpos;ypos;rot
 		//roundStart 	rs
 		//setScore 		ss;id;score
-		//initPlayer 	ip;entid;uid;uname
+		//initPlayer 	ip;entid;uid;uname;sender_uid
 		//disconnect 	dc;id
 		//gameOver 		go
 		//drawDot 		dd;x;y
@@ -591,7 +594,7 @@ function setupSocketHandlers(socket){
 		} else if (data[0] === 'ss'){
 			manager.updatePlayerScore(data[1], data[2])
 		} else if (data[0] === 'ip') {
-			manager.addPlayer(data[1], data[2], data[3]);
+			manager.addPlayer(data[1], data[2], data[3], data[4]);
 		} else if (data[0] === 'dc') {
 			let player = manager.players[data[1]];
 			useCountdownAsMessageDisplay(`${player.uname} disconnected!`);

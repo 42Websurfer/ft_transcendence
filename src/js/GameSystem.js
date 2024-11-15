@@ -160,15 +160,18 @@ export class Physics extends Component{
  * Draw can be overloaded like in the Circle class, which does not need points
  */
 export class Mesh extends Component{
-	constructor(isTrigger = false){
+	constructor(isTrigger = false, colour = 'white'){
 		super();
 		this.isTrigger = isTrigger;
+		this.colour = colour;
 		this.points = [];
 	}
 
 	draw(transform){
 		if (this.points.length == 0)
 			return;
+		let prevFillStyle = ctx.fillStyle;
+		ctx.fillStyle = this.colour;
 		ctx.beginPath();
 
 		let transformedPoints = this.points.map(p => p.dup().rotate(transform.rotation).add(transform.position));
@@ -183,6 +186,7 @@ export class Mesh extends Component{
 		ctx.lineTo(point.x, point.y);
 		ctx.closePath();
 		ctx.fill();
+		ctx.fillStyle = prevFillStyle;
 	}
 
 	/**
@@ -225,10 +229,13 @@ export class Circle extends Mesh{
 	}
 
 	draw(transform){
+		let prevFillStyle = ctx.fillStyle;
+		ctx.fillStyle = this.colour;
 		ctx.beginPath();
 		ctx.arc(transform.position.x, transform.position.y, this.width * 0.5, 0, 360);
 		ctx.closePath();
 		ctx.fill();
+		ctx.fillStyle = prevFillStyle;
 	}
 
 	getClosestPoint(transform, point){

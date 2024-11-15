@@ -49,7 +49,7 @@ class MyConsumer(AsyncWebsocketConsumer):
 	#setPos 		sp;id;xpos;ypos;rot
 	#roundStart 	rs
 	#setScore 		ss;id;score
-	#initPlayer 	ip;entid;uid;uname
+	#initPlayer 	ip;entid;uid;uname;sender_uid
 	#disconnect 	dc;id
 	#gameOver 		go
 	#drawDot 		dd;x;y
@@ -58,7 +58,6 @@ class MyConsumer(AsyncWebsocketConsumer):
 	async def assign_player(self, pong_player):
 		print('consumer gets PongPlayer assigned')
 		self.player_c = pong_player
-		await self.send(text_data=f'is;{pong_player.id};{self.user.id}')
 		await self.channel_layer.group_send(
 			self.group_name,
 			{
@@ -96,7 +95,7 @@ class MyConsumer(AsyncWebsocketConsumer):
 	#initPlayer 	ip;entid;uid;uname
 	async def init_players(self, event):
 		print('We send what player has wich uid and uname')
-		await self.send(text_data=f"ip;{event.get('ent_id')};{event.get('uid')};{event.get('uname')}")
+		await self.send(text_data=f"ip;{event.get('ent_id')};{event.get('uid')};{event.get('uname')};{self.user.id}")
 		
 	#newEntity		ne;id;type;xpos;ypos;rotation;?.height
 	async def client_create_entity(self, event):
