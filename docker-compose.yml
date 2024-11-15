@@ -63,6 +63,7 @@ services:
       - 5432
   postgres_exporter:
     image: wrouesnel/postgres_exporter
+    container_name: postgres_exporter    
     environment:
       DATA_SOURCE_NAME: "postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@django_db:5432/$POSTGRES_DB?sslmode=disable"
     expose:
@@ -80,8 +81,11 @@ services:
       - ./src:/var/www/html/frontend/
     depends_on:
       - user-service
-      - application
+      - gameloop-service
       - gamehub-service
+      - daphne_user
+      - daphne_gamehub
+      - daphne_gameloop
     networks:
       - trans_net
     expose:
@@ -92,6 +96,7 @@ services:
   nginx_exporter:
     image: nginx/nginx-prometheus-exporter:latest
     command: -nginx.scrape-uri http://nginx:80/stub_status
+    container_name: nginx_exporter    
     expose:
       - 9113
     networks:
@@ -119,6 +124,7 @@ services:
   redis_exporter:
     image: oliver006/redis_exporter:latest
     command: --redis.addr=redis:6379
+    container_name: redis_exporter
     expose:
       - 9121
     networks:
@@ -126,15 +132,15 @@ services:
     depends_on:
       - redis
 
-  blockchain:
-    build: ./requirements/blockchain
-    container_name: blockchain
-    env_file: 
-      - ./.env
-    networks:
-      - trans_net
-    ports:
-      - "5000:5000"
+  # blockchain:
+  #   build: ./requirements/blockchain
+  #   container_name: blockchain
+  #   env_file: 
+  #     - ./.env
+  #   networks:
+  #     - trans_net
+  #   ports:
+  #     - "5000:5000"
   daphne_user:
     build: 
       context: ./app/user_service/
@@ -177,8 +183,9 @@ services:
   
   prometheus:
     image: prom/prometheus:v2.21.0
-    ports:
-      - "9090:9090"
+    container_name: prometheus
+    expose: 
+      - 9090
     volumes:
       - prometheus_data:/prometheus
       - ./conf/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
@@ -187,6 +194,7 @@ services:
 
   grafana:
     image: grafana/grafana:7.5.7
+    container_name: grafana
     ports:
       - 3000:3000
     restart: unless-stopped
@@ -196,7 +204,8 @@ services:
     networks:
       - trans_net
 networks: 
-  trans_net: 
+  trans_net:
+    name: trans_net 
     driver: bridge
 volumes:
   postgres_data:
