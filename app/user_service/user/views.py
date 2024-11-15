@@ -232,8 +232,8 @@ def update_user_information(request):
         #     user.gamestatsuser.save()
         user.save()
         return (JsonResponse({'type': 'success'}, status=200))
-    except User.DoesNotExist:  
-        return JsonResponse({'type': 'error', 'message': 'User does not exist.'}, status=400)
+    except Exception as e:
+        return JsonResponse({'type': 'error', 'message': str(e)}, status=400)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
