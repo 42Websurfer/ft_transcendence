@@ -22,9 +22,7 @@ export function runWebsocket(socket) {
                 matchPlayers.innerHTML = '';
 
                 const li = document.createElement('li');
-
-                li.innerHTML = `<span class="list-item-content"><span>${data.admin_username}</span><span style="color: red; font-size: 0.8em"> (*)</span></span>`;
-
+                li.innerHTML = `<span class="list-item-content"><span ${data.user_id === data.admin_id ? 'class="local-player"' : ''}>${data.admin_username}</span><span style="color: red; font-size: 0.8em"> (*)</span></span>`;
                 matchPlayers.appendChild(li);
 
                 const startMatchButton = document.getElementById('startOnlineMatch');
@@ -39,7 +37,9 @@ export function runWebsocket(socket) {
                         startMatchButton.style.display = 'block';
                     li.className = 'friends-add-list-user';
                     li.innerHTML = `<span class="list-item-content">${data.member_username}</span>`;
-    
+					if (data.user_id === data.member_id) {
+						li.classList.add('local-player');
+					}
                     matchPlayers.appendChild(li);
                 }
                 else

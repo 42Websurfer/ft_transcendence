@@ -19,6 +19,10 @@ p {
 	font-family: 'Press Start 2P';
 }
 
+.local-player {
+	text-decoration: underline;
+}
+
 .container-fluid, .main-content {
     padding: 0;
     margin: 0;
