@@ -10,7 +10,6 @@ urlpatterns = [
 	path('bc_update_score/', views.bc_update_score, name="bc_update_score"),
 	path('bc_get_score/', views.bc_get_score, name="bc_get_score"),
 	path('bc_delete_score/', views.bc_delete_score, name="bc_delete_score"),
-	path('join_online_lobby/<str:lobby_id>/', views.join_match_lobby, name='join_online_lobby'),
 	path('start_game/<str:lobby_id>/', views.start_game_loop, name='start_game_loop'),
 	path('get_dashboard/', views.get_dashboard_data, name='get_dashboard'),
 	path('get_lobby_data/<str:lobby_id>/', views.get_lobby_data, name='get_lobby_data'),
