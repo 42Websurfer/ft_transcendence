@@ -40,7 +40,7 @@ export function runWebsocket() {
                         admin = true;
                     
                     let rank = user.rank;
-                    let player = user.player;
+                    let player = data.user_id == user.user_id ? `<span class="local-player">${user.player}</span>` : user.player;
                     let games = user.games;
                     let wins = user.won;
                     let losses = user.lost;
