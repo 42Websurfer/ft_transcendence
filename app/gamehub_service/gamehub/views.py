@@ -45,8 +45,8 @@ def gamestatsuser(request):
 			gamestatsuser.username = username
 			gamestatsuser.save()
 			return JsonResponse({'status': 'success'})
-		except GameStatsUser.DoesNotExist:
-			return JsonResponse({'status': 'error', 'message': 'GameStatsUser not found'}, status=404)
+		except Exception as e:
+			return JsonResponse({'status': 'error', 'message': str(e)}, status=404)
 	return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
 
 

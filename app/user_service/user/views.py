@@ -205,7 +205,7 @@ def update_user_information(request):
         firstname = data.get('firstname')
         lastname = data.get('lastname')
         username = data.get('username')
-        avatar = data = request.FILES.get('avatar')
+        avatar = request.FILES.get('avatar')
         user = User.objects.get(id=request.user.id)
         logger.debug("WO FAILST DU JUNGE3")
 
