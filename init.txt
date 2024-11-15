@@ -1,6 +1,0 @@
-#step in to python environment
-
-source app/webappenv/bin/activate
-
-#create app
-py manage.py startapp  

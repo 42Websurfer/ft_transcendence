@@ -77,7 +77,7 @@ export async function handleLogoutSubmit(ws, wsBool)
 {
     const token = localStorage.getItem('access_token'); 
 
-    const response = await fetch('/api/logout/', {
+    const response = await fetch('/api/user/logout/', {
         method: 'GET',
         headers: {
             'Authorization': `Bearer ${token}`,
@@ -158,7 +158,7 @@ export async function sendAuthCode(user) {
 	const code = input_code.value.trim();
 	if (!code)
 		return ({'type': 'error', 'message': 'You have to enter a code.'});
-	const response = await fetch('/api/verify_2fa_code/', {
+	const response = await fetch('/api/user/verify_2fa_code/', {
 		method: 'POST',
     	headers: {
            'Content-Type': 'application/json'
@@ -171,21 +171,24 @@ export async function sendAuthCode(user) {
 		localStorage.setItem('access_token', result.tokens.access);  
         localStorage.setItem('refresh_token', result.tokens.refresh);	
 		showSection('menu');
+		return result;
 	}
-	return result;
+	else
+		return result;
 }
 
 let countdown = 3;
 let countdownInterval;
 
 export function startGame() {
-	console.log('start the countdown!');
 	countdown = 3
 	let countdownDisplay = document.getElementById('countdownDisplay');
 	if (!countdownDisplay)
 		return;
 	countdownDisplay.textContent = countdown.toString();
 	countdownDisplay.style.display = 'block';
+	if (countdownInterval)
+		clearInterval(countdownInterval);
 	countdownInterval = setInterval(updateCountdown, 1000);
 }
 
@@ -199,6 +202,7 @@ async function updateCountdown() {
 		countdownDisplay.textContent = countdown.toString();
 	} else {
 		clearInterval(countdownInterval);
+		countdownInterval = undefined;
 		countdownDisplay.style.display = 'none';
 		
 		console.log('Game started!');

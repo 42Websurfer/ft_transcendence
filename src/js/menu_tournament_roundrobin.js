@@ -436,7 +436,7 @@ export function renderMenuTournamentRoundRobin(lobbyId) {
         document.getElementById('countdownDisplay').style.display = 'block';
 
         countdownInterval = setInterval(updateCountdown, 1000);
-        const response = fetch_get(`/tm/start_tournament_round/${lobbyId}`)
+        const response = fetch_get(`/tm/start_tournament_round/${lobbyId}/`)
         if (response.type === 'error')
             console.log(response.message);
     }

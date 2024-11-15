@@ -345,7 +345,7 @@ class PongLocalManager extends Entity{
 					window.removeEventListener('keydown', restartGame);
 					this.round_running = false;
 					this.counter = Date.now();
-					startRound();
+					startGame();
 				}
 			}
 
@@ -515,9 +515,9 @@ let socket = undefined;
 
 function sendMovementInput(event) {
 	if (event.type == 'keypress') {
-		if (event.key == 'w') {
+		if (event.key == 'w' || event.key == 'ArrowUp') {
 			socket.send(0b01);
-		} else if (event.key == 's') {
+		} else if (event.key == 's' || event.key == 'ArrowDown') {
 			socket.send(0b10);
 		}
 	} else if (event.type == 'keyup' && (event.key == 's' || event.key == 'w')) {
@@ -539,7 +539,7 @@ function selectGamemode(groupName){
 		setupCloseLocal();
 	} else {
 		const token = localStorage.getItem('access_token');
-		socket = new WebSocket(`ws://${window.location.host}/ws/pong/${groupName}/?token=${token}`);
+		socket = new WebSocket(`ws://${window.location.host}/ws/game/pong/${groupName}/?token=${token}`);
 		setupCloseWebsocket(socket);
 		manager = new RemoteHandler();
 		setupSocketHandlers(socket);
@@ -587,7 +587,7 @@ function setupSocketHandlers(socket){
 		} else if (data[0] === 'sp'){
 			manager.setEntityPosition(data[1], {position: {x: data[2], y: data[3]}, rotation: data[4]});
 		} else if (data[0] === 'rs'){
-			startRound();
+			startGame();
 		} else if (data[0] === 'ss'){
 			manager.updatePlayerScore(data[1], data[2])
 		} else if (data[0] === 'ip') {
@@ -610,20 +610,23 @@ function setupSocketHandlers(socket){
 	socket.onclose = () => {
 		console.log('GAME SOCKET CLOSED!');
 		clearInterval(intervalId);
+		manager?.cleanup();
 		world.entities = [];
 		world.systems = [];
+		manager = undefined;
 	}
 }
 
 function endGame() {
 	clearInterval(intervalId);
-	manager.cleanup();
+	manager?.cleanup();
 	world.entities = [];
 	world.systems = [];
+	manager = undefined;
 	if (matchType === 'match') {
 		setTimeout(() => showSection('menu_online_lobby', lobbyId), 2000);
 	} else if (matchType === 'tournament') {
-		setTimeout(() => showSection('menu_tournament_roundrobin', lobbyId), 2000);
+		setTimeout(() => showSection('menu_tournament_lobby', lobbyId), 2000);
 	} else if (matchType === 'multiple') {
 		setTimeout(() => showSection('menu_multiple_lobby', lobbyId))
 	} else {

@@ -11,7 +11,7 @@ let ws;
 async function checkAuthentication() {
     const token = localStorage.getItem('access_token'); 
     try {
-        const response = await fetch('/api/checkauth/', {
+        const response = await fetch('/api/user/checkauth/', {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -99,7 +99,7 @@ export async function handleFriendRequest(url) {
     try {
         const token = localStorage.getItem('access_token'); 
 
-        const response = await fetch(`/api${url}`, {
+        const response = await fetch(`/api/user/${url}`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -300,7 +300,7 @@ export async function addListItem(content, ul, list, role)
 
 function initOnlineStatus() {
     const token = localStorage.getItem('access_token');
-    ws = new WebSocket(`ws://${window.location.host}/ws/online-status/?token=${token}`);
+    ws = new WebSocket(`ws://${window.location.host}/ws/user/online-status/?token=${token}`);
 
     ws.onopen =  function() {
         console.log("Connected to WebSocket Online Status");
@@ -461,7 +461,7 @@ window.addEventListener('popstate', (event) => {
 
 async function sendCodeToBackend(code) {
     try {        
-        const response = await fetch(`/api/callback/`, {
+        const response = await fetch(`/api/user/callback/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

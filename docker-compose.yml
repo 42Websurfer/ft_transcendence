@@ -1,0 +1,214 @@
+services:
+  user-service: 
+    build: 
+      context: ./app/user_service/
+      dockerfile: Dockerfile.django
+    container_name: user-service
+    env_file:
+      - ./.env
+    volumes:
+      - ./app/user_service/:/app/
+    expose:
+      - 8002
+    networks: 
+      - trans_net
+    depends_on:
+      - database
+      - redis
+  gamehub-service: 
+    build: 
+      context: ./app/gamehub_service/
+      dockerfile: Dockerfile.django
+    container_name: gamehub-service
+    env_file:
+      - ./.env
+    volumes:
+      - ./app/gamehub_service/:/app/
+    expose:
+      - 8003
+    networks: 
+      - trans_net
+    depends_on:
+      - database
+      - redis
+      - user-service
+  gameloop-service:
+    build: 
+      context: ./app/gameloop_service/
+      dockerfile: Dockerfile.django
+    container_name: gameloop-service
+    env_file:
+      - ./.env
+    volumes:
+      - ./app/gameloop_service/:/app/
+    expose:
+      - 8004
+    networks: 
+      - trans_net
+    depends_on:
+      - database
+      - redis
+      - user-service
+      - gamehub-service
+  database:
+    container_name: django_db
+    image: postgres:latest
+    env_file:
+      - .env
+    networks:
+      - trans_net
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    expose:
+      - 5432
+  postgres_exporter:
+    image: wrouesnel/postgres_exporter
+    container_name: postgres_exporter    
+    environment:
+      DATA_SOURCE_NAME: "postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@django_db:5432/$POSTGRES_DB?sslmode=disable"
+    expose:
+      - 9187
+    networks:
+      - trans_net
+    depends_on:
+      - database
+
+  nginx:
+    container_name: nginx
+    image: nginx
+    volumes:
+      - ./conf/nginx:/etc/nginx/conf.d
+      - ./src:/var/www/html/frontend/
+    depends_on:
+      - user-service
+      - gameloop-service
+      - gamehub-service
+      - daphne_user
+      - daphne_gamehub
+      - daphne_gameloop
+    networks:
+      - trans_net
+    expose:
+      - 8090
+    ports:
+      - "8090:8090"
+
+  nginx_exporter:
+    image: nginx/nginx-prometheus-exporter:latest
+    command: -nginx.scrape-uri http://nginx:80/stub_status
+    container_name: nginx_exporter    
+    expose:
+      - 9113
+    networks:
+      - trans_net
+    depends_on:
+      - nginx
+
+  adminer: 
+    container_name: adminer
+    image: adminer
+    networks: 
+      - trans_net
+    ports: 
+      - "8080:8080"
+  redis:
+    container_name: redis
+    image: redis:alpine
+    volumes:
+      - redis_data:/data
+    expose:
+      - 6379
+    networks:
+     - trans_net
+
+  redis_exporter:
+    image: oliver006/redis_exporter:latest
+    command: --redis.addr=redis:6379
+    container_name: redis_exporter
+    expose:
+      - 9121
+    networks:
+      - trans_net
+    depends_on:
+      - redis
+
+  # blockchain:
+  #   build: ./requirements/blockchain
+  #   container_name: blockchain
+  #   env_file: 
+  #     - ./.env
+  #   networks:
+  #     - trans_net
+  #   ports:
+  #     - "5000:5000"
+  daphne_user:
+    build: 
+      context: ./app/user_service/
+      dockerfile: Dockerfile.daphne
+    container_name: daphne_user
+    env_file:
+      - ./.env
+    volumes:
+      - ./app/user_service/:/app/
+    expose:
+      - 8002
+    networks: 
+      - trans_net
+  daphne_gamehub:
+    build: 
+      context: ./app/gamehub_service/
+      dockerfile: Dockerfile.daphne
+    container_name: daphne_gamehub
+    env_file:
+      - ./.env
+    volumes:
+      - ./app/gamehub_service/:/app/
+    expose:
+      - 8003
+    networks: 
+      - trans_net
+  daphne_gameloop:
+    build: 
+      context: ./app/gameloop_service/
+      dockerfile: Dockerfile.daphne
+    container_name: daphne_gameloop
+    env_file:
+      - ./.env
+    volumes:
+      - ./app/gameloop_service/:/app/
+    expose:
+      - 8004
+    networks: 
+      - trans_net
+  
+  prometheus:
+    image: prom/prometheus:v2.21.0
+    container_name: prometheus
+    expose: 
+      - 9090
+    volumes:
+      - prometheus_data:/prometheus
+      - ./conf/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - trans_net
+
+  grafana:
+    image: grafana/grafana:7.5.7
+    container_name: grafana
+    ports:
+      - 3000:3000
+    restart: unless-stopped
+    volumes:
+      - ./conf/grafana:/etc/grafana/provisioning/datasources
+      - grafana-data:/var/lib/grafana
+    networks:
+      - trans_net
+networks: 
+  trans_net:
+    name: trans_net 
+    driver: bridge
+volumes:
+  postgres_data:
+  redis_data:
+  prometheus_data:
+  grafana-data:

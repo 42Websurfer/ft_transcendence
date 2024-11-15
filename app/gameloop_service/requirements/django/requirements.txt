@@ -1,0 +1,12 @@
+Django>=4.1,<5.0
+setuptools
+psycopg2-binary
+django 
+whitenoise
+channels
+daphne
+channels_redis
+requests
+Pillow
+djangorestframework 
+djangorestframework-simplejwt
