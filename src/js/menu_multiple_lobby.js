@@ -24,11 +24,11 @@ export function runWebsocket(socket) {
 				for (let user of data.users) {
 					const li = document.createElement('li');
 					if (user.role === 'admin') {
-						li.innerHTML = `<span class="list-item-content"><span>${user.username}</span><span style="color: red; font-size: 0.8em"> (*)</span></span>`;
+						li.innerHTML = `<span class="list-item-content"><span${user.username === data.username ? ' class="local-player"' : ''}>${user.username}</span><span style="color: red; font-size: 0.8em"> (*)</span></span>`;
 						if (data.users.length == 4 && data.username == user.username)
 							startMatchButton.style.display = 'block';
 					} else {
-						li.innerHTML = `<span class="list-item-content">${user.username}</span>`;
+						li.innerHTML = `<span class="list-item-content${user.username === data.username ? ' local-player' : ''}">${user.username}</span>`;
 					}
 					matchPlayers.append(li);
 				}
