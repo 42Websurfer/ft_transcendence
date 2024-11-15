@@ -134,7 +134,7 @@ def register(request):
             firstname = data.get('firstname')
             lastname = data.get('lastname')
             username = data.get('username')
-            avatar = data = request.FILES.get('avatar')
+            avatar = request.FILES.get('avatar')
             if User.objects.filter(email=email).exists():
                 return JsonResponse({'type': 'error', 'message': 'Email address already exists.'}, status=400)
             elif User.objects.filter(username=username).exists():
@@ -160,8 +160,8 @@ def register(request):
                 },
                 'qr_code': f"data:image/png;base64,{qr_code_string}",
             }, status=201)
-        except json.JSONDecodeError:
-            return JsonResponse({'error': 'Invalid JSON.'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
