@@ -198,10 +198,7 @@ def get_user_information(request):
 @permission_classes([IsAuthenticated])
 def update_user_information(request):
     try:
-        logger.debug("WO FAILST DU JUNGE")
         data = request.POST
-        logger.debug(f"data = {data}")
-        logger.debug("WO FAILST DU JUNGE1")
 
         email = data.get('email')
         password = data.get('password')
