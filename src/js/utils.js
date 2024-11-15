@@ -180,6 +180,14 @@ export async function sendAuthCode(user) {
 let countdown = 3;
 let countdownInterval;
 
+export function useCountdownAsMessageDisplay(message) {
+	clearInterval(countdownInterval);
+	let countdownDisplay = document.getElementById('countdownDisplay');
+	
+	countdownDisplay.innerHTML = `<p>${message}</p>`;
+	countdownDisplay.style.display = 'block';
+}
+
 export function startGame() {
 	countdown = 3
 	let countdownDisplay = document.getElementById('countdownDisplay');

@@ -1,6 +1,6 @@
 import {Vector, Plane, World, Entity, Mesh, Physics, Box, Circle, RenderSystem, CollisionSystem, MovementSystem, canvas, drawText, strokeText, drawLine, ctx} from './GameSystem.js';
 import { showSection } from './index.js';
-import { startGame } from './utils.js';
+import { startGame, useCountdownAsMessageDisplay } from './utils.js';
 
 const PLAYER_MOVE_SPEED = 20;
 const BALL_MOVE_SPEED = 20;
@@ -594,7 +594,7 @@ function setupSocketHandlers(socket){
 			manager.addPlayer(data[1], data[2], data[3]);
 		} else if (data[0] === 'dc') {
 			let player = manager.players[data[1]];
-			displayDisconnect(player.uname);
+			useCountdownAsMessageDisplay(`${player.uname} disconnected!`);
 			endGame();
 		} else if (data[0] === 'go') {
 			endGame();
@@ -664,15 +664,4 @@ function setupCloseWebsocket(socket) {
 	homeButton.addEventListener('click', closeSocket)
 	logoutButton.addEventListener('click', closeSocket);
     window.addEventListener('popstate', closeSocket);
-}
-
-
-// COUNTDOWN TEST
-
-function displayDisconnect(name) {
-	clearInterval(countdownInterval);
-	let countdownDisplay = document.getElementById('countdownDisplay');
-	
-	countdownDisplay.innerHTML = `<p>${name} disconnected!</p>`;
-	countdownDisplay.style.display = 'block';
 }
