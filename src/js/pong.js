@@ -225,38 +225,6 @@ class PlayerSection extends Entity{
 	}
 }
 
-// Scoreboard stuff
-function createScoreItem(playerName) {
-	let scoreItem = document.createElement('div');
-	let playerNameDiv = document.createElement('span');
-	let playerScore = document.createElement('span');
-	playerNameDiv.innerText = playerName;
-	playerScore.innerText = 0;
-	scoreItem.classList.add('score-item');
-	scoreItem.appendChild(playerNameDiv);
-	scoreItem.appendChild(playerScore);
-	return scoreItem;
-}
-
-function initScoreBoard(playerNames) {
-	const scoreContainer = document.querySelector('.game-container');
-	let scoreItems = scoreContainer.querySelectorAll('.score-item');
-	for (let i = 0; i < scoreItems.length; i++) {
-		scoreItems[i].remove();
-	}
-	for (let i = 0; i < playerNames.length; i++) {
-		scoreContainer.appendChild(createScoreItem(playerNames[i]));	
-	}
-}
-
-function updateScore(idx, newScore) {
-	const scoreContainer = document.querySelector('.game-container');
-	let scoreItem = scoreContainer.querySelectorAll('.score-item')?.[idx];
-	if (!scoreItem || scoreItem.childNodes.length < 2)
-		return;
-	scoreItem.childNodes[1].innerText = newScore;
-}
-
 class PongLocalManager extends Entity{
 	constructor(aiOpponent = false){
 		super(0, 0);
@@ -683,4 +651,37 @@ function setupCloseWebsocket(socket) {
 	homeButton.addEventListener('click', closeSocket)
 	logoutButton.addEventListener('click', closeSocket);
     window.addEventListener('popstate', closeSocket);
+}
+
+// Scoreboard stuff
+// interaction with html ui elements
+function createScoreItem(playerName) {
+	let scoreItem = document.createElement('div');
+	let playerNameDiv = document.createElement('span');
+	let playerScore = document.createElement('span');
+	playerNameDiv.innerText = playerName;
+	playerScore.innerText = 0;
+	scoreItem.classList.add('score-item');
+	scoreItem.appendChild(playerNameDiv);
+	scoreItem.appendChild(playerScore);
+	return scoreItem;
+}
+
+function initScoreBoard(playerNames) {
+	const scoreContainer = document.querySelector('.game-container');
+	let scoreItems = scoreContainer.querySelectorAll('.score-item');
+	for (let i = 0; i < scoreItems.length; i++) {
+		scoreItems[i].remove();
+	}
+	for (let i = 0; i < playerNames.length; i++) {
+		scoreContainer.appendChild(createScoreItem(playerNames[i]));	
+	}
+}
+
+function updateScore(idx, newScore) {
+	const scoreContainer = document.querySelector('.game-container');
+	let scoreItem = scoreContainer.querySelectorAll('.score-item')?.[idx];
+	if (!scoreItem || scoreItem.childNodes.length < 2)
+		return;
+	scoreItem.childNodes[1].innerText = newScore;
 }
