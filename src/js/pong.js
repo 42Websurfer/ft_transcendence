@@ -15,15 +15,7 @@ export function renderPong(match_id) {
 		app.innerHTML = `
 		<div class="menu" style="justify-content: center; padding: 2em;">
 			<div class="game-container">
-				<div class="game-information">
-					<span id="player1_name" class="game-name">fwechslex</span>
-					<span id="player1_score" class="game-score">4</span>
-				</div>
 				<div id="canvasContainer"></div>
-				<div class="game-information">
-					<span id="player2_name" class="game-name">fwechslex</span>
-					<span id="player2_score" class="game-score">0</span>
-				</div>
 			</div>
 			<div class="countdown-container" id="countdownDisplay"></div>
 		</div>
@@ -303,6 +295,8 @@ class PongLocalManager extends Entity{
 			};
 		});
 
+		initScoreBoard(['localP1', this.sections[1].player instanceof AiPlayer ? 'AI_King' : 'localP2']);
+
 		this.starter = this.sections[0].player;
 	}
 
@@ -311,12 +305,7 @@ class PongLocalManager extends Entity{
 		let section = this.sections.find((value) => value.player == playerScored);
 		let idx = this.sections.indexOf(section);
 		console.log('idx:', idx);
-		let scoreText = document.getElementById(`player${idx+1}_score`);
-		let scoreName = document.getElementById(`player${idx+1}_name`);
-		if (scoreText)
-			scoreText.innerText = playerScored.score;
-		if (scoreName)
-			scoreName.innerText = playerScored instanceof AiPlayer ? 'AI_King' : idx > 0 ? 'localP2' : 'localP1';
+		updateScore(idx, playerScored.score);
 	}
 
 	resetRound() {
@@ -454,9 +443,11 @@ class RemoteHandler extends Entity{
 		this.players[entid] = {uid, uname};
 		if (uid === sender_uid) {
 			this.entities[entid].mesh.colour = '#ff6666'; //colour is bad
+			this.localPlayer = this.players[entid];
 		}
 		if (Object.keys(this.players).length >= 2) {
-			this.updatePlayerScore(entid, 0);
+			const names = Object.values(this.players).map(player => player.uname);
+			initScoreBoard(names, this.localPlayer);
 		}
 	}
 
@@ -485,13 +476,7 @@ class RemoteHandler extends Entity{
 		this.entities[id].score = score;
 		let i = 0;
 		for (const entid in this.players) {
-			const player = this.players[entid];
-			let scoreText = document.getElementById(`player${i+1}_score`);
-			let scoreName = document.getElementById(`player${i+1}_name`);
-			if (scoreText)
-				scoreText.innerText = this.entities[entid].score;
-			if (scoreName)
-				scoreName.innerText = player.uname;
+			updateScore(i, this.entities[entid].score);
 			i++;
 		}
 	}
@@ -667,4 +652,39 @@ function setupCloseWebsocket(socket) {
 	homeButton.addEventListener('click', closeSocket)
 	logoutButton.addEventListener('click', closeSocket);
     window.addEventListener('popstate', closeSocket);
+}
+
+// Scoreboard stuff
+// interaction with html ui elements
+function createScoreItem(playerName, isLocal = false) {
+	let scoreItem = document.createElement('div');
+	let playerNameDiv = document.createElement('span');
+	let playerScore = document.createElement('span');
+	if (isLocal)
+		playerNameDiv.classList.add('local-player');
+	playerNameDiv.innerText = playerName;
+	playerScore.innerText = 0;
+	scoreItem.classList.add('score-item');
+	scoreItem.appendChild(playerNameDiv);
+	scoreItem.appendChild(playerScore);
+	return scoreItem;
+}
+
+function initScoreBoard(playerNames, localPlayer = undefined) {
+	const scoreContainer = document.querySelector('.game-container');
+	let scoreItems = scoreContainer.querySelectorAll('.score-item');
+	for (let i = 0; i < scoreItems.length; i++) {
+		scoreItems[i].remove();
+	}
+	for (let i = 0; i < playerNames.length; i++) {
+		scoreContainer.appendChild(createScoreItem(playerNames[i], localPlayer.uname == playerNames[i]));	
+	}
+}
+
+function updateScore(idx, newScore) {
+	const scoreContainer = document.querySelector('.game-container');
+	let scoreItem = scoreContainer.querySelectorAll('.score-item')?.[idx];
+	if (!scoreItem || scoreItem.childNodes.length < 2)
+		return;
+	scoreItem.childNodes[1].innerText = newScore;
 }
