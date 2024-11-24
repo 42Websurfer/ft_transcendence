@@ -336,14 +336,40 @@ export class MovementSystem extends System{
 	}
 }
 
+function RayCast(startPos, direction, entities) {
+	for (let ent of entities) {
+		const entMesh = ent.getComponent(Mesh);
+
+		let transformedPoints = entMesh.points.map(p => p.dup().rotate(ent.rotation).add(ent.position.sub(startPos)));
+		for (let i = 0; i < transformedPoints.length; i++) {
+			let pointA = transformedPoints[i];
+			let pointB = transformedPoints[(i + 1) % transformedPoints.length];
+
+			let planeAB = new Plane(pointA, pointB.sub(pointA));
+
+			let crossProduct = direction.cross(planeAB.dir);
+			if (crossProduct == 0) {
+				console.log('Parallel');
+				continue;
+			} else if (crossProduct > 0) {
+
+			} else if (crossProduct < 0) {
+				
+			}
+
+			drawLine(planeAB.start, planeAB.dir.add(planeAB.start));
+		}
+	}
+}
+
 export class CollisionSystem extends System{
 	execute(entities){
-		entities.forEach(currentEnt => {
+		for (let currentEnt of entities){
 			const entMesh = currentEnt.getComponent(Mesh);
 			const entPhys = currentEnt.getComponent(Physics);
 			if (!entMesh || !entPhys)
 				return ;
-			entities.forEach(otherEnt => {
+			for (let otherEnt of entities){
 				if (currentEnt != otherEnt){
 					const otherMesh = otherEnt.getComponent(Mesh);
 					if (!otherMesh)
@@ -384,8 +410,8 @@ export class CollisionSystem extends System{
 						}
 					}
 				}
-			});
-		});
+			}
+		}
 	}
 }
 
