@@ -443,10 +443,11 @@ class RemoteHandler extends Entity{
 		this.players[entid] = {uid, uname};
 		if (uid === sender_uid) {
 			this.entities[entid].mesh.colour = '#ff6666'; //colour is bad
+			this.localPlayer = this.players[entid];
 		}
 		if (Object.keys(this.players).length >= 2) {
 			const names = Object.values(this.players).map(player => player.uname);
-			initScoreBoard(names);
+			initScoreBoard(names, this.localPlayer);
 		}
 	}
 
