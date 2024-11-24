@@ -337,7 +337,7 @@ class PongGame:
 			data['match_id'] = self.players[0].match_id
 			data['home_score'] = self.players[0].player_c.score
 			data['away_score'] = self.players[1].player_c.score
-			data['status'] = 'pending'
+			data['status'] = 'running'
 			requests.post('http://gamehub-service:8003/match/', json=data)
 
 	def game_complete(self):
