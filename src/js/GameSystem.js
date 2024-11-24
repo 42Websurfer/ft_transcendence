@@ -53,6 +53,10 @@ export class Vector{
 		return (this.x * other.x + this.y * other.y);
 	}
 
+	cross(other) {
+		return (this.y * other.x - this.x * other.y);
+	}
+
 	sqrLength(){
 		return (Math.pow(this.x, 2) + Math.pow(this.y, 2));
 	}
@@ -82,6 +86,10 @@ export class Plane{
 
 	getTangent(){
 		return (new Plane(this.start, this.dir.dup().rotate(90)));
+	}
+
+	length() {
+		return (this.dir.length());
 	}
 
 	getClosestPoint(point){
@@ -381,6 +389,12 @@ export class CollisionSystem extends System{
 						const otherPos = otherEnt.position;
 						let ab = otherPos.sub(currentPos);
 						let threshold = Math.max(entMesh.width, entMesh.height, otherMesh.width, otherMesh.height) * 0.5;
+						// const points = RayCast(currentEnt.position, entPhys.velocity, [otherEnt]);
+						// for (let i = 0; i < points.length; i++) {
+						// 	const pointA = points[i];
+						// 	const pointB = points[(i + 1) % points.length];
+						// 	threshold = pointB.sub(pointA).length();
+						// }
 						if (ab.length() < threshold){
 							const stepTransform = new Transform(currentPos.x, currentPos.y, currentEnt.rotation);
 							let oClosest = otherMesh.getClosestPoint(otherEnt, currentPos);
