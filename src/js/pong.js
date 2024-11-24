@@ -655,10 +655,12 @@ function setupCloseWebsocket(socket) {
 
 // Scoreboard stuff
 // interaction with html ui elements
-function createScoreItem(playerName) {
+function createScoreItem(playerName, isLocal = false) {
 	let scoreItem = document.createElement('div');
 	let playerNameDiv = document.createElement('span');
 	let playerScore = document.createElement('span');
+	if (isLocal)
+		playerNameDiv.classList.add('local-player');
 	playerNameDiv.innerText = playerName;
 	playerScore.innerText = 0;
 	scoreItem.classList.add('score-item');
@@ -667,14 +669,14 @@ function createScoreItem(playerName) {
 	return scoreItem;
 }
 
-function initScoreBoard(playerNames) {
+function initScoreBoard(playerNames, localPlayer = undefined) {
 	const scoreContainer = document.querySelector('.game-container');
 	let scoreItems = scoreContainer.querySelectorAll('.score-item');
 	for (let i = 0; i < scoreItems.length; i++) {
 		scoreItems[i].remove();
 	}
 	for (let i = 0; i < playerNames.length; i++) {
-		scoreContainer.appendChild(createScoreItem(playerNames[i]));	
+		scoreContainer.appendChild(createScoreItem(playerNames[i], localPlayer.uname == playerNames[i]));	
 	}
 }
 
