@@ -1631,6 +1631,9 @@ body {
     justify-self: center;
     font-family: 'Press Start 2P';
     color: white;
+    font-size: 2em;
+    gap: 2em;
+    margin: auto 0;
 }
 
 canvas {
