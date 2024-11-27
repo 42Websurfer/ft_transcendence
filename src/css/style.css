@@ -1021,12 +1021,6 @@ body {
     cursor: not-allowed;
 }
 
-#roundStartButtonSpan.disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    pointer-events: none;
-}
-
 #roundStartButtonSpan:not(.disabled):hover {
     color: #e6e4e7;
     text-shadow: 2px 2px 2px #000000;

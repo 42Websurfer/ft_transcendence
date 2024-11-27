@@ -71,7 +71,7 @@ export function runWebsocket() {
                     const roundStartButton = document.getElementById('roundStartButton');
                     if (roundStartButton)
                         setTimeout(() => {
-                            roundStartButton.style.display = 'block'
+                            roundStartButton.style.display = 'block';
                             roundStartButton.disabled = false;
                         }, 4000);
                 }
@@ -309,7 +309,7 @@ export function renderMenuTournamentRoundRobin(lobbyId) {
                     </div>
                     <button id="controlsButton"><span class="button-text">Controls</span></button>
                     <button id="tournamentStartButton" class="start-button"><span id="tournamentStartButtonSpan">Start tournament</span></button>
-                    <button id="roundStartButton" class="start-button"><span id="roundStartButtonSpan">Start Round</span></button>
+                    <button id="roundStartButton" class="start-button">Start Round</button>
                     <div id="copyMessage" class="copy-message">Copied to clipboard!</div>  
                 </div>  
             </div>
@@ -399,6 +399,7 @@ export function renderMenuTournamentRoundRobin(lobbyId) {
 
     const tournamentStartButton = document.getElementById('tournamentStartButton');
     const roundStartButton = document.getElementById('roundStartButton');
+    roundStartButton.disabled = false;
 
     tournamentStartButton.addEventListener('click', async() => {
         tournamentStartButton.style.display = 'none';
@@ -408,7 +409,7 @@ export function renderMenuTournamentRoundRobin(lobbyId) {
 
     roundStartButton.addEventListener('click', async() => {
         roundStartButton.disabled = true;
-        roundStartButton.style.display = 'none'
+        roundStartButton.style.display = 'none';
         startGame();
     });
 
@@ -420,7 +421,7 @@ export function renderMenuTournamentRoundRobin(lobbyId) {
 
     function startGame() {
         if (roundStartButton && roundStartButton.disabled)
-                disableSpanInsideButton('roundStartButton');
+            disableSpanInsideButton('roundStartButton');
 
         document.getElementById('countdownDisplay').style.display = 'block';
 
@@ -446,10 +447,7 @@ export function renderMenuTournamentRoundRobin(lobbyId) {
     function disableSpanInsideButton(buttonId) {
         const button = document.getElementById(buttonId);
         if (button && button.disabled) {
-            const span = button.querySelector('span');
-            if (span) {
-                span.classList.add('disabled');
-            }
+            button.querySelector('span')?.classList.add('disabled');
         }
     }
 }

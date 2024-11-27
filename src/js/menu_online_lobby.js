@@ -307,7 +307,7 @@ export function renderMenuOnlineLobby(lobbyId) {
     });
 
     const matchStartButton = document.getElementById('startOnlineMatch');
-
+    matchStartButton.style.display = 'block';
     matchStartButton.addEventListener('click', async() => {
         try {
             const token = localStorage.getItem('access_token'); 
@@ -320,6 +320,7 @@ export function renderMenuOnlineLobby(lobbyId) {
                 },
             });
             console.log('Response: ', response);
+            matchStartButton.style.display = 'none';
         } catch (error) {
             console.log('Error: ', error);
         }
