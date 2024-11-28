@@ -527,7 +527,7 @@ function selectGamemode(groupName){
 		setupCloseLocal();
 	} else {
 		const token = localStorage.getItem('access_token');
-		socket = new WebSocket(`wss://${window.location.host}/ws/game/pong/${groupName}/?token=${token}`);
+		socket = new WebSocket(`ws://${window.location.host}/ws/game/pong/${groupName}/?token=${token}`);
 		setupCloseWebsocket(socket);
 		manager = new RemoteHandler();
 		setupSocketHandlers(socket);
