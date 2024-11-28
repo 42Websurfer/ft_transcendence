@@ -79,6 +79,7 @@ services:
     volumes:
       - ./conf/nginx:/etc/nginx/conf.d
       - ./src:/var/www/html/frontend/
+      - ./conf/nginx/cert/:/cert/
     depends_on:
       - user-service
       - gameloop-service
@@ -89,9 +90,11 @@ services:
     networks:
       - trans_net
     expose:
-      - 8090
+      - 80
+      - 443
     ports:
-      - "8090:8090"
+      - "80:80"
+      - "443:443"
 
   nginx_exporter:
     image: nginx/nginx-prometheus-exporter:latest

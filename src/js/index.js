@@ -300,7 +300,7 @@ export async function addListItem(content, ul, list, role)
 
 function initOnlineStatus() {
     const token = localStorage.getItem('access_token');
-    ws = new WebSocket(`ws://${window.location.host}/ws/user/online-status/?token=${token}`);
+    ws = new WebSocket(`wss://${window.location.host}/ws/user/online-status/?token=${token}`);
 
     ws.onopen =  function() {
         console.log("Connected to WebSocket Online Status");

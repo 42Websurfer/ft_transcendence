@@ -189,7 +189,7 @@ export function renderMultiplayerLobby(lobbyId) {
     if (!g_socket) {
         const token = localStorage.getItem('access_token');
 
-        g_socket = new WebSocket(`ws://${window.location.host}/ws/multiple/${lobbyId}/?token=${token}`);
+        g_socket = new WebSocket(`wss://${window.location.host}/ws/multiple/${lobbyId}/?token=${token}`);
         runWebsocket(g_socket);
         closeWebsocket(g_socket);
     } else {
