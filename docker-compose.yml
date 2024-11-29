@@ -77,8 +77,10 @@ services:
     container_name: nginx
     image: nginx
     volumes:
-      - ./conf/nginx:/etc/nginx/conf.d
+      - ./conf/nginx/:/etc/nginx/conf.d/
+      - ./scripts/nginx/entrypoint.sh:/entrypoint.sh
       - ./src:/var/www/html/frontend/
+    entrypoint: /entrypoint.sh
     depends_on:
       - user-service
       - gameloop-service
