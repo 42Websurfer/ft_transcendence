@@ -337,7 +337,7 @@ export function renderMenuTournamentRoundRobin(lobbyId) {
     {
         const token = localStorage.getItem('access_token');
 
-        g_socket = new WebSocket(`ws://${window.location.host}/ws/tm/${lobbyId}/?token=${token}`);
+        g_socket = new WebSocket(`wss://${window.location.host}/ws/tm/${lobbyId}/?token=${token}`);
         runWebsocket(g_socket);
         closeWebsocket(g_socket);
     }
