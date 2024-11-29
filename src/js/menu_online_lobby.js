@@ -35,6 +35,8 @@ export function runWebsocket(socket) {
                     
                     if (data.user_id == data.admin_id)
                         startMatchButton.style.display = 'block';
+                    else
+                        startMatchButton.style.display = 'none';
                     li.className = 'friends-add-list-user';
                     li.innerHTML = `<span class="list-item-content">${data.member_username}</span>`;
 					if (data.user_id === data.member_id) {
@@ -274,7 +276,8 @@ export function renderMenuOnlineLobby(lobbyId) {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             },
-        }).then((response) => response.json())
+        })
+        .then((response) => response.json())
         .then((data) => {
             if (data.type === 'error') {
                 displayToast(data.message, 'error')

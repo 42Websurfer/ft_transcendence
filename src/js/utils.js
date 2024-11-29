@@ -217,12 +217,3 @@ async function updateCountdown() {
 	}
 }
 
-function disableSpanInsideButton(buttonId) {
-    const button = document.getElementById(buttonId);
-    if (button && button.disabled) {
-        const span = button.querySelector('span');
-        if (span) {
-            span.classList.add('disabled');
-        }
-    }
-}
