@@ -36,7 +36,7 @@ export function renderAuthRegister() {
 					<label for="floatingPassword">Username</label>
 				</div>
 				<div class="login-form-field form-floating">
-					<input type="file" name="avatar" class="form-control" placeholder="Upload avatar">
+					<input type="file" accept=".jpg, .jpeg, .png, .webp" name="avatar" class="form-control" placeholder="Upload avatar">
 					<label for="floatingPassword">Upload avatar</label>
 				</div>
 				<button class="signin-button btn btn-primary w-100 py-2" type="submit">Sign up</button>
