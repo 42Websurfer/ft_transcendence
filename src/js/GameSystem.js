@@ -53,6 +53,10 @@ export class Vector{
 		return (this.x * other.x + this.y * other.y);
 	}
 
+	cross(other) {
+		return this.y * other.x - this.x * other.y;
+	}
+
 	sqrLength(){
 		return (Math.pow(this.x, 2) + Math.pow(this.y, 2));
 	}
@@ -66,6 +70,10 @@ export class Vector{
 			this.x + (other.x - this.x) * alpha,
 			this.y + (other.y - this.y) * alpha
 		);
+	}
+
+	negate() {
+		return new Vector(-this.x, -this.y);
 	}
 }
 
@@ -220,6 +228,10 @@ export class Mesh extends Component{
 		}
 		return (closestPoint);
 	}
+
+	getWorldPoints(transform) {
+		return this.points.map(p => p.dup().rotate(transform.rotation).add(transform.position));
+	}
 }
 
 export class Circle extends Mesh{
@@ -244,6 +256,10 @@ export class Circle extends Mesh{
 		closestPoint.scale(this.width * 0.5);
 		closestPoint = closestPoint.add(transform.position);
 		return (closestPoint);
+	}
+
+	getWorldPoints(transform) {
+		return [transform.position, transform.position.add(new Vector(1, 0).scale(this.width * 0.5))];
 	}
 }
 
@@ -336,53 +352,151 @@ export class MovementSystem extends System{
 	}
 }
 
+//functions for GJK
+function getFarthestPonintOfShape(shape, direction) {
+	if (shape.length == 2) {
+		return direction.dup().normalize().scale(shape[0].sub(shape[1]).length());
+	}
+	let farthestPoint = shape[0];
+	let maxDot = farthestPoint.dot(direction);
+
+	for (let i = 1; i < shape.length; i++) {
+		const dot = shape[i].dot(direction);
+		if (dot > maxDot) {
+			maxDot = dot;
+			farthestPoint = shape[i];
+		}
+	}
+	return farthestPoint;
+}
+
+function minkowskiDifference(shapeA, shapeB, dir) {
+	return getFarthestPonintOfShape(shapeA, dir).sub(getFarthestPonintOfShape(shapeB, dir.negate()));
+}
+
+function gjk(shapeA, shapeB) {
+	let direction = new Vector(1, 0);
+	const simplex = [minkowskiDifference(shapeA, shapeB, direction)];
+
+	while (true) {
+		direction = closestPointToOrigin(simplex).negate();
+		const newPoint = minkowskiDifference(shapeA, shapeB, direction);
+
+		if (newPoint.dot(direction) <= 0) {
+			return false
+		}
+
+		simplex.push(newPoint);
+
+		if (containsOrigin(simplex)) {
+			return true;
+		}
+	}
+}
+
+function closestPointToOrigin(simplex) {
+    if (simplex.length === 1) {
+        return simplex[0];
+    } else if (simplex.length === 2) {
+        return closestPointOnLineToOrigin(simplex[0], simplex[1]);
+    } else if (simplex.length === 3) {
+        return closestPointOnTriangleToOrigin(simplex[0], simplex[1], simplex[2]);
+    }
+}
+
+function closestPointOnLineToOrigin(a, b) {
+	const ab = b.sub(a);
+    const ao = a.dup().scale(-1);
+	const t = ao.dot(ab) / ab.dot(ab);
+    const closestPoint = a.add(ab.scale(Math.max(0, Math.min(1, t))));
+    return closestPoint;
+}
+
+function closestPointOnTriangleToOrigin(a, b, c) {
+	const ab = b.sub(a);
+    const ac = c.sub(a);
+    const ao = a.dup().scale(-1);
+
+	const abDot = ab.dot(ab);
+	const acDot = ac.dot(ac);
+	const abAcDot = ab.dot(ac);
+	const aoAbDot = ao.dot(ab);
+	const aoAcDot = ao.dot(ac);
+
+    const det = abDot * acDot - abAcDot * abAcDot;
+    const u = (acDot * aoAbDot - abAcDot * aoAcDot) / det;
+    const v = (abDot * aoAcDot - abAcDot * aoAbDot) / det;
+
+    if (u >= 0 && v >= 0 && u + v <= 1) {
+        return a.add(ab.scale(u)).add(ac.scale(v));
+    }
+
+    if (u < 0) {
+        return closestPointOnLineToOrigin(a, c);
+    } else if (v < 0) {
+        return closestPointOnLineToOrigin(a, b);
+    } else {
+        return closestPointOnLineToOrigin(b, c);
+    }
+}
+
+function containsOrigin(simplex) {
+    if (simplex.length === 2) {
+        // Line case
+        const a = simplex[0];
+        const b = simplex[1];
+        const ab = b.sub(a);
+        const ao = a.dup().scale(-1);
+		const t = ao.dot(ab) / ab.dot(ab);
+        const closestPoint = a.add(ab.scale(Math.max(0, Math.min(1, t))));
+        return closestPoint.sqrLength() < 1e-6; // Check if closest point is close to origin
+    } else if (simplex.length === 3) {
+        // Triangle case
+        const a = simplex[0];
+        const b = simplex[1];
+        const c = simplex[2];
+
+        const ab = b.sub(a);
+        const ac = c.sub(a);
+        const ao = a.dup().scale(-1);
+
+        const abDot = ab.dot(ab);
+        const acDot = ac.dot(ac);
+        const abAcDot = ab.dot(ac);
+        const aoAbDot = ao.dot(ab);
+        const aoAcDot = ao.dot(ac);
+
+        const det = abDot * acDot - abAcDot * abAcDot;
+        const u = (acDot * aoAbDot - abAcDot * aoAcDot) / det;
+        const v = (abDot * aoAcDot - abAcDot * aoAbDot) / det;
+
+        return u >= 0 && v >= 0 && u + v <= 1;
+    }
+    return false;
+}
+
 export class CollisionSystem extends System{
 	execute(entities){
 		for (let currentEnt of entities){
 			const entMesh = currentEnt.getComponent(Mesh);
 			const entPhys = currentEnt.getComponent(Physics);
 			if (!entMesh || !entPhys)
-				return ;
+				continue;
 			for (let otherEnt of entities){
-				if (currentEnt != otherEnt){
-					const otherMesh = otherEnt.getComponent(Mesh);
-					if (!otherMesh)
-						return ;
-					const steps = Math.ceil(entPhys.velocity.length() / Math.max(entMesh.width * 0.5, entMesh.height * 0.5));
-					for (let i = 0; i <= steps; i++) {
-						const t = i / steps;
-						const currentPos = currentEnt.position.add(entPhys.velocity.dup().scale(t));
-						const otherPos = otherEnt.position;
-						let ab = otherPos.sub(currentPos);
-						let threshold = Math.max(entMesh.width, entMesh.height, otherMesh.width, otherMesh.height) * 0.5;
-						if (ab.length() < threshold){
-							const stepTransform = new Transform(currentPos.x, currentPos.y, currentEnt.rotation);
-							let oClosest = otherMesh.getClosestPoint(otherEnt, currentPos);
-							let sClosest = entMesh.getClosestPoint(stepTransform, oClosest);
-							let diff = oClosest.sub(sClosest);
-							if (diff.dot(ab) < 0) {
-								if (!entPhys.isStatic){
-									currentEnt.setPos(currentPos.x, currentPos.y);
-									currentEnt.move(diff.x, diff.y);
-								}
-								const ophys = otherEnt.getComponent(Physics);
-								if (ophys && !ophys.isStatic){
-									otherEnt.move(-diff.x, -diff.y)
-								}
-								if (entMesh.isTrigger){
-									currentEnt.onTrigger(otherEnt, sClosest);
-								} else {
-									currentEnt.onCollision(otherEnt, sClosest);
-								}
-								if (otherMesh.isTrigger){
-									otherEnt.onTrigger(currentEnt, oClosest);
-								} else {
-									otherEnt.onCollision(currentEnt, oClosest);
-								}
-								break;
-							}
-						}
-					}
+				if (currentEnt == otherEnt)
+					continue;
+				const otherMesh = otherEnt.getComponent(Mesh);
+				if (!otherMesh) {
+					continue;
+				}
+
+				const shapeA = entMesh.getWorldPoints(currentEnt);
+				const shapeB = otherMesh.getWorldPoints(otherEnt);
+				console.log('Points', shapeA, shapeB);
+				
+				if (gjk(shapeA, shapeB)) {
+					console.log("COLLISION!!!");
+					drawLine(currentEnt.position, otherEnt.position, 'red');
 				}
 			}
 		}
