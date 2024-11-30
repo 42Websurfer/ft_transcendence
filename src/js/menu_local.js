@@ -15,14 +15,19 @@ export function renderMenuLocal() {
             <div class="menu-item" id="tournamentItemKO">
                 <h1>Local PvE</h1>
                 <p>Play 1 vs 1 against AI<p>
+            </div>
+            <div class="menu-item" id="tournamentItemKO">
+                <h1>DEBUG</h1>
+                <p>this is for collision debugging<p>
             </div>  
         </div>
-        
     </div>
     `;
 
     document.getElementById('onlineItemLobby')?.addEventListener('click', () => showSection('pong', 'local'));
 
     document.getElementById('tournamentItemKO')?.addEventListener('click', () => showSection('pong', 'local_ai'));
+
+    document.querySelectorAll('.menu-item')?.[2]?.addEventListener('click', () => showSection('pong', 'debug'));
 
 }

@@ -75,6 +75,16 @@ export class Vector{
 	negate() {
 		return new Vector(-this.x, -this.y);
 	}
+
+	set(x, y) {
+		this.x = x;
+		this.y = y;
+	}
+
+	setV(other) {
+		this.x = other.x;
+		this.y = other.y;
+	}
 }
 
 export class Plane{
@@ -355,10 +365,10 @@ export class MovementSystem extends System{
 //functions for GJK
 function getFarthestPonintOfShape(shape, direction) {
 	if (shape.length == 2) {
-		return direction.dup().normalize().scale(shape[0].sub(shape[1]).length());
+		return direction.dup().normalize().scale(shape[0].sub(shape[1]).length()).add(shape[0]);
 	}
 	let farthestPoint = shape[0];
-	let maxDot = farthestPoint.dot(direction);
+	let maxDot = -Infinity;
 
 	for (let i = 1; i < shape.length; i++) {
 		const dot = shape[i].dot(direction);
@@ -492,9 +502,9 @@ export class CollisionSystem extends System{
 
 				const shapeA = entMesh.getWorldPoints(currentEnt);
 				const shapeB = otherMesh.getWorldPoints(otherEnt);
-				console.log('Points', shapeA, shapeB);
 				
 				if (gjk(shapeA, shapeB)) {
+					// if (entMesh instanceof Circle)
 					console.log("COLLISION!!!");
 					drawLine(currentEnt.position, otherEnt.position, 'red');
 				}

@@ -520,7 +520,23 @@ function selectGamemode(groupName){
 	let split = groupName?.split('_');
 	matchType = split?.length > 0 ? split[0] : undefined;
 	lobbyId = split?.length > 1 ? split[1] : undefined;
-	if (!matchType || matchType === 'local'){
+	world.addSystem(new RenderSystem());
+	if (matchType === 'debug') {
+		world.addSystem(new CollisionSystem());
+		world.addSystem(new MovementSystem());
+		let player = new Ball();
+		
+		world.addEntity(player);
+		world.addEntity(new Wall(500, 100, 90, 200));
+	
+		document.addEventListener('mousemove', (event) => {
+			const rect = canvas.getBoundingClientRect();
+			const x = event.clientX - rect.left;
+			const y = event.clientY - rect.top;
+			player.position.set(x, y);
+		});
+		manager = new Entity(0, 0);
+	} else if (!matchType || matchType === 'local'){
 		world.addSystem(new CollisionSystem());
 		world.addSystem(new MovementSystem());
 		manager = new PongLocalManager(lobbyId == 'ai');
@@ -532,7 +548,7 @@ function selectGamemode(groupName){
 		manager = new RemoteHandler();
 		setupSocketHandlers(socket);
 	}
-	world.addSystem(new RenderSystem());
+	// world.addSystem(new RenderSystem());
 	world.addEntity(manager);
 	intervalId = setInterval(function() {
 		world.update();
@@ -646,12 +662,12 @@ function setupCloseWebsocket(socket) {
 		socket.close();
 		homeButton.removeEventListener('click', closeSocket);
 		logoutButton.removeEventListener('click', closeSocket);
-        window.removeEventListener('popstate', closeSocket);
+		window.removeEventListener('popstate', closeSocket);
 	}
 
 	homeButton.addEventListener('click', closeSocket)
 	logoutButton.addEventListener('click', closeSocket);
-    window.addEventListener('popstate', closeSocket);
+	window.addEventListener('popstate', closeSocket);
 }
 
 // Scoreboard stuff
