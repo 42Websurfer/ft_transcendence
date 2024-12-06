@@ -77,8 +77,10 @@ services:
     container_name: nginx
     image: nginx
     volumes:
-      - ./conf/nginx:/etc/nginx/conf.d
+      - ./conf/nginx/:/etc/nginx/conf.d/
+      - ./scripts/nginx/entrypoint.sh:/entrypoint.sh
       - ./src:/var/www/html/frontend/
+    entrypoint: /entrypoint.sh
     depends_on:
       - user-service
       - gameloop-service
@@ -89,13 +91,16 @@ services:
     networks:
       - trans_net
     expose:
-      - 8090
+      - 80
+      - 443
+      - 8080
     ports:
-      - "8090:8090"
+      - "80:80"
+      - "443:443"
 
   nginx_exporter:
     image: nginx/nginx-prometheus-exporter:latest
-    command: -nginx.scrape-uri http://nginx:80/stub_status
+    command: -nginx.scrape-uri http://nginx:8080/stub_status
     container_name: nginx_exporter    
     expose:
       - 9113
@@ -109,8 +114,8 @@ services:
     image: adminer
     networks: 
       - trans_net
-    ports: 
-      - "8080:8080"
+    expose:
+      - 8080
   redis:
     container_name: redis
     image: redis:alpine
@@ -195,8 +200,8 @@ services:
   grafana:
     image: grafana/grafana:7.5.7
     container_name: grafana
-    ports:
-      - 3000:3000
+    expose:
+      - 3000
     restart: unless-stopped
     volumes:
       - ./conf/grafana:/etc/grafana/provisioning/datasources

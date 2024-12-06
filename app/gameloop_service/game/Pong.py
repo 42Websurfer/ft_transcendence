@@ -197,6 +197,7 @@ class GameLogicManager(Entity):
 					elif other.second_last_hit is not None:
 						other.second_last_hit.increase_score()
 						self.starter = other.second_last_hit
+					thread_local.pong_game.update_tournament_gamestate()
 					self.reset_ball()
 				else:
 					print("WHAT NOW? THIS IS AN INVALID GOAL AS THE BALL WAS LAUNCHED FROM CENTER")
@@ -328,13 +329,24 @@ class PongGame:
 		self.stop_thread = True
 		print(f'stop_thread set to {self.stop_thread}')
 
+	def update_tournament_gamestate(self):
+		if self.players[0].match_type == 'tournament':
+			data = {}
+			data['lobby_id'] = self.players[0].lobby_id
+			data['type'] = 'tournament'
+			data['match_id'] = self.players[0].match_id
+			data['home_score'] = self.players[0].player_c.score
+			data['away_score'] = self.players[1].player_c.score
+			data['status'] = 'running'
+			requests.post('http://gamehub-service:8003/match/', json=data)
+
 	def game_complete(self):
 		asyncio.run_coroutine_threadsafe(thread_local.host.channel_layer.group_send(
 				thread_local.host.group_name,
 				{
 					'type': 'game_over',
 				}
-			), thread_local.event_loop)
+			), self.event_loop)
 		print('We have a winner! Stop game thread, and asyncio thread')
 		self.stop()
 		data = {}

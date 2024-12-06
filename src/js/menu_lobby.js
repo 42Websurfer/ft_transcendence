@@ -47,6 +47,10 @@ export function renderMenuLobby(type) {
     lobbyIdInput.addEventListener('keydown', async (event) => {
         if (event.key === 'Enter') {
             const lobbyId = lobbyIdInput.value.trim();
+            if (lobbyId.length != 4 || /[^A-Za-z0-9]/.test(lobbyId)) {
+                displayToast('Invalid lobby id format!', 'error');
+                return;
+            }
             if (lobbyId) {
                 const response = await joinLobby(lobbyId, type);
                 if (response.type === 'success')

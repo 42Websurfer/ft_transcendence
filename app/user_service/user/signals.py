@@ -31,16 +31,14 @@ def save_user_profile(sender, instance, **kwargs):
 @receiver(pre_save, sender=User)
 def update_gamestatsuser(sender, instance, **kwargs):
     if instance.pk:
-        try:
-            old_user = User.objects.get(pk=instance.pk)
-            if old_user.username != instance.username:
-                data = {
-                    'user_id': instance.pk,
-                    'username': instance.username
-                }
-                response = requests.put('http://gamehub-service:8003/gameStatsUser/', json=data)
+        old_user = User.objects.get(pk=instance.pk)
+        if old_user.username != instance.username:
+            data = {
+                'user_id': instance.pk,
+                'username': instance.username
+            }
+            response = requests.put('http://gamehub-service:8003/gameStatsUser/', json=data)
 
-                if response.status_code != 200:
-                    print('Failed to update GameStatsUser')
-        except User.DoesNotExist:
-            pass
+            if not response.ok:
+                response_data = response.json()
+                raise Exception(response_data['message'])

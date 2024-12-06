@@ -165,22 +165,6 @@ def register(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def get_user(request, user_id):
-    try:
-        user = User.objects.get(pk=user_id)
-        data = {
-            'id': user.id,
-            'username': user.username,
-            'email': user.email,
-            'first_name': user.first_name,
-            'last_name': user.last_name
-        }
-        return JsonResponse(data)
-    except User.DoesNotExist:
-        return JsonResponse({'type': 'error', 'message': 'User not found'}, status=404)
-    
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
 def get_user_information(request):
     user = request.user
     if user:
@@ -207,7 +191,6 @@ def update_user_information(request):
         username = data.get('username')
         avatar = request.FILES.get('avatar')
         user = User.objects.get(id=request.user.id)
-        logger.debug("WO FAILST DU JUNGE3")
 
         if user.userprofile.is_third_party_user:
             if user.email != email:

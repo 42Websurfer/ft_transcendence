@@ -35,6 +35,8 @@ export function runWebsocket(socket) {
                     
                     if (data.user_id == data.admin_id)
                         startMatchButton.style.display = 'block';
+                    else
+                        startMatchButton.style.display = 'none';
                     li.className = 'friends-add-list-user';
                     li.innerHTML = `<span class="list-item-content">${data.member_username}</span>`;
 					if (data.user_id === data.member_id) {
@@ -262,7 +264,7 @@ export function renderMenuOnlineLobby(lobbyId) {
     if (!g_socket) {
         const token = localStorage.getItem('access_token');
 
-        g_socket = new WebSocket(`ws://${window.location.host}/ws/match/${lobbyId}/?token=${token}`);
+        g_socket = new WebSocket(`wss://${window.location.host}/ws/match/${lobbyId}/?token=${token}`);
         runWebsocket(g_socket);
         closeWebsocket(g_socket);
     } else {
@@ -274,7 +276,8 @@ export function renderMenuOnlineLobby(lobbyId) {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             },
-        }).then((response) => response.json())
+        })
+        .then((response) => response.json())
         .then((data) => {
             if (data.type === 'error') {
                 displayToast(data.message, 'error')
@@ -307,7 +310,7 @@ export function renderMenuOnlineLobby(lobbyId) {
     });
 
     const matchStartButton = document.getElementById('startOnlineMatch');
-
+    matchStartButton.style.display = 'block';
     matchStartButton.addEventListener('click', async() => {
         try {
             const token = localStorage.getItem('access_token'); 
@@ -320,6 +323,7 @@ export function renderMenuOnlineLobby(lobbyId) {
                 },
             });
             console.log('Response: ', response);
+            matchStartButton.style.display = 'none';
         } catch (error) {
             console.log('Error: ', error);
         }
