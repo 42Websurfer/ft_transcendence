@@ -93,13 +93,14 @@ services:
     expose:
       - 80
       - 443
+      - 8080
     ports:
       - "80:80"
       - "443:443"
 
   nginx_exporter:
     image: nginx/nginx-prometheus-exporter:latest
-    command: -nginx.scrape-uri http://nginx:80/stub_status
+    command: -nginx.scrape-uri http://nginx:8080/stub_status
     container_name: nginx_exporter    
     expose:
       - 9113
