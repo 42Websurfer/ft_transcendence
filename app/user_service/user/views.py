@@ -191,7 +191,6 @@ def update_user_information(request):
         username = data.get('username')
         avatar = request.FILES.get('avatar')
         user = User.objects.get(id=request.user.id)
-        logger.debug("WO FAILST DU JUNGE3")
 
         if user.userprofile.is_third_party_user:
             if user.email != email:

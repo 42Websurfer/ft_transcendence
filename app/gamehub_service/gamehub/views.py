@@ -33,7 +33,7 @@ def gamestatsuser(request):
 			gamestatsuser = GameStatsUser.objects.create(user_id=uid, username=username)
 			if not gamestatsuser:
 				return JsonResponse({'message': 'Create GameStatsUser model failed.'}, status=400)
-			return JsonResponse(status=200)
+			return HttpResponse(status=200)
 		except Exception as e:
 			logger.debug(f"Error: {e}")
 			return JsonResponse({'message': 'Create GameStatsUser model failed.'}, status=400)
@@ -44,7 +44,7 @@ def gamestatsuser(request):
 			gamestatsuser = GameStatsUser.objects.get(user_id=user_id)
 			gamestatsuser.username = username
 			gamestatsuser.save()
-			return JsonResponse(status=200)
+			return HttpResponse(status=200)
 		except Exception as e:
 			return JsonResponse({'message': str(e)}, status=400)
 	return JsonResponse({'message': 'Invalid request'}, status=400)

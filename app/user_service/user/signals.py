@@ -40,5 +40,5 @@ def update_gamestatsuser(sender, instance, **kwargs):
             response = requests.put('http://gamehub-service:8003/gameStatsUser/', json=data)
 
             if not response.ok:
-                data = response.json()
-                raise Exception(data['message'])
+                response_data = response.json()
+                raise Exception(response_data['message'])
