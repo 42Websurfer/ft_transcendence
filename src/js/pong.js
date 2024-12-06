@@ -524,10 +524,11 @@ function selectGamemode(groupName){
 	if (matchType === 'debug') {
 		world.addSystem(new CollisionSystem());
 		world.addSystem(new MovementSystem());
-		let player = new Ball();
+		let player = new Player(0 ,0, 100);
 		
 		world.addEntity(player);
 		world.addEntity(new Wall(500, 100, 90, 200));
+		world.addEntity(new Wall(600, 200, 33, 200));
 	
 		document.addEventListener('mousemove', (event) => {
 			const rect = canvas.getBoundingClientRect();
