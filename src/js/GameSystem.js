@@ -53,6 +53,10 @@ export class Vector{
 		return (this.x * other.x + this.y * other.y);
 	}
 
+	cross(other) {
+		return (this.y * other.x - this.x * other.y);
+	}
+
 	sqrLength(){
 		return (Math.pow(this.x, 2) + Math.pow(this.y, 2));
 	}
@@ -82,6 +86,10 @@ export class Plane{
 
 	getTangent(){
 		return (new Plane(this.start, this.dir.dup().rotate(90)));
+	}
+
+	length() {
+		return (this.dir.length());
 	}
 
 	getClosestPoint(point){
@@ -336,6 +344,47 @@ export class MovementSystem extends System{
 	}
 }
 
+export class Ray extends Plane {
+	constructor(start, dir) {
+		super(start, dir);
+	}
+
+	cast(entities, debug = false) {
+		const start = this.start;
+		const end = this.start.add(this.dir);
+		if (debug)
+			drawLine(start, end, 'red');
+		const eps = 0.00001;
+		let points = [];
+		for (let ent of entities) {
+			const entMesh = ent.getComponent(Mesh);
+			if (!entMesh)
+				continue;
+			let transformedPoints = entMesh.points.map(p => p.dup().rotate(ent.rotation).add(ent.position));
+			for (let i = 0; i < transformedPoints.length; i++) {
+				let A = transformedPoints[i];
+				let B = transformedPoints[(i + 1) % transformedPoints.length];
+	
+				const denominator = (end.x - start.x) * (B.y - A.y) - (B.x - A.x) * (end.y - start.y);
+
+				const r = ((B.x - A.x) * (start.y - A.y) - (start.x - A.x) * (B.y - A.y)) / denominator;
+
+				if (r + eps < 0) continue;
+
+				const s = ((A.x - start.x) * (end.y - start.y) - (end.x - start.x) * (A.y - start.y)) / denominator;
+
+				if (s + eps < 0 || s - eps > 1) continue;
+
+				points.push(new Vector(s * (B.x - A.x) + A.x, s * (B.y - A.y) + A.y));
+				if (debug)
+					ctx.fillRect(points[points.length - 1].x, points[points.length - 1].y, 5, 5);
+			}
+		}
+		points.sort((a, b) => a.sub(start).sqrLength() - b.sub(start).sqrLength());
+		return points;
+	}
+}
+
 export class CollisionSystem extends System{
 	execute(entities){
 		for (let currentEnt of entities){
@@ -355,6 +404,7 @@ export class CollisionSystem extends System{
 						const otherPos = otherEnt.position;
 						let ab = otherPos.sub(currentPos);
 						let threshold = Math.max(entMesh.width, entMesh.height, otherMesh.width, otherMesh.height) * 0.5;
+					
 						if (ab.length() < threshold){
 							const stepTransform = new Transform(currentPos.x, currentPos.y, currentEnt.rotation);
 							let oClosest = otherMesh.getClosestPoint(otherEnt, currentPos);
