@@ -344,29 +344,44 @@ export class MovementSystem extends System{
 	}
 }
 
-function RayCast(startPos, direction, entities) {
-	for (let ent of entities) {
-		const entMesh = ent.getComponent(Mesh);
+export class Ray extends Plane {
+	constructor(start, dir) {
+		super(start, dir);
+	}
 
-		let transformedPoints = entMesh.points.map(p => p.dup().rotate(ent.rotation).add(ent.position.sub(startPos)));
-		for (let i = 0; i < transformedPoints.length; i++) {
-			let pointA = transformedPoints[i];
-			let pointB = transformedPoints[(i + 1) % transformedPoints.length];
-
-			let planeAB = new Plane(pointA, pointB.sub(pointA));
-
-			let crossProduct = direction.cross(planeAB.dir);
-			if (crossProduct == 0) {
-				console.log('Parallel');
+	cast(entities, debug = false) {
+		const start = this.start;
+		const end = this.start.add(this.dir);
+		if (debug)
+			drawLine(start, end, 'red');
+		const eps = 0.00001;
+		let points = [];
+		for (let ent of entities) {
+			const entMesh = ent.getComponent(Mesh);
+			if (!entMesh)
 				continue;
-			} else if (crossProduct > 0) {
+			let transformedPoints = entMesh.points.map(p => p.dup().rotate(ent.rotation).add(ent.position));
+			for (let i = 0; i < transformedPoints.length; i++) {
+				let A = transformedPoints[i];
+				let B = transformedPoints[(i + 1) % transformedPoints.length];
+	
+				const denominator = (end.x - start.x) * (B.y - A.y) - (B.x - A.x) * (end.y - start.y);
 
-			} else if (crossProduct < 0) {
-				
+				const r = ((B.x - A.x) * (start.y - A.y) - (start.x - A.x) * (B.y - A.y)) / denominator;
+
+				if (r + eps < 0) continue;
+
+				const s = ((A.x - start.x) * (end.y - start.y) - (end.x - start.x) * (A.y - start.y)) / denominator;
+
+				if (s + eps < 0 || s - eps > 1) continue;
+
+				points.push(new Vector(s * (B.x - A.x) + A.x, s * (B.y - A.y) + A.y));
+				if (debug)
+					ctx.fillRect(points[points.length - 1].x, points[points.length - 1].y, 5, 5);
 			}
-
-			drawLine(planeAB.start, planeAB.dir.add(planeAB.start));
 		}
+		points.sort((a, b) => a.sub(start).sqrLength() - b.sub(start).sqrLength());
+		return points;
 	}
 }
 
@@ -389,12 +404,7 @@ export class CollisionSystem extends System{
 						const otherPos = otherEnt.position;
 						let ab = otherPos.sub(currentPos);
 						let threshold = Math.max(entMesh.width, entMesh.height, otherMesh.width, otherMesh.height) * 0.5;
-						// const points = RayCast(currentEnt.position, entPhys.velocity, [otherEnt]);
-						// for (let i = 0; i < points.length; i++) {
-						// 	const pointA = points[i];
-						// 	const pointB = points[(i + 1) % points.length];
-						// 	threshold = pointB.sub(pointA).length();
-						// }
+					
 						if (ab.length() < threshold){
 							const stepTransform = new Transform(currentPos.x, currentPos.y, currentEnt.rotation);
 							let oClosest = otherMesh.getClosestPoint(otherEnt, currentPos);
