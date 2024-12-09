@@ -43,6 +43,16 @@ class Ball extends Entity{
 		this.setPos(canvas.width * 0.5, canvas.height * 0.5);
 	}
 
+	static velocityAfterReflection(position, velocity, collisionPoint) {
+		let ba = (position.sub(collisionPoint)).normalize();
+		let tangent = new Plane(collisionPoint, ba);
+		let velocityNormalized = velocity.dup().normalize();
+		let dotProduct = tangent.dir.dot(velocityNormalized);
+		let reflection = velocityNormalized.sub(ba.scale(2 * dotProduct));
+		reflection.scale(velocity.length());
+		return reflection;
+	}
+
 	onCollision(other, collisionPoint = undefined){
 		if (other instanceof Player){
 			this.secondLastHit = this.lastHit != other ? this.lastHit : this.secondLastHit;
@@ -50,13 +60,7 @@ class Ball extends Entity{
 		}
 		if (collisionPoint === undefined)
 			return;
-		let ba = (this.position.sub(collisionPoint)).normalize();
-		let tangent = new Plane(collisionPoint, ba);
-		let velocityNormalized = this.physics.velocity.dup().normalize();
-		let dotProduct = tangent.dir.dot(velocityNormalized);
-		let reflection = velocityNormalized.sub(ba.scale(2 * dotProduct));
-		reflection.scale(this.physics.velocity.length());
-		this.physics.setVelocityV(reflection);
+		this.physics.setVelocityV(Ball.velocityAfterReflection(this.position, this.physics.velocity, collisionPoint));
 	}
 }
 
@@ -102,16 +106,21 @@ class Player extends Entity{
 		this.position = newPos;
 	}
 
+	static playerBallDefleciton(paddlePosition, ballVelocity, collisionPoint) {
+		let drall = collisionPoint.sub(paddlePosition);
+		let prevScale = ballVelocity.length();
+		drall.normalize();
+		drall.scale(10);	
+		let newVelocity = ballVelocity.add(drall);
+		newVelocity.normalize();
+		newVelocity.scale(prevScale);
+		return newVelocity;
+	}
+
 	onCollision(other, collisionPoint = undefined){
 		var ophys = other.getComponent(Physics);
 		if (ophys && collisionPoint && other instanceof Ball){
-			let drall = collisionPoint.sub(this.position);
-			let prevScale = ophys.velocity.length();
-			drall.normalize();
-			drall.scale(10);	
-			ophys.velocity = ophys.velocity.add(drall);
-			ophys.velocity.normalize();
-			ophys.velocity.scale(prevScale);
+			ophys.velocity = Player.playerBallDefleciton(this.position, ophys.velocity, collisionPoint);
 		}
 	}
 
@@ -142,6 +151,7 @@ class AiPlayer extends Player {
 		this.gameBall = ball;
 		this.difficulty = difficulty;
 		this.target = undefined;
+		this.brainId = setInterval(() => this.aiBrain(), 1000);
 	}
 
 	moveToTarget() {
@@ -164,19 +174,34 @@ class AiPlayer extends Player {
 		this.target = position;
 	}
 
-	update() {
+	aiBrain() {
 		if (!this.gameBall) {
 			console.log('AI: no ref to ball!');
 			//if ball is somehow undefined search for it in the world.entities
 			this.gameBall = world.entities.find((value) => value instanceof Ball);
 		}
 
-		if (this.gameBall.physics.velocity.sqrLength() == 0) {
-			this.setTarget(new Vector(this.position.x, canvas.height * 0.5));
-		} else {
-			this.setTarget(this.gameBall.position);
+		let position = this.gameBall.position;
+		let direction = this.gameBall.physics.velocity.dup().normalize().scale(100);
+		for (let i = 0; i < this.difficulty; i++) {
+			let ray = new Ray(position, direction);
+			let hitInfo = ray.castInfo(world.entities, true);
+			if (!hitInfo) {
+				continue;
+			}
+			if (hitInfo.entity == manager.sections[1].goal) {
+				this.setTarget(hitInfo.hitPos);
+				break;
+			}
+			direction = Ball.velocityAfterReflection(hitInfo.hitPos.sub(direction.dup().normalize().scale(-1 * this.gameBall.width * 0.5)), direction, hitInfo.hitPos);
+			position = hitInfo.hitPos;
+			if (hitInfo.entity instanceof Player) {
+				direction = Player.playerBallDefleciton(hitInfo.entity.position, direction, hitInfo.hitPos);
+			}
 		}
+	}
 
+	update() {
 		this.moveToTarget();
 	}
 }
@@ -197,7 +222,7 @@ class PlayerSection extends Entity{
 		this.goal = new Wall(x, y, rotation, height);
 		this.player = undefined;
 		if (ai) {
-			this.player = new AiPlayer(x, y, height * 0.33, undefined, 1);
+			this.player = new AiPlayer(x, y, height * 0.33, undefined, 3);
 		} else {
 			this.player = new Player(x, y, height * 0.33);
 			this.keyDownHandler = (event) => this.player.keyDown(event);
@@ -677,7 +702,7 @@ function initScoreBoard(playerNames, localPlayer = undefined) {
 		scoreItems[i].remove();
 	}
 	for (let i = 0; i < playerNames.length; i++) {
-		scoreContainer.appendChild(createScoreItem(playerNames[i], localPlayer.uname == playerNames[i]));	
+		scoreContainer.appendChild(createScoreItem(playerNames[i], localPlayer?.uname == playerNames[i]));	
 	}
 }
 
