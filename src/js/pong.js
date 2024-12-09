@@ -677,7 +677,7 @@ function initScoreBoard(playerNames, localPlayer = undefined) {
 		scoreItems[i].remove();
 	}
 	for (let i = 0; i < playerNames.length; i++) {
-		scoreContainer.appendChild(createScoreItem(playerNames[i], localPlayer.uname == playerNames[i]));	
+		scoreContainer.appendChild(createScoreItem(playerNames[i], localPlayer?.uname == playerNames[i]));
 	}
 }
 
