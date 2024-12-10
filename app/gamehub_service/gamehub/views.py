@@ -120,6 +120,12 @@ def update_match(request):
 @permission_classes([IsAuthenticated])
 def join_lobby(request, lobby_id):
 	type = request.GET.get('type')
+	user = request.user	
+	if redis.sismember('user_lobbies', user.id):
+		return JsonResponse({
+			'type': 'error',
+			'message': 'You can\'t join multiple lobbies'
+		})
 	if type == 'tournament':
 		if redis.exists(tournament_string(lobby_id)):
 			return(JsonResponse({'type': 'error', 'message': 'Tournament already started.'}))

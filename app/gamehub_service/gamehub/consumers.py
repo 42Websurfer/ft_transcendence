@@ -61,18 +61,16 @@ class Tournament(AsyncWebsocketConsumer):
 					'user_id': self.user.id,
 				}
 			)
-			await self.send_info('success', 'You have successfully joined a lobby!')
+			#await self.send_info('success', 'You have successfully joined a lobby!')
 
 	async def disconnect(self, close_code):
 		if (self.user.is_authenticated):
 			if (self.duplicate):
-				await self.send_info('error', 'You are already in this lobby!!!')
+				return
 			await self.channel_layer.group_discard(
 				self.group_name,
 				self.channel_name
 			)
-			if (self.duplicate):
-				return
 			results_json = redis.get(self.group_name)
 			if not results_json:
 				return
