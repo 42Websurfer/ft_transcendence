@@ -1,4 +1,4 @@
-import { getCookie, fetch_get, copyToClipboard } from './utils.js';
+import { getCookie, fetch_get, copyToClipboard, displayToast } from './utils.js';
 import { selectedListItem, setSelectedListItem, handleFriendRequest, showSection } from './index.js';
 import { renderPong } from './pong.js';
 
@@ -85,6 +85,13 @@ export function runWebsocket() {
                 if (data.match_id)
                     renderPong(data.match_id)
             }
+			else if (data.type === 'success') {
+				displayToast(data.message, 'success');
+			}
+			else if (data.type === 'error') {
+				displayToast(data.message, 'error');
+				showSection('menu');
+			}
 
         }
         catch (error) {
