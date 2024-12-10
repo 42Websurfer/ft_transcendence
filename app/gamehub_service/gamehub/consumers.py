@@ -15,19 +15,26 @@ class Tournament(AsyncWebsocketConsumer):
 		self.user = self.scope["user"]
 		self.group_name = self.scope['url_route']['kwargs']['group_name']
 		left_user = False
-		if redis.exists(self.group_name):
-			results = redis.get(self.group_name)
-			if results:
-				results = json.loads(results)
-				for user in results: 
-					if user['user_id'] == self.user.id:
-						left_user = True
+		self.duplicate = False
+		# if redis.exists(self.group_name):
+		# 	results = redis.get(self.group_name)
+		# 	if results:
+		# 		print("WE ARE HERE", flush=True)
+		# 		results = json.loads(results)
+		# 		for user in results: 
+		# 			if user['user_id'] == self.user.id:
+		# 				left_user = True
 		if (self.user.is_authenticated):
 			User = get_user_model()
 			user = await sync_to_async(User.objects.get)(id=self.user.id)		
 			if (not left_user):
 				tournament_data = redis.get(self.group_name)
 				if redis.exists(self.group_name) and tournament_data:
+					if redis.sismember('user_lobbies', self.user.id):
+						print('ALREADY IN LOBBY!!', flush=True)
+						self.duplicate = True
+						await self.close()
+						return
 					redis.sadd('user_lobbies', self.user.id)
 					results = json.loads(tournament_data)
 					results.append(create_user_structure(self.user.id, 'member', user.username))
@@ -54,13 +61,18 @@ class Tournament(AsyncWebsocketConsumer):
 					'user_id': self.user.id,
 				}
 			)
+			await self.send_info('success', 'You have successfully joined a lobby!')
 
 	async def disconnect(self, close_code):
 		if (self.user.is_authenticated):
+			if (self.duplicate):
+				await self.send_info('error', 'You are already in this lobby!!!')
 			await self.channel_layer.group_discard(
 				self.group_name,
 				self.channel_name
 			)
+			if (self.duplicate):
+				return
 			results_json = redis.get(self.group_name)
 			if not results_json:
 				return
@@ -104,6 +116,9 @@ class Tournament(AsyncWebsocketConsumer):
 				}
 			)
 	
+	async def send_info(self, type, message):
+		await self.send(json.dumps({'type': type, 'message': message}))
+
 	async def send_tournament_users(self, event):
 		results_json = redis.get(self.group_name)
 		if not results_json:
