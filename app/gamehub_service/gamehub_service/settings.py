@@ -26,7 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', 'development', 'user-service', 'gamehub-service', '10.13.9.6', '127.0.0.1', '10.13.9.3', '10.13.9.2', '10.14.7.4', '10.14.7.3', '10.14.1.9', '10.14.3.9', 'websurfers.com']
+ALLOWED_HOSTS = ['localhost', 'development', '10.13.9.1', 'user-service', 'gamehub-service', '10.13.9.6', '127.0.0.1', '10.13.9.3', '10.13.9.2', '10.14.7.4', '10.14.7.3', '10.14.1.9', '10.14.3.9', 'websurfers.com']
 
 
 # Application definition
