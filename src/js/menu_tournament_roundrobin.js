@@ -198,9 +198,9 @@ function addMatchItem(tournamentMatchesList, player_home, player_away, score, st
     let free_color_home = '';
     let free_color_away = '';
     if (player_home[0] === "Free from play")
-        free_color_home = ' color: grey;';
+        free_color_home = 'color: grey;';
     if (player_away[0] === "Free from play")
-        free_color_away = ' color: grey;';
+        free_color_away = 'color: grey;';
 
     li.innerHTML = `
     <div class="tournament-match">
@@ -219,7 +219,7 @@ function closeWebsocket() {
 	const homeButton = document.getElementById('webpong-button');
 
 	const closeSocket = () => {
-		g_socket.close();
+		g_socket?.close();
 		homeButton.removeEventListener('click', closeSocket);
 		logoutButton.removeEventListener('click', closeSocket);
         window.removeEventListener('popstate', closeSocket);
@@ -360,12 +360,14 @@ export function renderMenuTournamentRoundRobin(lobbyId) {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             },
-        }).then((response) => response.json())
+        })
+        .then((response) => response.json())
         .then((data) => {
             if (data.type === 'error') {
                 console.log(data.message);
             }
-        }).catch((error) => console.log("Error:", error));
+        })
+        .catch((error) => console.log("Error:", error));
     }
 
     const copyLobbyIdButton = document.getElementById('copyLobbyIdButton');
