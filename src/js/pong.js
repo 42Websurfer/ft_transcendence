@@ -573,11 +573,10 @@ function selectGamemode(groupName){
 		manager = new RemoteHandler();
 		setupSocketHandlers(socket);
 	}
-	world.addSystem(new RenderSystem());
 	world.addEntity(manager);
 	intervalId = setInterval(function() {
 		world.update();
-	}, 16);
+	}, 100);
 }
 
 function setupSocketHandlers(socket){
