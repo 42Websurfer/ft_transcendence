@@ -151,12 +151,12 @@ class AiPlayer extends Player {
 		this.gameBall = ball;
 		this.difficulty = difficulty;
 		this.target = undefined;
-		this.brainId = setInterval(() => this.aiBrain(), 1000);
+		this.brainId = setInterval(() => this.aiBrain(), 100);
 	}
 
 	moveToTarget() {
 		if (!this.target) {
-			console.log('AI: no target!')
+			console.log('AI: no target!');
 			return;
 		}
 		if (this.target.x > canvas.width * 0.67) {
@@ -183,21 +183,37 @@ class AiPlayer extends Player {
 
 		let position = this.gameBall.position;
 		let direction = this.gameBall.physics.velocity.dup().normalize().scale(100);
+		let points = [position];
+		let ents = world.entities.filter((ent) => !(ent instanceof Ball));
 		for (let i = 0; i < this.difficulty; i++) {
 			let ray = new Ray(position, direction);
-			let hitInfo = ray.castInfo(world.entities, true);
+			console.log(ents);
+			let hitInfo = ray.castInfo(ents);
 			if (!hitInfo) {
 				continue;
 			}
+			if (hitInfo.hitPos.x == NaN || hitInfo.hitPos.y == NaN) {
+				console.error("WTF!");
+			}
+			console.log("RAY:", position, direction, 'hit at:', hitInfo.hitPos);
+			points.push(hitInfo.hitPos);
 			if (hitInfo.entity == manager.sections[1].goal) {
 				this.setTarget(hitInfo.hitPos);
 				break;
 			}
-			direction = Ball.velocityAfterReflection(hitInfo.hitPos.sub(direction.dup().normalize().scale(-1 * this.gameBall.width * 0.5)), direction, hitInfo.hitPos);
+			let newStart = hitInfo.hitPos;
+			console.log('new start', newStart);
+			ctx.fillRect(newStart.x, newStart.y, 5, 5);
 			position = hitInfo.hitPos;
 			if (hitInfo.entity instanceof Player) {
 				direction = Player.playerBallDefleciton(hitInfo.entity.position, direction, hitInfo.hitPos);
 			}
+			direction = Ball.velocityAfterReflection(hitInfo.hitPos, direction, hitInfo.hitPos);
+		}
+		console.log('Points calculated', points.length);
+		const colors = ['red', 'orange', 'yellow', 'green', 'blue', 'purple'];
+		for (let i = 0; i < points.length - 1; i++) {
+			drawLine(points[i], points[i + 1], colors[i % colors.length]);
 		}
 	}
 
@@ -222,7 +238,7 @@ class PlayerSection extends Entity{
 		this.goal = new Wall(x, y, rotation, height);
 		this.player = undefined;
 		if (ai) {
-			this.player = new AiPlayer(x, y, height * 0.33, undefined, 3);
+			this.player = new AiPlayer(x, y, height * 0.33, undefined, 5);
 		} else {
 			this.player = new Player(x, y, height * 0.33);
 			this.keyDownHandler = (event) => this.player.keyDown(event);

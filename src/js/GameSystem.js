@@ -344,6 +344,8 @@ export class MovementSystem extends System{
 	}
 }
 
+const eps = 0.00001;
+
 export class Ray extends Plane {
 	constructor(start, dir) {
 		super(start, dir);
@@ -354,7 +356,6 @@ export class Ray extends Plane {
 		const end = this.start.add(this.dir);
 		if (debug)
 			drawLine(start, end, 'red');
-		const eps = 0.00001;
 		let points = [];
 		for (let ent of entities) {
 			const entMesh = ent.getComponent(Mesh);
@@ -369,11 +370,15 @@ export class Ray extends Plane {
 
 				const r = ((B.x - A.x) * (start.y - A.y) - (start.x - A.x) * (B.y - A.y)) / denominator;
 
-				if (r + eps < 0) continue;
+				if (r + eps < 0){
+					continue;
+				}
 
 				const s = ((A.x - start.x) * (end.y - start.y) - (end.x - start.x) * (A.y - start.y)) / denominator;
 
-				if (s + eps < 0 || s - eps > 1) continue;
+				if (s + eps < 0 || s - eps > 1){
+					continue;
+				}
 
 				points.push(new Vector(s * (B.x - A.x) + A.x, s * (B.y - A.y) + A.y));
 				if (debug)
@@ -389,7 +394,6 @@ export class Ray extends Plane {
 		const end = this.start.add(this.dir);
 		if (debug)
 			drawLine(start, end, 'red');
-		const eps = 0.00001;
 		let points = [];
 		for (let ent of entities) {
 			const entMesh = ent.getComponent(Mesh);
@@ -404,11 +408,15 @@ export class Ray extends Plane {
 
 				const r = ((B.x - A.x) * (start.y - A.y) - (start.x - A.x) * (B.y - A.y)) / denominator;
 
-				if (r + eps < 0) continue;
+				if (r + eps < 0){
+					continue;
+				}
 
 				const s = ((A.x - start.x) * (end.y - start.y) - (end.x - start.x) * (A.y - start.y)) / denominator;
 
-				if (s + eps < 0 || s - eps > 1) continue;
+				if (s + eps < 0 || s - eps > 1){
+					continue;
+				}
 
 				points.push({hitPos: new Vector(s * (B.x - A.x) + A.x, s * (B.y - A.y) + A.y), entity: ent});
 				if (debug)
