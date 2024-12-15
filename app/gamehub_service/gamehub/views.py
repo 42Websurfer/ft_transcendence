@@ -49,8 +49,6 @@ def gamestatsuser(request):
 			return JsonResponse({'message': str(e)}, status=400)
 	return JsonResponse({'message': 'Invalid request'}, status=400)
 
-
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def create_lobby(request):
@@ -115,7 +113,6 @@ def update_match(request):
 		return HttpResponse(status=400)
 	return HttpResponse(status=200)
 	
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def join_lobby(request, lobby_id):
