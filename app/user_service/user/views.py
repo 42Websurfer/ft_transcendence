@@ -187,12 +187,14 @@ def register(request):
 def get_user_information(request):
     user = request.user
     if user:
+        print("THIRD PARTY: ", user.userprofile.is_third_party_user, flush=True)
         return JsonResponse({
             'type': 'success',
             'email': user.email,
             'firstname': user.first_name,
             'lastname': user.last_name,
-            'username': user.username
+            'username': user.username,
+            'third_party': user.userprofile.is_third_party_user
         })
     else: 
         return JsonResponse({'type': 'error', 'message': 'User does not exists.'})
@@ -213,7 +215,7 @@ def update_user_information(request):
                             status=200)
         else:
             return Response({'type': 'error', 'message': serialized_data.errors}, status=400)
-            
+
 
         # if avatar:
         #     user.gamestatsuser.avatar = avatar
@@ -221,7 +223,7 @@ def update_user_information(request):
         user.save()
         return (JsonResponse({'type': 'success'}, status=200))
     except Exception as e:
-        return JsonResponse({'type': 'error', 'message': str(e)}, status=400)
+        return JsonResponse({'type': 'error', 'message': {'exepction': str(e)}}, status=400)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -405,33 +407,39 @@ def register_api(request):
         firstname=session_data.get('first_name')
         lastname=session_data.get('last_name')
 
-        if User.objects.filter(username=username).exists():
-            return JsonResponse({'type': 'error', 'message': 'This username already exists.'}, status=400)
-
-        user= User.objects.create_user(username=username, email=email, first_name=firstname, last_name=lastname)
-        user.save()
-        if user:
-            userprofile = UserProfile.objects.get(user=user)
-            userprofile.is_third_party_user = True
-            userprofile.save()
-        qr_code_string = setup_2fa(user)
-        return JsonResponse(
-            {
-                'type': 'success',
-                'user': {
-                    'id': user.id,
-                    'username': user.username,
-                    'email': user.email,
-                    'first_name': user.first_name,
-                    'last_name': user.last_name
-                },
-                'qr_code': f"data:image/png;base64,{qr_code_string}",
-            })
+        # if User.objects.filter(username=username).exists():
+        #     return JsonResponse({'type': 'error', 'message': 'This username already exists.'}, status=400)
+        
+        # user= User.objects.create(username=username, email=email, first_name=firstname, last_name=lastname)
+        serializer = RegisterSerializer(data={
+            'username': username,
+            'email': email,
+            'firstname': firstname,
+            'lastname': lastname
+        }, is_third_party_user=True)
+        if serializer.is_valid():
+            user = serializer.save()
+            qr_code_string = setup_2fa(user, True)
+        #user.save()
+            return JsonResponse(
+                {
+                    'type': 'success',
+                    'user': {
+                        'id': user.id,
+                        'username': user.username,
+                        'email': user.email,
+                        'first_name': user.first_name,
+                        'last_name': user.last_name
+                    },
+                    'qr_code': f"data:image/png;base64,{qr_code_string}",
+                })
+        else: 
+            return JsonResponse({'type': 'error', 'message': serializer.errors}, status=400)
     except json.JSONDecodeError as e:
         logger.error(f"JSON decode error: {e}")
-        return JsonResponse({'type': 'error', 'message': 'Invalid JSON data'}, status=400)
+        return JsonResponse({'type': 'error', 'message': {'exception': 'Invalid JSON data'}}, status=400)
     except Exception as e:
-        return JsonResponse({'type': 'error', 'message': str(e)}, status=400)
+        return JsonResponse({'type': 'error', 'message': {'exepction': str(e)}}, status=400)
     
 
 @csrf_exempt
