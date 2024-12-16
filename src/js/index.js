@@ -52,6 +52,8 @@ async function renderLoginLogoutButton(isAuthenticated, section) {
         const logoutButton = document.getElementById('logoutButton')
         logoutButton.addEventListener('click', () => {
             wsBool = false;
+			const logoContainer = document.querySelector('#avatar_container');
+			logoContainer.style.display = 'none';
             handleLogoutSubmit(ws, wsBool);
         });
     }
@@ -353,7 +355,8 @@ function initOnlineStatus() {
 
 export async function showSection(section, lobbyId, pushState = true)
 {
-
+	
+	const settingsButton = document.getElementById('settings-button')
     const isAuthenticated = await checkAuthentication();
     renderLoginLogoutButton(isAuthenticated, section);
     if (section === 'auth_register')
@@ -368,8 +371,10 @@ export async function showSection(section, lobbyId, pushState = true)
         import('./auth_42.js').then(module => {
             module.renderAuth42();    
         });
+	if (settingsButton)
+		settingsButton.style.display = 'none';
+
     if (isAuthenticated) {
-        const settingsButton = document.getElementById('settings-button')
         if (settingsButton)
         {
             if (section == 'menu')
@@ -377,6 +382,22 @@ export async function showSection(section, lobbyId, pushState = true)
             else 
                 settingsButton.style.display = 'none';
         }
+
+		const token = localStorage.getItem('access_token'); 
+		fetch('/api/tm/avatar_url/', {
+			method: 'GET',
+			headers: {
+				'Authorization': `Bearer ${token}`,
+				'Content-Type': 'application/json'
+			},
+		})
+		.then((response) => response.json())
+		.then((data) => {
+			const avatarConainer = document.querySelector('#avatar_container');
+			avatarConainer.style.display = 'block';
+			const avatarImg = avatarConainer.querySelector('img');
+			avatarImg.src = '/img' + data.avatar_url;
+		});
 
         if (!wsBool)
         {
