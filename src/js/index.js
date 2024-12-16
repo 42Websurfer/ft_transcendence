@@ -512,7 +512,7 @@ window.onload = async function() {
         }
         else if (response.type === 'error')
         {
-            displayToast(result.message, 'error')
+            displayToast(response.message, 'error')
             showSection('login');
         }
     }

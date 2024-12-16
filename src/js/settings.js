@@ -19,11 +19,11 @@ export async function renderSettings() {
 				</div>
 				<div class="login-form-field">
                     <label for="floatingPassword" class="settings-label">New password</label>
-					<input type="password" name="password" class="form-control" placeholder="Password">
+					<input id="settings-pw" type="password" name="password" class="form-control" placeholder="Password">
 				</div>
 				<div class="login-form-field">
                     <label for="floatingPassword" class="settings-label">Confirm new password</label>
-					<input type="password" name="password" class="form-control" placeholder="Password">
+					<input id="settings-confirm-pw" type="password" name="password" class="form-control" placeholder="Password">
 				</div>
 				<div class="login-form-field">
                     <label for="floatingPassword" class="settings-label">Firstname</label>
@@ -50,13 +50,21 @@ export async function renderSettings() {
     const inputFirstname = document.getElementById('settings-firstname');
     const inputLastname = document.getElementById('settings-lastname');
     const inputUsername = document.getElementById('settings-username');
-
+	const inputPassword = document.getElementById('settings-pw')
+	const inputConfirmPassword = document.getElementById('settings-confirm-pw')
     const response = await getUserInformation();
     if (response.type === 'error')
         displayToast(response.message, 'error');
     else
     {
+		console.log("Response; ", response);
         inputEmail.value = response.email;
+		if (response.third_party)
+		{
+			inputEmail.setAttribute("disabled", "");
+			inputPassword.setAttribute("disabled", "");
+			inputConfirmPassword.setAttribute("disabled", "");
+		}
         inputFirstname.value = response.firstname;
         inputLastname.value = response.lastname;
         inputUsername.value = response.username;
@@ -80,7 +88,7 @@ async function getUserInformation() {
         return await response.json();
     }
     catch(error){
-		return {'type': 'request_error', 'message': 'Failed to tournament joind request.' };
+		return {'type': 'request_error', 'message': 'Failed to tournament joind request.' }; //NOT ONLY COPY AND PASTE! THIS MESSAGE IS FROM ANOTHER UNIVERSUM
     }
 }
 
@@ -107,6 +115,8 @@ async function handleSettingsFormSubmit(event) {
 		showSection('menu')
 	}
 	else if (result.type === 'error')
-		displayToast(result.message, 'error');
-
+	{
+		for(let key of Object.keys(result.message))
+			displayToast(result.message[key], 'error');
+	}
 }

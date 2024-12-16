@@ -35,7 +35,9 @@ export async function renderAuth2FARegister(input) {
         if (event.key === 'Enter') {
 			let result = await sendAuthCode(input.user);
 			if (result.type === 'error')
+			{
 				displayToast(result.message, 'error')
+			}	
 			else if (result.type === 'success')
 				displayToast('You have successfully registered.', 'success');
         }
