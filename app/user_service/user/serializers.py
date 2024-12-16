@@ -78,6 +78,12 @@ class UpdateUserSerializer(serializers.ModelSerializer):
         model = User
         fields = ('username', 'email', 'password', 'firstname', 'lastname')
 
+    def __init__(self, *args, **kwargs):
+        self.is_third_party_user = kwargs.pop('is_third_party_user', None)
+        super().__init__(*args, **kwargs)
+        if self.is_third_party_user:
+            self.fields.pop('email', None)
+
     def validate_email(self, value):
         user = self.context['request'].user
         if User.objects.exclude(id=user.id).filter(email=value).exists():

@@ -204,11 +204,17 @@ def get_user_information(request):
 def update_user_information(request):
     try:
         user = request.user
-
-        if user.userprofile.is_third_party_user:
-            if user.email != request.data.get('email'):
-                return JsonResponse({'type': 'error', 'message': 'Third party user cannot change email'}, status=400)
-        serialized_data = UpdateUserSerializer(user, data=request.data, partial=True, context={'request': request})
+        print("Email: ", request.data)
+        # if user.userprofile.is_third_party_user:
+        #     if user.email != request.data.get('email'):
+        #         return JsonResponse({'type': 'error', 'message': 'Third party user cannot change email'}, status=400)
+        serialized_data = UpdateUserSerializer(
+            user, 
+            data=request.data, 
+            partial=True, 
+            context={'request': request}, 
+            is_third_party_user=user.userprofile.is_third_party_user
+            )
         if serialized_data.is_valid():
             serialized_data.save()
             return Response({'type': 'success', 'message': 'User information successfull updated.'}, 
