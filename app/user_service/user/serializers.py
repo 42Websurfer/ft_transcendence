@@ -24,6 +24,12 @@ class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('username', 'email', 'password', 'firstname', 'lastname')
+    
+    def __init__(self, *args, **kwargs):
+        self.is_third_party_user = kwargs.pop('is_third_party_user', None)
+        super().__init__(*args, **kwargs)
+        if self.is_third_party_user:
+            self.fields.pop('password', None)
 
     def validate_email(self, value):
         if User.objects.filter(email=value).exists():
@@ -34,15 +40,24 @@ class RegisterSerializer(serializers.ModelSerializer):
         if User.objects.filter(username=value).exists():
             raise serializers.ValidationError("This username already exists.")
         return value
-
+    
     def create(self, validated_data):
-        user = User.objects.create_user(
-            username=validated_data['username'],
-            email=validated_data['email'],
-            first_name=validated_data['first_name'],
-            last_name=validated_data['last_name'],
-            password=validated_data['password']
-        )
+        if self.is_third_party_user:
+            user = User.objects.create_user(
+                username=validated_data['username'],
+                email=validated_data['email'],
+                first_name=validated_data['first_name'],
+                last_name=validated_data['last_name'],
+            )
+            user.set_unusable_password()
+        else:
+            user = User.objects.create_user(
+                username=validated_data['username'],
+                email=validated_data['email'],
+                first_name=validated_data['first_name'],
+                last_name=validated_data['last_name'],
+                password=validated_data['password']
+            )
         return user
     
 
