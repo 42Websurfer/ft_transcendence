@@ -27,26 +27,24 @@ def gamestatsuser(request):
 	if request.method == 'POST':
 		try:
 			data = request.POST
-			print('DATA', data)
 			uid = (int)(data.get('user_id'))
-			logger.debug(f"{type(uid)} + 'uid = ' {uid}")
 			username = data.get('username')
 			avatar = request.FILES.get('avatar')
-			print('avatar:', avatar)
 			gamestatsuser = GameStatsUser.objects.create(user_id=uid, username=username, avatar=avatar)
 			if not gamestatsuser:
 				return JsonResponse({'message': 'Create GameStatsUser model failed.'}, status=400)
 			return HttpResponse(status=200)
 		except Exception as e:
-			logger.debug(f"Error: {e}")
-			return JsonResponse({'message': 'Create GameStatsUser model failed.'}, status=444)
+			return JsonResponse({'message': str(e)}, status=400)
 	elif request.method == 'PUT':
-		data = request.PUT
-		user_id = data.get('user_id')
-		username = data.get('username')
 		try:
+			data = request.PUT
+			user_id = int(data.get('user_id'))
+			username = data.get('username')
+			avatar = request.FILES.get('avatar')
 			gamestatsuser = GameStatsUser.objects.get(user_id=user_id)
 			gamestatsuser.username = username
+			gamestatsuser.avatar = avatar
 			gamestatsuser.save()
 			return HttpResponse(status=200)
 		except Exception as e:
