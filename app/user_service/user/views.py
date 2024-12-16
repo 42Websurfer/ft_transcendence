@@ -14,10 +14,12 @@ from django.db.models import Q
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.response import Response
 from user.utils import updateOnlineStatusChannel
 #TypeError: the JSON object must be str, bytes or bytearray, not Response
 #from tournament.models import GameStatsUser
 from .models import User, Friendship, UserProfile
+from .serializers import RegisterSerializer
 from .utils import setup_2fa
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -129,26 +131,32 @@ def register(request):
         try:
             data = request.POST
 
-            email = data.get('email')
-            password = data.get('password')
-            firstname = data.get('firstname')
-            lastname = data.get('lastname')
-            username = data.get('username')
-            avatar = request.FILES.get('avatar')
-            if User.objects.filter(email=email).exists():
-                return JsonResponse({'type': 'error', 'message': 'Email address already exists.'}, status=400)
-            elif User.objects.filter(username=username).exists():
-                return JsonResponse({'type': 'error', 'message': 'This username already exists.'}, status=400)
-            user = User.objects.create_user(username=username, email=email, first_name=firstname, last_name=lastname)
-            user.set_password(password)
-            user.save()
+            serialized_data = RegisterSerializer(data=data)
+            if serialized_data.is_valid():
+                user = serialized_data.save()
+            else:
+                return Response({'type': 'error', 'message': serialized_data.errors})
+
+            # email = data.get('email')
+            # password = data.get('password')
+            # firstname = data.get('firstname')
+            # lastname = data.get('lastname')
+            # username = data.get('username')
+            # avatar = request.FILES.get('avatar')
+            # if User.objects.filter(email=email).exists():
+            #     return JsonResponse({'type': 'error', 'message': 'Email address already exists.'}, status=400)
+            # elif User.objects.filter(username=username).exists():
+            #     return JsonResponse({'type': 'error', 'message': 'This username already exists.'}, status=400)
+            # user = User.objects.create_user(username=username, email=email, first_name=firstname, last_name=lastname)
+            # user.set_password(password)
+            # user.save()
             # if avatar:
             #     user_game_stats = GameStatsUser.objects.get(username=username)
             #     user_game_stats.avatar = avatar
             #     user_game_stats.save()
 
             qr_code_string = setup_2fa(user)
-            return JsonResponse({
+            return Response({
                 'type': 'success',
                 'message': 'User registered successfully.',
                 'user': {
@@ -161,7 +169,8 @@ def register(request):
                 'qr_code': f"data:image/png;base64,{qr_code_string}",
             }, status=201)
         except Exception as e:
-            return JsonResponse({'error': str(e)}, status=400)
+            print("Was ist das Problem", str(e), flush=True)
+            return Response({'type': 'error', 'message': str(e)}, status=400)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
