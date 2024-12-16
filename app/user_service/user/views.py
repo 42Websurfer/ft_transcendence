@@ -19,7 +19,7 @@ from user.utils import updateOnlineStatusChannel
 #TypeError: the JSON object must be str, bytes or bytearray, not Response
 #from tournament.models import GameStatsUser
 from .models import User, Friendship, UserProfile
-from .serializers import RegisterSerializer
+from .serializers import RegisterSerializer, UpdateUserSerializer
 from .utils import setup_2fa
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -191,34 +191,20 @@ def get_user_information(request):
 @permission_classes([IsAuthenticated])
 def update_user_information(request):
     try:
-        data = request.POST
-
-        email = data.get('email')
-        password = data.get('password')
-        firstname = data.get('firstname')
-        lastname = data.get('lastname')
-        username = data.get('username')
-        avatar = request.FILES.get('avatar')
-        user = User.objects.get(id=request.user.id)
+        user = request.user
 
         if user.userprofile.is_third_party_user:
-            if user.email != email:
+            if user.email != request.data.get('email'):
                 return JsonResponse({'type': 'error', 'message': 'Third party user cannot change email'}, status=400)
-        if username and user.username != username:
-            if User.objects.filter(username=username).exists():
-                return JsonResponse({'type': 'error', 'message': 'This username already exists.'}, status=400)
-            user.username = username
-        
-        if email and user.email != email: 
-            if User.objects.filter(email=email).exists():
-                return JsonResponse({'type': 'error', 'message': 'Email address already exists.'}, status=400)
-            user.email = email
-        if password:
-            user.set_password(password)
-        if firstname:
-            user.first_name = firstname
-        if lastname: 
-            user.last_name = lastname
+        serialized_data = UpdateUserSerializer(user, data=request.data, partial=True, context={'request': request})
+        if serialized_data.is_valid():
+            serialized_data.save()
+            return Response({'type': 'success', 'message': 'User information successfull updated.'}, 
+                            status=200)
+        else:
+            return Response({'type': 'error', 'message': serialized_data.errors}, status=400)
+            
+
         # if avatar:
         #     user.gamestatsuser.avatar = avatar
         #     user.gamestatsuser.save()
