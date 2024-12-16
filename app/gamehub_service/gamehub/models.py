@@ -7,7 +7,7 @@ User = get_user_model()
 class GameStatsUser(models.Model):
     user_id = models.IntegerField(default=0)
     username = models.CharField(max_length=16, null=True, blank=True)
-    avatar = models.ImageField(upload_to='avatar/', default="defaults/default_avatar.jpg")
+    avatar = models.ImageField(upload_to='avatar/', default="defaults/default_avatar.png")
     wins = models.IntegerField(default=0)
     losses = models.IntegerField(default=0)
     tournament_wins = models.IntegerField(default=0)

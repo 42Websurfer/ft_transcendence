@@ -227,6 +227,10 @@ def update_user_information(request):
         #     user.gamestatsuser.avatar = avatar
         #     user.gamestatsuser.save()
         user.save()
+        response = requests.put('http://gamehub-service:8003/gameStatsUser/', data={'user_id': user.pk, 'username': user.username}, files={'avatar': avatar})
+        if not response.ok:
+            response_data = response.json()
+            return Response({'type': 'error', 'message': response_data['message']}, status=400)
         return (JsonResponse({'type': 'success'}, status=200))
     except Exception as e:
         return JsonResponse({'type': 'error', 'message': {'exepction': str(e)}}, status=400)
