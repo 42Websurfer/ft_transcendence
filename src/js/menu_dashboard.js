@@ -210,7 +210,7 @@ function displayAvatar(avatar_url) {
     if (avatar_url) {
         const avatarContainer = document.getElementById('avatarItem');
         const avatarImg = document.createElement('img');
-        avatarImg.src = avatar_url;
+        avatarImg.src = '/img' + avatar_url;
         avatarImg.alt = 'User Avatar';
         avatarImg.className = 'user-avatar'; // Add any necessary classes
         avatarContainer.appendChild(avatarImg);

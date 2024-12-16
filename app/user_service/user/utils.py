@@ -17,11 +17,16 @@ def updateOnlineStatusChannel():
         }
     )
 
-def setup_2fa(user):
+def setup_2fa(user, third_party=False):
     #Hier muss dann auch noch das get mit try catch gecatched werden!
-    otp_secret = pyotp.random_base32() 
-    user_profile = UserProfile.objects.get(user=user)
-    user_profile.otp_secret = otp_secret
+    otp_secret = pyotp.random_base32()
+    if UserProfile.objects.filter(user=user).exists():
+        user_profile = UserProfile.objects.get(user=user)
+        user_profile.otp_secret = otp_secret
+    else:
+        user_profile = UserProfile.objects.create(user=user, otp_secret=otp_secret)
+    if (third_party):
+        user_profile.is_third_party_user = True
     user_profile.save()
 
     totp = pyotp.TOTP(otp_secret)

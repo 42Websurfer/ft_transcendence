@@ -155,7 +155,7 @@ CHANNEL_LAYERS = {
     },
 }
 
-MEDIA_ROOT = '/workspaces/media/'
+MEDIA_ROOT = '/media/'
 MEDIA_URL = '/media/'
 
 REST_FRAMEWORK = {
