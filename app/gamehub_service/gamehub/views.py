@@ -30,21 +30,27 @@ def gamestatsuser(request):
 			uid = (int)(data.get('user_id'))
 			username = data.get('username')
 			avatar = request.FILES.get('avatar')
-			gamestatsuser = GameStatsUser.objects.create(user_id=uid, username=username, avatar=avatar)
+			gamestatsuser = GameStatsUser.objects.create(user_id=uid, username=username)
 			if not gamestatsuser:
 				return JsonResponse({'message': 'Create GameStatsUser model failed.'}, status=400)
+			if avatar:
+				gamestatsuser.avatar = avatar
+			gamestatsuser.save()
 			return HttpResponse(status=200)
 		except Exception as e:
 			return JsonResponse({'message': str(e)}, status=400)
 	elif request.method == 'PUT':
 		try:
-			data = request.PUT
+			data = request.POST
 			user_id = int(data.get('user_id'))
 			username = data.get('username')
 			avatar = request.FILES.get('avatar')
 			gamestatsuser = GameStatsUser.objects.get(user_id=user_id)
 			gamestatsuser.username = username
-			gamestatsuser.avatar = avatar
+			if avatar:
+				if gamestatsuser.avatar and gamestatsuser.avatar.name != 'avatars/default_avatar.png':
+					gamestatsuser.avatar.delete()
+				gamestatsuser.avatar = avatar
 			gamestatsuser.save()
 			return HttpResponse(status=200)
 		except Exception as e:
@@ -429,6 +435,24 @@ def get_match_data(user_game_stats):
 					highest_loss = match_data
 		matches_data.append(match_data)
 	return matches_data, highest_win, highest_loss, form
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user_avatar_url(request, id=None):
+	print('id', id)
+	print('user', request.user.username)
+	print('user id', request.user.id)
+	try:
+		if id is None:
+			user_game_stats = GameStatsUser.objects.get(username=request.user.username)
+		else:
+			user_game_stats = GameStatsUser.objects.get(user_id=id)
+		logger.debug(user_game_stats.avatar.url)
+		return JsonResponse({'avatar_url': user_game_stats.avatar.url})
+	except GameStatsUser.DoesNotExist:
+		return JsonResponse({'avatar_url': '/media/defaults/default_avatar.png'})
+	except Exception as e:
+		return JsonResponse({'message': str(e)}, status=404)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
