@@ -23,6 +23,10 @@ p {
 	text-decoration: underline;
 }
 
+input:disabled {
+    color: grey
+}
+
 .container-fluid, .main-content {
     padding: 0;
     margin: 0;
