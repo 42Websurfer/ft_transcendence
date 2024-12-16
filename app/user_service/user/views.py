@@ -204,7 +204,6 @@ def get_user_information(request):
 def update_user_information(request):
     try:
         user = request.user
-        print("Email: ", request.data)
         # if user.userprofile.is_third_party_user:
         #     if user.email != request.data.get('email'):
         #         return JsonResponse({'type': 'error', 'message': 'Third party user cannot change email'}, status=400)
@@ -216,22 +215,17 @@ def update_user_information(request):
             is_third_party_user=user.userprofile.is_third_party_user
             )
         if serialized_data.is_valid():
-            serialized_data.save()
+            username = request.data.get('username')
+            avatar = request.FILES.get('avatar')
+            response = requests.put('http://gamehub-service:8003/gameStatsUser/', data={'user_id': user.pk, 'username': username}, files={'avatar': avatar})
+            if not response.ok:
+                response_data = response.json()
+                return Response({'type': 'error', 'message': {'user' :response_data['message']}}, status=400)
+            user = serialized_data.save()
             return Response({'type': 'success', 'message': 'User information successfull updated.'}, 
                             status=200)
         else:
             return Response({'type': 'error', 'message': serialized_data.errors}, status=400)
-
-
-        # if avatar:
-        #     user.gamestatsuser.avatar = avatar
-        #     user.gamestatsuser.save()
-        user.save()
-        response = requests.put('http://gamehub-service:8003/gameStatsUser/', data={'user_id': user.pk, 'username': user.username}, files={'avatar': avatar})
-        if not response.ok:
-            response_data = response.json()
-            return Response({'type': 'error', 'message': response_data['message']}, status=400)
-        return (JsonResponse({'type': 'success'}, status=200))
     except Exception as e:
         return JsonResponse({'type': 'error', 'message': {'exepction': str(e)}}, status=400)
 
@@ -428,7 +422,17 @@ def register_api(request):
             'lastname': lastname
         }, is_third_party_user=True)
         if serializer.is_valid():
+
             user = serializer.save()
+            data = {
+                'user_id': user.pk,
+                'username': user.username
+            }
+            response = requests.post('http://gamehub-service:8003/gameStatsUser/', data=data)
+            if not response.ok:
+                response_data = response.json()
+                user.delete()
+                return Response({'type': 'error', 'message': {'usermodel': response_data['message']}}, status=400)
             qr_code_string = setup_2fa(user, True)
         #user.save()
             return JsonResponse(
