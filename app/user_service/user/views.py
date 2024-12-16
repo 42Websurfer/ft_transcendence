@@ -134,8 +134,18 @@ def register(request):
             serialized_data = RegisterSerializer(data=data)
             if serialized_data.is_valid():
                 user = serialized_data.save()
+                data = {
+                    'user_id': user.pk,
+                    'username': user.username
+                }
+                avatar = request.FILES.get('avatar')
+                response = requests.post('http://gamehub-service:8003/gameStatsUser/', data=data, files={'avatar': avatar})
+                if not response.ok:
+                    response_data = response.json()
+                    user.delete()
+                    return Response({'type': 'error', 'message': {'usermodel': response_data['message']}}, status=400)
             else:
-                return Response({'type': 'error', 'message': serialized_data.errors})
+                return Response({'type': 'error', 'message': serialized_data.errors}, status=400)
 
             # email = data.get('email')
             # password = data.get('password')
@@ -170,7 +180,7 @@ def register(request):
             }, status=201)
         except Exception as e:
             print("Was ist das Problem", str(e), flush=True)
-            return Response({'type': 'error', 'message': str(e)}, status=400)
+            return Response({'type': 'error', 'message': {'exepction': str(e)}}, status=400)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
