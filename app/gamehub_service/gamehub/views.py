@@ -48,7 +48,7 @@ def gamestatsuser(request):
 			gamestatsuser = GameStatsUser.objects.get(user_id=user_id)
 			gamestatsuser.username = username
 			if avatar:
-				if gamestatsuser.avatar and gamestatsuser.avatar.name != 'avatars/default_avatar.png':
+				if gamestatsuser.avatar and gamestatsuser.avatar.name != 'defaults/default_avatar.png':
 					gamestatsuser.avatar.delete()
 				gamestatsuser.avatar = avatar
 			gamestatsuser.save()
