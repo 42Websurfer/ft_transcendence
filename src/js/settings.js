@@ -116,7 +116,8 @@ async function handleSettingsFormSubmit(event) {
 	}
 	else if (result.type === 'error')
 	{
+		console.log("Error; ", result.message);
 		for(let key of Object.keys(result.message))
-			displayToast(result.message[key], 'error');
+			displayToast(key + ": " + result.message[key], 'error');
 	}
 }
