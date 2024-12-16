@@ -24,20 +24,24 @@ def lobby_name_generator():
 @api_view(['PUT', 'POST'])
 @permission_classes([IsInternalContainerFactory(['user-service'])])
 def gamestatsuser(request):
-	data = json.loads(request.body)
 	if request.method == 'POST':
 		try:
+			data = request.POST
+			print('DATA', data)
 			uid = (int)(data.get('user_id'))
 			logger.debug(f"{type(uid)} + 'uid = ' {uid}")
 			username = data.get('username')
-			gamestatsuser = GameStatsUser.objects.create(user_id=uid, username=username)
+			avatar = request.FILES.get('avatar')
+			print('avatar:', avatar)
+			gamestatsuser = GameStatsUser.objects.create(user_id=uid, username=username, avatar=avatar)
 			if not gamestatsuser:
 				return JsonResponse({'message': 'Create GameStatsUser model failed.'}, status=400)
 			return HttpResponse(status=200)
 		except Exception as e:
 			logger.debug(f"Error: {e}")
-			return JsonResponse({'message': 'Create GameStatsUser model failed.'}, status=400)
+			return JsonResponse({'message': 'Create GameStatsUser model failed.'}, status=444)
 	elif request.method == 'PUT':
+		data = request.PUT
 		user_id = data.get('user_id')
 		username = data.get('username')
 		try:
