@@ -44,3 +44,44 @@ class RegisterSerializer(serializers.ModelSerializer):
             password=validated_data['password']
         )
         return user
+    
+
+class UpdateUserSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(
+        max_length=150,
+        required=True,
+        validators=[validate_username_format]
+    )
+    email = serializers.EmailField(required=True)
+    password = serializers.CharField(write_only=True, min_length=1, required=False)
+    firstname = serializers.CharField(source='first_name', required=True)
+    lastname = serializers.CharField(source='last_name', required=True)
+    #avatar = serializers.ImageField(required=False, allow_null=True)
+
+    class Meta:
+
+        model = User
+        fields = ('username', 'email', 'password', 'firstname', 'lastname')
+
+    def validate_email(self, value):
+        user = self.context['request'].user
+        if User.objects.exclude(id=user.id).filter(email=value).exists():
+            raise serializers.ValidationError("Email address already exists.")
+        return value
+
+    def validate_username(self, value):
+        user = self.context['request'].user
+        if User.objects.exclude(id=user.id).filter(username=value).exists():
+            raise serializers.ValidationError("This username already exists.")
+        return value
+
+    def update(self, instance, validated_data):
+        password = validated_data.pop('password', None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        
+        if password:
+            instance.set_password(password)
+
+        instance.save()
+        return instance
