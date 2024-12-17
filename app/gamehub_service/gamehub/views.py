@@ -206,7 +206,6 @@ def get_tournament_lobby_data(lobby_id):
 	if tournament is None:
 		return JsonResponse({'type': 'error', 'message': 'Tournament not found.'})
 	tournament_dic = json.loads(tournament)
-	round, start = get_current_round(tournament_dic['matches'])
 	channel_layer = get_channel_layer()
 	(async_to_sync)(channel_layer.group_send)(
 		lobby_id,
@@ -220,10 +219,10 @@ def get_tournament_lobby_data(lobby_id):
 			'type': 'send_tournament_users',
 		}
 	)
-	round -= 1
-	if round == -1:
-		round = 0
+	round = tournament_dic['current_round']
 	status, tournament_finished = round_completed(tournament_dic['matches'], round)
+	print("Status round = ", status, "Tournament finished: ", tournament_finished, flush=True)
+
 	if status and not tournament_finished:
 		(async_to_sync)(channel_layer.group_send)(
 			lobby_id,
@@ -243,29 +242,29 @@ def get_tournament_lobby_data(lobby_id):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def start_tournament_round(request, lobby_id):
-	tournament_matches_json = redis.get(tournament_string(lobby_id))
-	if not tournament_matches_json:
+	tournament_data_json = redis.get(tournament_string(lobby_id))
+	if not tournament_data_json:
 		return (JsonResponse({'type': 'error', 'message': 'Tournament not found'}))
-	tournament_matches = json.loads(tournament_matches_json)
-	matches = tournament_matches['matches']
-	round, start = get_current_round(matches)
-	if round != -1 or start != -1:
-		channel_layer = get_channel_layer()
-		for match in matches[start:]:
-			if match['round'] > round:
-				break
-			if match['status'] == 'pending':
-				(async_to_sync)(channel_layer.group_send)(
-					lobby_id,
-					{
-						'type': 'start_tournament_match',
-						'match_id': 'tournament_' + lobby_id + '_loop_' + str(match['match_id']),
-						'user1': match['home'],
-						'user2': match['away'],
-					}
-				)
-	else: 
-		return JsonResponse({'type': 'error', 'message': 'No round founded'})
+	tournament_data = json.loads(tournament_data_json)
+	matches = tournament_data['matches']
+	round = 424242 #need for for-loop logic
+	channel_layer = get_channel_layer()
+	for match in matches:
+		if match['round'] > round:
+			break
+		if match['status'] == 'pending':
+			round = match['round']
+			(async_to_sync)(channel_layer.group_send)(
+				lobby_id,
+				{
+					'type': 'start_tournament_match',
+					'match_id': 'tournament_' + lobby_id + '_loop_' + str(match['match_id']),
+					'user1': match['home'],
+					'user2': match['away'],
+				}
+			)
+	tournament_data['current_round'] = round
+	redis.set(tournament_string(lobby_id), json.dumps(tournament_data))
 	return JsonResponse({'type': 'success'})
 
 @api_view(['GET'])
@@ -279,7 +278,7 @@ def start_group_tournament(request, lobby_id):
 		results.append({'user_id': -1})
 	num_rounds = len(results) - 1
 	num_matches_per_round = len(results) // 2
-	tournament_dict = {'tournament_id': lobby_id, 'matches': []}
+	tournament_dict = {'tournament_id': lobby_id, 'current_round': 0, 'matches': []}
 	match_id = 1
 	for round in range(num_rounds):
 		for match in range(num_matches_per_round):

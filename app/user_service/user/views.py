@@ -147,24 +147,6 @@ def register(request):
             else:
                 return Response({'type': 'error', 'message': serialized_data.errors}, status=400)
 
-            # email = data.get('email')
-            # password = data.get('password')
-            # firstname = data.get('firstname')
-            # lastname = data.get('lastname')
-            # username = data.get('username')
-            # avatar = request.FILES.get('avatar')
-            # if User.objects.filter(email=email).exists():
-            #     return JsonResponse({'type': 'error', 'message': 'Email address already exists.'}, status=400)
-            # elif User.objects.filter(username=username).exists():
-            #     return JsonResponse({'type': 'error', 'message': 'This username already exists.'}, status=400)
-            # user = User.objects.create_user(username=username, email=email, first_name=firstname, last_name=lastname)
-            # user.set_password(password)
-            # user.save()
-            # if avatar:
-            #     user_game_stats = GameStatsUser.objects.get(username=username)
-            #     user_game_stats.avatar = avatar
-            #     user_game_stats.save()
-
             qr_code_string = setup_2fa(user)
             return Response({
                 'type': 'success',
