@@ -508,7 +508,7 @@ function sendMovementInput(event) {
 		} else if (event.key == 's' || event.key == 'ArrowDown') {
 			socket.send(0b10);
 		}
-	} else if (event.type == 'keyup' && (event.key == 's' || event.key == 'w')) {
+	} else if (event.type == 'keyup' && (event.key == 's' || event.key == 'w' || event.key == 'ArrowUp' || event.key == 'ArrowDown')) {
 		socket.send(0b00);
 	} 
 }
