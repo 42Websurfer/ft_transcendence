@@ -416,7 +416,7 @@ class RemoteHandler extends Entity{
 		this.entities = {};
 		this.players = {};
 		this.complete = false;
-		window.addEventListener('keypress', sendMovementInput);
+		window.addEventListener('keydown', sendMovementInput);
 		window.addEventListener('keyup', sendMovementInput);
 	}
 
