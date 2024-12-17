@@ -502,7 +502,7 @@ let socket = undefined;
 
 
 function sendMovementInput(event) {
-	if (event.type == 'keypress') {
+	if (event.type == 'keydown') {
 		if (event.key == 'w' || event.key == 'ArrowUp') {
 			socket.send(0b01);
 		} else if (event.key == 's' || event.key == 'ArrowDown') {
