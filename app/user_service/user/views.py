@@ -161,7 +161,6 @@ def register(request):
                 'qr_code': f"data:image/png;base64,{qr_code_string}",
             }, status=201)
         except Exception as e:
-            print("Was ist das Problem", str(e), flush=True)
             return Response({'type': 'error', 'message': {'exepction': str(e)}}, status=400)
 
 @api_view(['GET'])

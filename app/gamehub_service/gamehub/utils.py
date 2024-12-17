@@ -21,7 +21,6 @@ def multiple_lobby_string(lobby_id):
 	return (f"multiple_{lobby_id}")
 
 def round_completed(matches, round):
-	print("Round = ", round)
 	for match in matches:
 		if (int)(match['round']) > round:
 			return True, False
@@ -264,14 +263,6 @@ async def set_match_data(lobby_id, match_id, score_home, score_away, status):
 		)
 		await (sync_to_async)(safe_tournament_data)(lobby_id)
 	return True
-
-def get_current_round(matches):
-	for match in matches: 
-		print(match, "\n", flush=True)
-	for match in matches: 
-		if (match['status'] == 'pending' or match['status'] == 'running'):
-			return match['round']
-	return -1
 
 def reset_match(lobby_id, match):
 	home = match['home']

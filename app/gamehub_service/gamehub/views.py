@@ -4,7 +4,7 @@ import string
 import redis
 import json
 import logging
-from .utils import get_current_round, get_longest_winstreak, tournament_string, round_completed, set_match_data, set_online_match, match_lobby_string, multiple_lobby_string, set_winner_multiple
+from .utils import get_longest_winstreak, tournament_string, round_completed, set_match_data, set_online_match, match_lobby_string, multiple_lobby_string, set_winner_multiple
 from channels.layers import get_channel_layer
 from django.core.exceptions import ObjectDoesNotExist
 from .models import GameStatsUser, OnlineMatch, TournamentResults
@@ -221,7 +221,6 @@ def get_tournament_lobby_data(lobby_id):
 	)
 	round = tournament_dic['current_round']
 	status, tournament_finished = round_completed(tournament_dic['matches'], round)
-	print("Status round = ", status, "Tournament finished: ", tournament_finished, flush=True)
 
 	if status and not tournament_finished:
 		(async_to_sync)(channel_layer.group_send)(
@@ -438,15 +437,11 @@ def get_match_data(user_game_stats):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_user_avatar_url(request, id=None):
-	print('id', id)
-	print('user', request.user.username)
-	print('user id', request.user.id)
 	try:
 		if id is None:
 			user_game_stats = GameStatsUser.objects.get(username=request.user.username)
 		else:
 			user_game_stats = GameStatsUser.objects.get(user_id=id)
-		logger.debug(user_game_stats.avatar.url)
 		return JsonResponse({'avatar_url': user_game_stats.avatar.url})
 	except GameStatsUser.DoesNotExist:
 		return JsonResponse({'avatar_url': '/media/defaults/default_avatar.png'})
