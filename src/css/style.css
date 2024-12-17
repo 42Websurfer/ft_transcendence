@@ -27,7 +27,11 @@ input:disabled {
     color: grey
 }
 
-#avatar_container {
+#avatar{
+	display: none;
+}
+
+#avatar_img_container {
 	position: relative;
 	border: black 1px solid;
 	border-radius: 50%;
@@ -36,6 +40,10 @@ input:disabled {
 
 .flex-container {
 	display: flex;
+}
+
+.column {
+	flex-direction: column;
 }
 
 .relative-container {
@@ -50,6 +58,11 @@ input:disabled {
 	left: 50%;
 	top: 50%;
 	transform: translate(-50%, -50%);
+}
+
+.flex-container.center {
+	align-items: center;
+	justify-items: center;
 }
 
 img {

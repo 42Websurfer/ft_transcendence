@@ -52,7 +52,7 @@ async function renderLoginLogoutButton(isAuthenticated, section) {
         const logoutButton = document.getElementById('logoutButton')
         logoutButton.addEventListener('click', () => {
             wsBool = false;
-			const logoContainer = document.querySelector('#avatar_container');
+			const logoContainer = document.querySelector('#avatar');
 			logoContainer.style.display = 'none';
             handleLogoutSubmit(ws, wsBool);
         });
@@ -384,7 +384,7 @@ export async function showSection(section, lobbyId, pushState = true)
         }
 
 		const token = localStorage.getItem('access_token'); 
-		fetch('/api/tm/avatar_url/', {
+		fetch('/api/tm/avatar_data/', {
 			method: 'GET',
 			headers: {
 				'Authorization': `Bearer ${token}`,
@@ -393,10 +393,13 @@ export async function showSection(section, lobbyId, pushState = true)
 		})
 		.then((response) => response.json())
 		.then((data) => {
-			const avatarConainer = document.querySelector('#avatar_container');
-			avatarConainer.style.display = 'block';
+			const avatarDiv = document.querySelector('#avatar');
+			const avatarConainer = avatarDiv.querySelector('#avatar_img_container');
+			const avatarName = avatarDiv.querySelector('#avatar_name');
+			avatarDiv.style.display = 'block';
 			const avatarImg = avatarConainer.querySelector('img');
 			avatarImg.src = '/img' + data.avatar_url;
+			avatarName.textContent = data.username;
 		});
 
         if (!wsBool)
