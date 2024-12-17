@@ -24,6 +24,7 @@ services:
       - ./.env
     volumes:
       - ./app/gamehub_service/:/app/
+      - ./src/img/media/:/media/
     expose:
       - 8003
     networks: 

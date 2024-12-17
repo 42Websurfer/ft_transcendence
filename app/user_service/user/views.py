@@ -14,10 +14,12 @@ from django.db.models import Q
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.response import Response
 from user.utils import updateOnlineStatusChannel
 #TypeError: the JSON object must be str, bytes or bytearray, not Response
 #from tournament.models import GameStatsUser
 from .models import User, Friendship, UserProfile
+from .serializers import RegisterSerializer, UpdateUserSerializer
 from .utils import setup_2fa
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -129,26 +131,42 @@ def register(request):
         try:
             data = request.POST
 
-            email = data.get('email')
-            password = data.get('password')
-            firstname = data.get('firstname')
-            lastname = data.get('lastname')
-            username = data.get('username')
-            avatar = request.FILES.get('avatar')
-            if User.objects.filter(email=email).exists():
-                return JsonResponse({'type': 'error', 'message': 'Email address already exists.'}, status=400)
-            elif User.objects.filter(username=username).exists():
-                return JsonResponse({'type': 'error', 'message': 'This username already exists.'}, status=400)
-            user = User.objects.create_user(username=username, email=email, first_name=firstname, last_name=lastname)
-            user.set_password(password)
-            user.save()
+            serialized_data = RegisterSerializer(data=data)
+            if serialized_data.is_valid():
+                user = serialized_data.save()
+                data = {
+                    'user_id': user.pk,
+                    'username': user.username
+                }
+                avatar = request.FILES.get('avatar')
+                response = requests.post('http://gamehub-service:8003/gameStatsUser/', data=data, files={'avatar': avatar})
+                if not response.ok:
+                    response_data = response.json()
+                    user.delete()
+                    return Response({'type': 'error', 'message': {'usermodel': response_data['message']}}, status=400)
+            else:
+                return Response({'type': 'error', 'message': serialized_data.errors}, status=400)
+
+            # email = data.get('email')
+            # password = data.get('password')
+            # firstname = data.get('firstname')
+            # lastname = data.get('lastname')
+            # username = data.get('username')
+            # avatar = request.FILES.get('avatar')
+            # if User.objects.filter(email=email).exists():
+            #     return JsonResponse({'type': 'error', 'message': 'Email address already exists.'}, status=400)
+            # elif User.objects.filter(username=username).exists():
+            #     return JsonResponse({'type': 'error', 'message': 'This username already exists.'}, status=400)
+            # user = User.objects.create_user(username=username, email=email, first_name=firstname, last_name=lastname)
+            # user.set_password(password)
+            # user.save()
             # if avatar:
             #     user_game_stats = GameStatsUser.objects.get(username=username)
             #     user_game_stats.avatar = avatar
             #     user_game_stats.save()
 
             qr_code_string = setup_2fa(user)
-            return JsonResponse({
+            return Response({
                 'type': 'success',
                 'message': 'User registered successfully.',
                 'user': {
@@ -161,19 +179,22 @@ def register(request):
                 'qr_code': f"data:image/png;base64,{qr_code_string}",
             }, status=201)
         except Exception as e:
-            return JsonResponse({'error': str(e)}, status=400)
+            print("Was ist das Problem", str(e), flush=True)
+            return Response({'type': 'error', 'message': {'exepction': str(e)}}, status=400)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_user_information(request):
     user = request.user
     if user:
+        print("THIRD PARTY: ", user.userprofile.is_third_party_user, flush=True)
         return JsonResponse({
             'type': 'success',
             'email': user.email,
             'firstname': user.first_name,
             'lastname': user.last_name,
-            'username': user.username
+            'username': user.username,
+            'third_party': user.userprofile.is_third_party_user
         })
     else: 
         return JsonResponse({'type': 'error', 'message': 'User does not exists.'})
@@ -182,41 +203,31 @@ def get_user_information(request):
 @permission_classes([IsAuthenticated])
 def update_user_information(request):
     try:
-        data = request.POST
-
-        email = data.get('email')
-        password = data.get('password')
-        firstname = data.get('firstname')
-        lastname = data.get('lastname')
-        username = data.get('username')
-        avatar = request.FILES.get('avatar')
-        user = User.objects.get(id=request.user.id)
-
-        if user.userprofile.is_third_party_user:
-            if user.email != email:
-                return JsonResponse({'type': 'error', 'message': 'Third party user cannot change email'}, status=400)
-        if username and user.username != username:
-            if User.objects.filter(username=username).exists():
-                return JsonResponse({'type': 'error', 'message': 'This username already exists.'}, status=400)
-            user.username = username
-        
-        if email and user.email != email: 
-            if User.objects.filter(email=email).exists():
-                return JsonResponse({'type': 'error', 'message': 'Email address already exists.'}, status=400)
-            user.email = email
-        if password:
-            user.set_password(password)
-        if firstname:
-            user.first_name = firstname
-        if lastname: 
-            user.last_name = lastname
-        # if avatar:
-        #     user.gamestatsuser.avatar = avatar
-        #     user.gamestatsuser.save()
-        user.save()
-        return (JsonResponse({'type': 'success'}, status=200))
+        user = request.user
+        # if user.userprofile.is_third_party_user:
+        #     if user.email != request.data.get('email'):
+        #         return JsonResponse({'type': 'error', 'message': 'Third party user cannot change email'}, status=400)
+        serialized_data = UpdateUserSerializer(
+            user, 
+            data=request.data, 
+            partial=True, 
+            context={'request': request}, 
+            is_third_party_user=user.userprofile.is_third_party_user
+            )
+        if serialized_data.is_valid():
+            username = request.data.get('username')
+            avatar = request.FILES.get('avatar')
+            response = requests.put('http://gamehub-service:8003/gameStatsUser/', data={'user_id': user.pk, 'username': username}, files={'avatar': avatar})
+            if not response.ok:
+                response_data = response.json()
+                return Response({'type': 'error', 'message': {'user' :response_data['message']}}, status=400)
+            user = serialized_data.save()
+            return Response({'type': 'success', 'message': 'User information successfull updated.'}, 
+                            status=200)
+        else:
+            return Response({'type': 'error', 'message': serialized_data.errors}, status=400)
     except Exception as e:
-        return JsonResponse({'type': 'error', 'message': str(e)}, status=400)
+        return JsonResponse({'type': 'error', 'message': {'exepction': str(e)}}, status=400)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -400,33 +411,49 @@ def register_api(request):
         firstname=session_data.get('first_name')
         lastname=session_data.get('last_name')
 
-        if User.objects.filter(username=username).exists():
-            return JsonResponse({'type': 'error', 'message': 'This username already exists.'}, status=400)
+        # if User.objects.filter(username=username).exists():
+        #     return JsonResponse({'type': 'error', 'message': 'This username already exists.'}, status=400)
+        
+        # user= User.objects.create(username=username, email=email, first_name=firstname, last_name=lastname)
+        serializer = RegisterSerializer(data={
+            'username': username,
+            'email': email,
+            'firstname': firstname,
+            'lastname': lastname
+        }, is_third_party_user=True)
+        if serializer.is_valid():
 
-        user= User.objects.create_user(username=username, email=email, first_name=firstname, last_name=lastname)
-        user.save()
-        if user:
-            userprofile = UserProfile.objects.get(user=user)
-            userprofile.is_third_party_user = True
-            userprofile.save()
-        qr_code_string = setup_2fa(user)
-        return JsonResponse(
-            {
-                'type': 'success',
-                'user': {
-                    'id': user.id,
-                    'username': user.username,
-                    'email': user.email,
-                    'first_name': user.first_name,
-                    'last_name': user.last_name
-                },
-                'qr_code': f"data:image/png;base64,{qr_code_string}",
-            })
+            user = serializer.save()
+            data = {
+                'user_id': user.pk,
+                'username': user.username
+            }
+            response = requests.post('http://gamehub-service:8003/gameStatsUser/', data=data)
+            if not response.ok:
+                response_data = response.json()
+                user.delete()
+                return Response({'type': 'error', 'message': {'usermodel': response_data['message']}}, status=400)
+            qr_code_string = setup_2fa(user, True)
+        #user.save()
+            return JsonResponse(
+                {
+                    'type': 'success',
+                    'user': {
+                        'id': user.id,
+                        'username': user.username,
+                        'email': user.email,
+                        'first_name': user.first_name,
+                        'last_name': user.last_name
+                    },
+                    'qr_code': f"data:image/png;base64,{qr_code_string}",
+                })
+        else: 
+            return JsonResponse({'type': 'error', 'message': serializer.errors}, status=400)
     except json.JSONDecodeError as e:
         logger.error(f"JSON decode error: {e}")
-        return JsonResponse({'type': 'error', 'message': 'Invalid JSON data'}, status=400)
+        return JsonResponse({'type': 'error', 'message': {'exception': 'Invalid JSON data'}}, status=400)
     except Exception as e:
-        return JsonResponse({'type': 'error', 'message': str(e)}, status=400)
+        return JsonResponse({'type': 'error', 'message': {'exepction': str(e)}}, status=400)
     
 
 @csrf_exempt

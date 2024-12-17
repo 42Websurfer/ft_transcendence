@@ -295,5 +295,4 @@ export function renderMenu() {
     menuDashboardButton.addEventListener('click', () => {
         showSection('menu_dashboard');
     });
-
 }
