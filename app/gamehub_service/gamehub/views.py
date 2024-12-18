@@ -141,6 +141,8 @@ def join_lobby(request, lobby_id):
 			data = redis.get(multiple_lobby_string(lobby_id))
 			if data:
 				data = json.loads(data)
+				if len(data['users']) >= 4:
+					return(JsonResponse({'type': 'error', 'message': 'Lobby is Full.'}))
 				if data['status'] == 'pending':
 					return(JsonResponse({'type': 'success'}))
 				else:
