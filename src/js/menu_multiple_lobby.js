@@ -167,8 +167,8 @@ export function renderMultiplayerLobby(lobbyId) {
                 </div>
                 <hr class="controls-divider">
                 <div class="tournament-controls">
-                    <p>paddle up: up-arrow key</p>
-                    <p>paddle down: down-arrow key</p>
+                    <p>paddle up: up-arrow or w key</p>
+                    <p>paddle down: down-arrow or s key</p>
                 </div>
             </div>
         </div>
