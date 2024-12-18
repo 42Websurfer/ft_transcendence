@@ -170,8 +170,7 @@ REST_FRAMEWORK = {
     ),
 }
 
-
-SECRET_KEY = 'D3RSIch3r5teKeYYYY33333v3r'
+SECRET_KEY = os.getenv('JWT_SECRET_KEY')
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
