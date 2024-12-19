@@ -112,9 +112,8 @@ async function handleSettingsFormSubmit(event) {
         },
         body: formData
     });
-	
+	localStorage.removeItem('user_data');
     const result = await response.json();
-	console.log("result = ", result);
 	if (result.type === 'success')
 	{
 		displayToast('User data successfully updated.', 'success');		
