@@ -184,9 +184,6 @@ class AiPlayer extends Player {
 		let direction = this.gameBall.physics.velocity.dup();
 		this.debugPoints = [position.dup()];
 		let ents = world.entities.filter((ent) => !(ent instanceof Ball));
-		///debug
-		let hasTarget = false;
-		///debug
 		for (let i = 0; i < this.difficulty; i++) {
 			let ray = new Ray(position, direction);
 			let hitInfo = ray.castInfo(ents);
@@ -198,21 +195,28 @@ class AiPlayer extends Player {
 			}
 			//hardcoded to simulate that the player will always hit it before the ball hits his goal
 			//this is to give AI a way to always somewhat predict a return shot
+			//maybe add this?
 			if (hitInfo.hitPos.x < 87.5 && hitInfo.entity == manager.sections[0].goal) {
 				console.log("Find intersection between ray and and line from x87.5 y0 to x87.5 yMAX then set hitInfo.hitPos to that");
+				let angle = Math.atan2(ray.start.y - hitInfo.hitPos.y, ray.start.x - hitInfo.hitPos.x) * (180 / Math.PI);
+				console.log('The angle is:', angle, 'angle2:');
+				let len = 87.5 / Math.cos(angle);
+				console.log('Base:', len, ' scuffed:');
+				let yC = ray.start.y + len * Math.sin(angle);
+				// ctx.fillRect(87.5, yC, 5, 5);
+				console.warn('pos:', 87.5, yC);
+				// maybe add this?
+				// hitInfo.hitPos.x = 87.5;
+				// hitInfo.hitPos.y = yC;
 			}
 			this.debugPoints.push(hitInfo.hitPos);
 			if (hitInfo.entity == manager.sections[1].goal
-				|| hitInfo.entity == manager.sections[1].player) {
-				if (!hasTarget) {
-					this.setTarget(hitInfo.hitPos);
-					hasTarget = true;
-				}
-				// break;
+				|| hitInfo.entity == manager.sections[1].player
+				|| hitInfo.entity == manager.sections[0].goal) {
+				this.setTarget(hitInfo.hitPos);
+				break;
 			}
 			position = hitInfo.hitPos.add(hitInfo.plane.dir.dup().normalize().rotate(90).scale(20));
-			ctx.fillRect(hitInfo.hitPos.x, hitInfo.hitPos.y, 5, 5);
-			ctx.fillRect(position.x, position.y, 5, 5);
 			direction = Ball.velocityAfterReflection(position, direction, hitInfo.hitPos);
 			if (hitInfo.entity instanceof Player) {
 				direction = Player.playerBallDefleciton(hitInfo.entity.position, direction, hitInfo.hitPos);
@@ -222,11 +226,11 @@ class AiPlayer extends Player {
 
 	update() {
 		this.moveToTarget();
-		const colors = ['red', 'orange', 'yellow', 'green', 'blue', 'purple'];
-		for (let i = 0; i < this.debugPoints.length - 1; i++) {
-			drawLine(this.debugPoints[i], this.debugPoints[i + 1], colors[i % colors.length]);
-		}
-		drawLine(new Vector(75 + 25 / 2, 0), new Vector(75 + 25 / 2, canvas.height));
+		// const colors = ['red', 'orange', 'yellow', 'green', 'blue', 'purple'];
+		// for (let i = 0; i < this.debugPoints.length - 1; i++) {
+		// 	drawLine(this.debugPoints[i], this.debugPoints[i + 1], colors[i % colors.length]);
+		// }
+		// drawLine(new Vector(75 + 25 / 2, 0), new Vector(75 + 25 / 2, canvas.height));
 	}
 }
 
