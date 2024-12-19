@@ -455,10 +455,12 @@ export async function showSection(section, lobbyId, pushState = true)
             import('./waiting.js').then(module => {
                 module.renderWaiting();
             });
-		else
+		else {
+			section = 'menu'; 
 			import('./menu.js').then(module => {
 				module.renderMenu();
 			});
+		}
     }
     else if (section != 'auth_login' && section != 'auth_register' && section != 'auth_42') {
         import('./auth_login.js').then(module => {
@@ -475,7 +477,14 @@ export async function showSection(section, lobbyId, pushState = true)
 async function initApp() {
     const isAuthenticated = await checkAuthentication();
     if (isAuthenticated) {
-        showSection('menu');
+		const section = window.location.pathname.substring(1);
+		const urlParams = new URLSearchParams(window.location.search);
+		const id = urlParams.get('lobbyId');
+		if (section) {
+			showSection(section, id);
+		} else {
+			showSection('menu');
+		}
     } else {
         showSection('auth_login');
     }
