@@ -3,6 +3,7 @@ import { copyToClipboard } from './utils.js';
 
 export function runWebsocket(socket) {
 
+	let USER = undefined;
 
     socket.onopen = function() {
         console.log("Connected to Websocket of a Tournament")
@@ -20,7 +21,7 @@ export function runWebsocket(socket) {
 
                 matchPlayers.innerHTML = '';
                 const startMatchButton = document.getElementById('startOnlineMatch');
-
+				USER = data.username;
 				for (let user of data.users) {
 					const li = document.createElement('li');
 					if (user.role === 'admin') {
@@ -41,7 +42,7 @@ export function runWebsocket(socket) {
                 console.log("data: ", data);
                 console.log("matches: ", data.matches);
                 
-                displayWinners(data.winners);
+                displayWinners(data.winners, USER);
             }
             else if (data.type === 'start_match')
             {
@@ -67,7 +68,7 @@ export function runWebsocket(socket) {
 
 }
 
-function displayWinners(winners)
+function displayWinners(winners, currentUser)
 {
     const historicMatchesList = document.getElementById('historicMatches');
     if (historicMatchesList)
@@ -75,7 +76,13 @@ function displayWinners(winners)
 
 	for (let winner of winners) {
 		const li = document.createElement('li');
-		li.innerHTML = `${winner}`
+		li.classList.add('flex-container', 'center', 'font-main', 'match-result-container', 'font-colour-primary');
+		if (winner == currentUser) {
+			li.classList.add('match-result-winner');
+		} else {
+			li.classList.add('match-result-loser');
+		}
+		li.innerText = winner;
 		historicMatchesList.appendChild(li);
 	}
 }
@@ -107,7 +114,7 @@ export function renderMultiplayerLobby(lobbyId) {
         <div class="lobby-container">
 
             <div class="lobby-container-header">
-                <p>1v1-Online-Lobby</p>
+                <p>4-Player-Online-Lobby</p>
             </div>
             
             <hr class="lobby-container-divider">
@@ -132,7 +139,7 @@ export function renderMultiplayerLobby(lobbyId) {
                     <div class="lobby-table2" style="padding-left: 0;">
                         <div>
                             <div class="tournament-table-header">
-                                <p>MATCHES</p>
+                                <p>LAST MATCH WINNERS</p>
                             </div>  
 
                             <ul id="historicMatches" style="list-style-type: none; padding: 0; margin: 0;"></ul>
