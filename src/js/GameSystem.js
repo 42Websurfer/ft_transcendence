@@ -418,7 +418,7 @@ export class Ray extends Plane {
 					continue;
 				}
 
-				points.push({hitPos: new Vector(s * (B.x - A.x) + A.x, s * (B.y - A.y) + A.y), entity: ent});
+				points.push({hitPos: new Vector(s * (B.x - A.x) + A.x, s * (B.y - A.y) + A.y), entity: ent, plane: new Plane(A.dup(), B.sub(A))});
 				if (debug)
 					ctx.fillRect(points[points.length - 1].hitPos.x, points[points.length - 1].hitPos.y, 5, 5);
 			}

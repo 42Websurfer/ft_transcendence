@@ -43,13 +43,13 @@ class Ball extends Entity{
 		this.setPos(canvas.width * 0.5, canvas.height * 0.5);
 	}
 
-	static velocityAfterReflection(position, velocity, collisionPoint) {
-		let ba = (position.sub(collisionPoint)).normalize();
+	static velocityAfterReflection(ballPosition, currentBallVelocity, collisionPoint) {
+		let ba = (ballPosition.sub(collisionPoint)).normalize();
 		let tangent = new Plane(collisionPoint, ba);
-		let velocityNormalized = velocity.dup().normalize();
+		let velocityNormalized = currentBallVelocity.dup().normalize();
 		let dotProduct = tangent.dir.dot(velocityNormalized);
 		let reflection = velocityNormalized.sub(ba.scale(2 * dotProduct));
-		reflection.scale(velocity.length());
+		reflection.scale(currentBallVelocity.length());
 		return reflection;
 	}
 
@@ -151,18 +151,18 @@ class AiPlayer extends Player {
 		this.gameBall = ball;
 		this.difficulty = difficulty;
 		this.target = undefined;
-		this.brainId = setInterval(() => this.aiBrain(), 100);
+		this.brainId = setInterval(() => this.aiBrain(), 1000);
+		this.debugPoints = [];
 	}
 
 	moveToTarget() {
 		if (!this.target) {
-			console.log('AI: no target!');
 			return;
 		}
 		if (this.target.x > canvas.width * 0.67) {
-			if (this.target.y > this.position.y + 20) {
+			if (this.target.y > this.position.y + 10) {
 				this.keyDown({ key: this.keyBinds.down });
-			} else if (this.target.y < this.position.y - 20) {
+			} else if (this.target.y < this.position.y - 10) {
 				this.keyDown({ key: this.keyBinds.up });
 			} else {
 				this.keyUp({ key: this.keyBinds.down });
@@ -176,49 +176,57 @@ class AiPlayer extends Player {
 
 	aiBrain() {
 		if (!this.gameBall) {
-			console.log('AI: no ref to ball!');
 			//if ball is somehow undefined search for it in the world.entities
 			this.gameBall = world.entities.find((value) => value instanceof Ball);
 		}
 
 		let position = this.gameBall.position;
-		let direction = this.gameBall.physics.velocity.dup().normalize().scale(100);
-		let points = [position];
+		let direction = this.gameBall.physics.velocity.dup();
+		this.debugPoints = [position.dup()];
 		let ents = world.entities.filter((ent) => !(ent instanceof Ball));
+		///debug
+		let hasTarget = false;
+		///debug
 		for (let i = 0; i < this.difficulty; i++) {
 			let ray = new Ray(position, direction);
-			console.log(ents);
 			let hitInfo = ray.castInfo(ents);
 			if (!hitInfo) {
 				continue;
 			}
 			if (hitInfo.hitPos.x == NaN || hitInfo.hitPos.y == NaN) {
-				console.error("WTF!");
+				continue;
 			}
-			console.log("RAY:", position, direction, 'hit at:', hitInfo.hitPos);
-			points.push(hitInfo.hitPos);
-			if (hitInfo.entity == manager.sections[1].goal) {
-				this.setTarget(hitInfo.hitPos);
-				break;
+			//hardcoded to simulate that the player will always hit it before the ball hits his goal
+			//this is to give AI a way to always somewhat predict a return shot
+			if (hitInfo.hitPos.x < 87.5 && hitInfo.entity == manager.sections[0].goal) {
+				console.log("Find intersection between ray and and line from x87.5 y0 to x87.5 yMAX then set hitInfo.hitPos to that");
 			}
-			let newStart = hitInfo.hitPos;
-			console.log('new start', newStart);
-			ctx.fillRect(newStart.x, newStart.y, 5, 5);
-			position = hitInfo.hitPos;
+			this.debugPoints.push(hitInfo.hitPos);
+			if (hitInfo.entity == manager.sections[1].goal
+				|| hitInfo.entity == manager.sections[1].player) {
+				if (!hasTarget) {
+					this.setTarget(hitInfo.hitPos);
+					hasTarget = true;
+				}
+				// break;
+			}
+			position = hitInfo.hitPos.add(hitInfo.plane.dir.dup().normalize().rotate(90).scale(20));
+			ctx.fillRect(hitInfo.hitPos.x, hitInfo.hitPos.y, 5, 5);
+			ctx.fillRect(position.x, position.y, 5, 5);
+			direction = Ball.velocityAfterReflection(position, direction, hitInfo.hitPos);
 			if (hitInfo.entity instanceof Player) {
 				direction = Player.playerBallDefleciton(hitInfo.entity.position, direction, hitInfo.hitPos);
 			}
-			direction = Ball.velocityAfterReflection(hitInfo.hitPos, direction, hitInfo.hitPos);
-		}
-		console.log('Points calculated', points.length);
-		const colors = ['red', 'orange', 'yellow', 'green', 'blue', 'purple'];
-		for (let i = 0; i < points.length - 1; i++) {
-			drawLine(points[i], points[i + 1], colors[i % colors.length]);
 		}
 	}
 
 	update() {
 		this.moveToTarget();
+		const colors = ['red', 'orange', 'yellow', 'green', 'blue', 'purple'];
+		for (let i = 0; i < this.debugPoints.length - 1; i++) {
+			drawLine(this.debugPoints[i], this.debugPoints[i + 1], colors[i % colors.length]);
+		}
+		drawLine(new Vector(75 + 25 / 2, 0), new Vector(75 + 25 / 2, canvas.height));
 	}
 }
 
@@ -238,7 +246,7 @@ class PlayerSection extends Entity{
 		this.goal = new Wall(x, y, rotation, height);
 		this.player = undefined;
 		if (ai) {
-			this.player = new AiPlayer(x, y, height * 0.33, undefined, 5);
+			this.player = new AiPlayer(x, y, height * 0.33, undefined, 4);
 		} else {
 			this.player = new Player(x, y, height * 0.33);
 			this.keyDownHandler = (event) => this.player.keyDown(event);
@@ -419,6 +427,11 @@ class PongLocalManager extends Entity{
 				this.ball.physics.setVelocityV(dir)
 				this.ball.lastHit = this.starter;
 				this.round_running = true;
+				if (this.sections[1].player instanceof AiPlayer) {
+					clearInterval(this.sections[1].player.brainId);
+					this.sections[1].player.aiBrain();
+					this.sections[1].player.brainId = setInterval(() => this.sections[1].player.aiBrain(), 1000);
+				}
 			} else if (this.starter) {
 				let forward = VECTOR_CENTER.sub(this.starter.startPos);
 				forward.normalize();
@@ -573,10 +586,11 @@ function selectGamemode(groupName){
 		manager = new RemoteHandler();
 		setupSocketHandlers(socket);
 	}
+	world.addSystem(new RenderSystem());
 	world.addEntity(manager);
 	intervalId = setInterval(function() {
 		world.update();
-	}, 100);
+	}, 16);
 }
 
 function setupSocketHandlers(socket){
