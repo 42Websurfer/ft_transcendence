@@ -1,7 +1,6 @@
 import { displayToast, sendAuthCode } from './utils.js';
 
 export async function renderAuth2FALogin(user) {
-	console.log("We are rendering auth2falogin");
 	const app = document.getElementById('app');
 	app.innerHTML = `
 	<div class="login">

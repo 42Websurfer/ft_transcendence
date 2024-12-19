@@ -522,7 +522,6 @@ window.onload = async function() {
     if (code = getAuthorizationCode())
     {
         const response = await sendCodeToBackend(code);
-        console.log(response);
         window.history.replaceState({}, document.title, window.location.pathname);
         if (response.type === 'registration')
         {

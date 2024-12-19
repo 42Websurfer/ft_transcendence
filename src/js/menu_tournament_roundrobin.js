@@ -1,4 +1,4 @@
-import { getCookie, fetch_get, copyToClipboard, displayToast } from './utils.js';
+import { getCookie, fetch_get, copyToClipboard, displayToast, startGame } from './utils.js';
 import { selectedListItem, setSelectedListItem, handleFriendRequest, showSection } from './index.js';
 import { renderPong } from './pong.js';
 
@@ -25,10 +25,6 @@ export function runWebsocket() {
                 const results = data.results;
                 for (let index = 0; index < results.length; index++) {
                     const user = results[index];
-                    console.log(data);
-                    console.log('User_id from from g_socket: ' + data.user_id);
-                    console.log('User_id from from reults: ' + user.user_id);
-                    console.log('Status: ' + user.role);
 
                     if (data.user_id === user.user_id && user.role != 'admin')
                     {
@@ -56,7 +52,6 @@ export function runWebsocket() {
             {
                 if (!data.matches)
                     return;
-                console.log(data.matches);
                 if (!data.matches)
                     return;
                 
@@ -67,7 +62,6 @@ export function runWebsocket() {
             {
                 if (admin)
                 {
-                    console.log('Round completed');
                     const roundStartButton = document.getElementById('roundStartButton');
                     if (roundStartButton)
                         setTimeout(() => {
@@ -81,7 +75,6 @@ export function runWebsocket() {
                 console.log('Tournament finished');
             else if (data.type === 'start_tournament_match')
             {
-                console.log('START GAME ID = ', data.match_id)
                 if (data.match_id)
                     renderPong(data.match_id)
             }
@@ -421,42 +414,4 @@ export function renderMenuTournamentRoundRobin(lobbyId) {
         roundStartButton.style.display = 'none';
         startGame();
     });
-
-
-    // COUNTDOWN TEST
-
-    let countdown = 3;
-    let countdownInterval;
-
-    function startGame() {
-        if (roundStartButton && roundStartButton.disabled)
-            disableSpanInsideButton('roundStartButton');
-
-        document.getElementById('countdownDisplay').style.display = 'block';
-
-        countdownInterval = setInterval(updateCountdown, 1000);
-        const response = fetch_get(`/tm/start_tournament_round/${lobbyId}/`)
-        if (response.type === 'error')
-            console.log(response.message);
-    }
-
-    async function updateCountdown() {
-        document.getElementById('countdownDisplay').textContent = countdown.toString();
-        
-        if (countdown > 0) {
-            countdown--;
-        } else {
-            clearInterval(countdownInterval);
-            document.getElementById('countdownDisplay').style.display = 'none';
-            
-            console.log('Game started!');
-        }
-    }
-
-    function disableSpanInsideButton(buttonId) {
-        const button = document.getElementById(buttonId);
-        if (button && button.disabled) {
-            button.querySelector('span')?.classList.add('disabled');
-        }
-    }
 }

@@ -167,8 +167,6 @@ export function renderMenu() {
         if (!friendUsername.value)
             return;
         var response = await sendFriendRequest(friendUsername.value);
-        console.log("Response_type: "+ response.type);            
-        console.log("Response_msg: "+ response.message);  
         invitationMessage.textContent = response.message;
 
         if (response.type === 'Success Request')

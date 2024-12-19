@@ -55,9 +55,6 @@ async function handleFormSubmit(event) {
     event.preventDefault();
     const form = event.target;
     const formData = new FormData(form);
-    for (let [key, value] of formData.entries()) {
-        console.log(`${key}: ${value}`);
-    }
 	
     const token = localStorage.getItem('access_token'); 
 

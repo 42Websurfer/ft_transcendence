@@ -63,7 +63,6 @@ async function handleUsernameFormSubmit(session_data)
         {
             for(let key of Object.keys(result.message))
             {
-                console.log("KEY: ", key);
                 displayToast(result.message[key], 'error');
             }
         }

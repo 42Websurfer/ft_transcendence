@@ -30,8 +30,6 @@ export function runWebsocket(socket) {
                 if (data.member_id != -1)
                 {
                     const li = document.createElement('li');
-                    console.log('user_id: ', data.user_id);
-                    console.log('admin_id: ', data.admin_id);
                     
                     if (data.user_id == data.admin_id)
                         startMatchButton.style.display = 'block';
@@ -51,9 +49,6 @@ export function runWebsocket(socket) {
             {
                 if (!data.matches)
                     return;
-
-                console.log("data: ", data);
-                console.log("matches: ", data.matches);
                 
                 displayMatches(data.matches, data.username);
             }
@@ -322,7 +317,6 @@ export function renderMenuOnlineLobby(lobbyId) {
                     'Content-Type': 'application/json'
                 },
             });
-            console.log('Response: ', response);
             matchStartButton.style.display = 'none';
         } catch (error) {
             console.log('Error: ', error);

@@ -18,7 +18,6 @@ function displayGoalsChart(dataset)
 {
     if (!myGoalsChart)
     {
-        console.log("HEEEEEEElp");
         return;
     }
 
@@ -80,7 +79,6 @@ function displayForm(form)
     if (formDiv)
         formDiv.innerHTML = '';
 
-    console.log(form.length);
     for (let index = form.length - 7 > 0 ? form.length - 7 : 0; index < form.length; index++)
         addFormItem(formDiv, form[index]);
     for (let i = form.length; i < 7; i++) {

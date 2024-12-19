@@ -38,15 +38,11 @@ export function runWebsocket(socket) {
             {
                 if (!data.winners)
                     return;
-
-                console.log("data: ", data);
-                console.log("matches: ", data.matches);
                 
                 displayWinners(data.winners, USER);
             }
             else if (data.type === 'start_match')
             {
-                console.log('Looop_id = ', data.match_id);
                 if (data.match_id)
                     renderPong(data.match_id)
             }
@@ -208,7 +204,8 @@ export function renderMultiplayerLobby(lobbyId) {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             },
-        }).then((response) => response.json())
+        })
+		.then((response) => response.json())
         .then((data) => {
             if (data.type === 'error') {
                 console.log(data.message);
@@ -252,46 +249,8 @@ export function renderMultiplayerLobby(lobbyId) {
                     'Content-Type': 'application/json'
                 },
             });
-            console.log('Response: ', response);
         } catch (error) {
             console.log('Error: ', error);
         }
     });
-
-    // COUNTDOWN TEST
-
-    let countdown = 3;
-    let countdownInterval;
-
-    function startGame() {
-        if (roundStartButton && roundStartButton.disabled)
-                disableSpanInsideButton('roundStartButton');
-
-        document.getElementById('countdownDisplay').style.display = 'block';
-
-        countdownInterval = setInterval(updateCountdown, 1000);
-    }
-
-    async function updateCountdown() {
-        document.getElementById('countdownDisplay').textContent = countdown.toString();
-        
-        if (countdown > 0) {
-            countdown--;
-        } else {
-            clearInterval(countdownInterval);
-            document.getElementById('countdownDisplay').style.display = 'none';
-            
-            console.log('Game started!');
-        }
-    }
-
-    function disableSpanInsideButton(buttonId) {
-        const button = document.getElementById(buttonId);
-        if (button && button.disabled) {
-            const span = button.querySelector('span');
-            if (span) {
-                span.classList.add('disabled');
-            }
-        }
-    }
 }
