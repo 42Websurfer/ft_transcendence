@@ -47,7 +47,7 @@ export async function renderAuthLogin() {
 async function signIn42API(callback)
 {
 	try {
-		const oauthUrl = 'https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-fb637ad0b8bbb1367103db0f18b4b34529f896099d78f83e11d23e36076333e2&redirect_uri=http%3A%2F%2Flocalhost%3A8090%2F&response_type=code';
+		const oauthUrl = 'https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-fb637ad0b8bbb1367103db0f18b4b34529f896099d78f83e11d23e36076333e2&redirect_uri=https%3A%2F%2Flocalhost%3A4433%2F&response_type=code';
 		window.location.href = oauthUrl;
 
 	} catch (error) {

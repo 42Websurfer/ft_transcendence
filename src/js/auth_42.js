@@ -61,7 +61,10 @@ async function handleUsernameFormSubmit(session_data)
             renderAuth2FARegister(result);
         else if (result.type === 'error')
         {
-            displayToast(result.message, 'error');
+            for(let key of Object.keys(result.message))
+            {
+                displayToast(result.message[key], 'error');
+            }
         }
     }
     catch(error) {

@@ -19,11 +19,11 @@ export async function renderSettings() {
 				</div>
 				<div class="login-form-field">
                     <label for="floatingPassword" class="settings-label">New password</label>
-					<input type="password" name="password" class="form-control" placeholder="Password">
+					<input id="settings-pw" type="password" name="password" class="form-control" placeholder="Password">
 				</div>
 				<div class="login-form-field">
                     <label for="floatingPassword" class="settings-label">Confirm new password</label>
-					<input type="password" name="password" class="form-control" placeholder="Password">
+					<input id="settings-confirm-pw" type="password" name="password-confirmation" class="form-control" placeholder="Password">
 				</div>
 				<div class="login-form-field">
                     <label for="floatingPassword" class="settings-label">Firstname</label>
@@ -50,13 +50,20 @@ export async function renderSettings() {
     const inputFirstname = document.getElementById('settings-firstname');
     const inputLastname = document.getElementById('settings-lastname');
     const inputUsername = document.getElementById('settings-username');
-
+	const inputPassword = document.getElementById('settings-pw')
+	const inputConfirmPassword = document.getElementById('settings-confirm-pw')
     const response = await getUserInformation();
     if (response.type === 'error')
         displayToast(response.message, 'error');
     else
     {
         inputEmail.value = response.email;
+		if (response.third_party)
+		{
+			inputEmail.setAttribute("disabled", "");
+			inputPassword.setAttribute("disabled", "");
+			inputConfirmPassword.setAttribute("disabled", "");
+		}
         inputFirstname.value = response.firstname;
         inputLastname.value = response.lastname;
         inputUsername.value = response.username;
@@ -80,7 +87,7 @@ async function getUserInformation() {
         return await response.json();
     }
     catch(error){
-		return {'type': 'request_error', 'message': 'Failed to tournament joind request.' };
+		return {'type': 'request_error', 'message': 'Failed to tournament joind request.' }; //NOT ONLY COPY AND PASTE! THIS MESSAGE IS FROM ANOTHER UNIVERSUM
     }
 }
 
@@ -88,9 +95,15 @@ async function handleSettingsFormSubmit(event) {
     event.preventDefault();
     const form = event.target;
     const formData = new FormData(form);
-	
-    const token = localStorage.getItem('access_token'); 
-	
+	const password = document.getElementById('settings-pw').value;
+	const confirmPassword = document.getElementById('settings-confirm-pw').value;
+	if (password != confirmPassword)
+	{
+		displayToast('Passwords don\'t match.', 'error');
+		return;
+	}
+	const token = localStorage.getItem('access_token'); 
+
     const response = await fetch('/api/user/settings/', {
 		method: 'POST',
         headers: {
@@ -98,15 +111,17 @@ async function handleSettingsFormSubmit(event) {
         },
         body: formData
     });
-	
+	localStorage.removeItem('user_data');
     const result = await response.json();
-	console.log("result = ", result);
 	if (result.type === 'success')
 	{
 		displayToast('User data successfully updated.', 'success');		
 		showSection('menu')
 	}
 	else if (result.type === 'error')
-		displayToast(result.message, 'error');
-
+	{
+		console.log("Error; ", result.message);
+		for(let key of Object.keys(result.message))
+			displayToast(key + ": " + result.message[key], 'error');
+	}
 }

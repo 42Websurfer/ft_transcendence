@@ -21,15 +21,11 @@ def multiple_lobby_string(lobby_id):
 	return (f"multiple_{lobby_id}")
 
 def round_completed(matches, round):
-	for index, match in enumerate(matches):
-		if index == len(matches) - 1 and match['status'] != 'pending':
-			return True, True
-		if match['round'] > round:
+	for match in matches:
+		if (int)(match['round']) > round:
 			return True, False
-		elif match['status'] == 'pending':
+		elif match['status'] == 'pending' or match['status'] == 'running':
 			return False, False
-		elif match['status'] == 'freegame' or match['status'] == 'disconnected':
-			continue
 	return True, True
 
 def create_user_structure(user_id, role, username):
@@ -156,22 +152,19 @@ def set_online_match(data, lobby_id):
 	)
 	match.save()
 	(async_to_sync)(update_online_match_socket)(data, lobby_id)
-# def check_round_completion(lobby_id, roundm machtes):
-#     tournament_json = redis.get(tournament_string(lobby_id))
-#     if (not tournament_json):
-#         return False
-#     tournament = json.loads(tournament_json)
-#     matches = tournament['matches']
-#     if round_completed(matches, round):
-#         return True
-#     else:
-#         return False
+
 
 def safe_tournament_data(lobby_id):
 	results_json = redis.get(lobby_id)
 	if not results_json:
 		return
 	results = json.loads(results_json)
+	connected = 0
+	for result in results: 
+		if result['status'] == 'connected':
+			connected += 1
+	if (connected < 2):
+		return
 	tournament = Tournament(tournament_id=lobby_id)
 	tournament.save()
 	for result in results: 
@@ -239,7 +232,7 @@ async def set_match_data(lobby_id, match_id, score_home, score_away, status):
 		return False
 	tournament_dic = json.loads(tournament)
 	match = tournament_dic['matches'][match_id - 1]
-
+	round = tournament_dic['current_round']
 	match['score_home'] = score_home
 	match['score_away'] = score_away
 	match['status'] = status
@@ -253,10 +246,6 @@ async def set_match_data(lobby_id, match_id, score_home, score_away, status):
 			'type': 'match_list',
 		}
 	)
-	round, start = get_current_round(tournament_dic['matches'])
-	round -= 1
-	if round == -1:
-		round = 0
 	status, tournament_finished = round_completed(tournament_dic['matches'], round)
 	if status and not tournament_finished:
 		await channel_layer.group_send(
@@ -274,18 +263,6 @@ async def set_match_data(lobby_id, match_id, score_home, score_away, status):
 		)
 		await (sync_to_async)(safe_tournament_data)(lobby_id)
 	return True
-
-def get_current_round(matches):
-	round = -1
-	start = -1
-	for index, match in enumerate(matches): 
-		if match['status'] == 'pending':
-			round = match['round']
-			start = index
-			break
-		if index == len(matches) - 1:
-			round = match['round'] + 1
-	return round, start
 
 def reset_match(lobby_id, match):
 	home = match['home']

@@ -3,6 +3,7 @@ import { copyToClipboard } from './utils.js';
 
 export function runWebsocket(socket) {
 
+	let USER = undefined;
 
     socket.onopen = function() {
         console.log("Connected to Websocket of a Tournament")
@@ -20,7 +21,7 @@ export function runWebsocket(socket) {
 
                 matchPlayers.innerHTML = '';
                 const startMatchButton = document.getElementById('startOnlineMatch');
-
+				USER = data.username;
 				for (let user of data.users) {
 					const li = document.createElement('li');
 					if (user.role === 'admin') {
@@ -37,15 +38,11 @@ export function runWebsocket(socket) {
             {
                 if (!data.winners)
                     return;
-
-                console.log("data: ", data);
-                console.log("matches: ", data.matches);
                 
-                displayWinners(data.winners);
+                displayWinners(data.winners, USER);
             }
             else if (data.type === 'start_match')
             {
-                console.log('Looop_id = ', data.match_id);
                 if (data.match_id)
                     renderPong(data.match_id)
             }
@@ -67,7 +64,7 @@ export function runWebsocket(socket) {
 
 }
 
-function displayWinners(winners)
+function displayWinners(winners, currentUser)
 {
     const historicMatchesList = document.getElementById('historicMatches');
     if (historicMatchesList)
@@ -75,7 +72,13 @@ function displayWinners(winners)
 
 	for (let winner of winners) {
 		const li = document.createElement('li');
-		li.innerHTML = `${winner}`
+		li.classList.add('flex-container', 'center', 'font-main', 'match-result-container', 'font-colour-primary');
+		if (winner == currentUser) {
+			li.classList.add('match-result-winner');
+		} else {
+			li.classList.add('match-result-loser');
+		}
+		li.innerText = winner;
 		historicMatchesList.appendChild(li);
 	}
 }
@@ -107,7 +110,7 @@ export function renderMultiplayerLobby(lobbyId) {
         <div class="lobby-container">
 
             <div class="lobby-container-header">
-                <p>1v1-Online-Lobby</p>
+                <p>4-Player-Online-Lobby</p>
             </div>
             
             <hr class="lobby-container-divider">
@@ -132,7 +135,7 @@ export function renderMultiplayerLobby(lobbyId) {
                     <div class="lobby-table2" style="padding-left: 0;">
                         <div>
                             <div class="tournament-table-header">
-                                <p>MATCHES</p>
+                                <p>LAST MATCH WINNERS</p>
                             </div>  
 
                             <ul id="historicMatches" style="list-style-type: none; padding: 0; margin: 0;"></ul>
@@ -167,8 +170,8 @@ export function renderMultiplayerLobby(lobbyId) {
                 </div>
                 <hr class="controls-divider">
                 <div class="tournament-controls">
-                    <p>paddle up: up-arrow key</p>
-                    <p>paddle down: down-arrow key</p>
+                    <p>paddle up: up-arrow or w key</p>
+                    <p>paddle down: down-arrow or s key</p>
                 </div>
             </div>
         </div>
@@ -201,7 +204,8 @@ export function renderMultiplayerLobby(lobbyId) {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             },
-        }).then((response) => response.json())
+        })
+		.then((response) => response.json())
         .then((data) => {
             if (data.type === 'error') {
                 console.log(data.message);
@@ -245,46 +249,8 @@ export function renderMultiplayerLobby(lobbyId) {
                     'Content-Type': 'application/json'
                 },
             });
-            console.log('Response: ', response);
         } catch (error) {
             console.log('Error: ', error);
         }
     });
-
-    // COUNTDOWN TEST
-
-    let countdown = 3;
-    let countdownInterval;
-
-    function startGame() {
-        if (roundStartButton && roundStartButton.disabled)
-                disableSpanInsideButton('roundStartButton');
-
-        document.getElementById('countdownDisplay').style.display = 'block';
-
-        countdownInterval = setInterval(updateCountdown, 1000);
-    }
-
-    async function updateCountdown() {
-        document.getElementById('countdownDisplay').textContent = countdown.toString();
-        
-        if (countdown > 0) {
-            countdown--;
-        } else {
-            clearInterval(countdownInterval);
-            document.getElementById('countdownDisplay').style.display = 'none';
-            
-            console.log('Game started!');
-        }
-    }
-
-    function disableSpanInsideButton(buttonId) {
-        const button = document.getElementById(buttonId);
-        if (button && button.disabled) {
-            const span = button.querySelector('span');
-            if (span) {
-                span.classList.add('disabled');
-            }
-        }
-    }
 }

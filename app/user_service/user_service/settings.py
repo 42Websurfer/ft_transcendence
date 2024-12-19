@@ -27,7 +27,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', 'user-service', '10.13.9.6', '127.0.0.1', 'websurfers.com']
+ALLOWED_HOSTS = ['localhost', 'user-service', '10.13.9.6', '127.0.0.1', 'websurfers.com', '10.13.9.1']
 
 
 # Application definition
@@ -161,11 +161,8 @@ CHANNEL_LAYERS = {
 }
 
 CLIENT_ID = 'u-s4t2ud-fb637ad0b8bbb1367103db0f18b4b34529f896099d78f83e11d23e36076333e2'
-CLIENT_SECRET = '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'
-REDIRECT_URI = 'http://localhost:8090/'
-
-MEDIA_ROOT = '/workspaces/media/'
-MEDIA_URL = '/media/'
+CLIENT_SECRET = os.getenv('CLIENT_SECRET_42')
+REDIRECT_URI = 'https://localhost:4433/'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -173,8 +170,7 @@ REST_FRAMEWORK = {
     ),
 }
 
-
-SECRET_KEY = 'D3RSIch3r5teKeYYYY33333v3r'
+SECRET_KEY = os.getenv('JWT_SECRET_KEY')
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=1),

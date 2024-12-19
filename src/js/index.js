@@ -52,6 +52,8 @@ async function renderLoginLogoutButton(isAuthenticated, section) {
         const logoutButton = document.getElementById('logoutButton')
         logoutButton.addEventListener('click', () => {
             wsBool = false;
+			const logoContainer = document.querySelector('#avatar');
+			logoContainer.style.display = 'none';
             handleLogoutSubmit(ws, wsBool);
         });
     }
@@ -353,7 +355,8 @@ function initOnlineStatus() {
 
 export async function showSection(section, lobbyId, pushState = true)
 {
-
+	
+	const settingsButton = document.getElementById('settings-button')
     const isAuthenticated = await checkAuthentication();
     renderLoginLogoutButton(isAuthenticated, section);
     if (section === 'auth_register')
@@ -368,8 +371,10 @@ export async function showSection(section, lobbyId, pushState = true)
         import('./auth_42.js').then(module => {
             module.renderAuth42();    
         });
+	if (settingsButton)
+		settingsButton.style.display = 'none';
+
     if (isAuthenticated) {
-        const settingsButton = document.getElementById('settings-button')
         if (settingsButton)
         {
             if (section == 'menu')
@@ -377,6 +382,34 @@ export async function showSection(section, lobbyId, pushState = true)
             else 
                 settingsButton.style.display = 'none';
         }
+
+		const user_data = localStorage.getItem('user_data');
+		function setAvatar(data) {
+			const avatarDiv = document.querySelector('#avatar');
+			const avatarConainer = avatarDiv.querySelector('#avatar_img_container');
+			const avatarName = avatarDiv.querySelector('#avatar_name');
+			const avatarImg = avatarConainer.querySelector('img');
+			avatarDiv.style.display = 'flex';
+			avatarImg.src = '/img' + data.avatar_url;
+			avatarName.textContent = data.username;
+		}
+		if (!user_data) {
+			const token = localStorage.getItem('access_token'); 
+			fetch('/api/tm/avatar_data/', {
+				method: 'GET',
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				},
+			})
+			.then((response) => response.json())
+			.then((data) => {
+				setAvatar(data);
+				localStorage.setItem('user_data', JSON.stringify({username: data.username, avatar_url: data.avatar_url}));
+			});
+		} else {
+			setAvatar(JSON.parse(user_data));
+		}
 
         if (!wsBool)
         {
@@ -431,6 +464,12 @@ export async function showSection(section, lobbyId, pushState = true)
             import('./waiting.js').then(module => {
                 module.renderWaiting();
             });
+		else {
+			section = 'menu'; 
+			import('./menu.js').then(module => {
+				module.renderMenu();
+			});
+		}
     }
     else if (section != 'auth_login' && section != 'auth_register' && section != 'auth_42') {
         import('./auth_login.js').then(module => {
@@ -447,7 +486,14 @@ export async function showSection(section, lobbyId, pushState = true)
 async function initApp() {
     const isAuthenticated = await checkAuthentication();
     if (isAuthenticated) {
-        showSection('menu');
+		const section = window.location.pathname.substring(1);
+		const urlParams = new URLSearchParams(window.location.search);
+		const id = urlParams.get('lobbyId');
+		if (section) {
+			showSection(section, id);
+		} else {
+			showSection('menu');
+		}
     } else {
         showSection('auth_login');
     }
@@ -494,7 +540,6 @@ window.onload = async function() {
     if (code = getAuthorizationCode())
     {
         const response = await sendCodeToBackend(code);
-        console.log(response);
         window.history.replaceState({}, document.title, window.location.pathname);
         if (response.type === 'registration')
         {
@@ -512,7 +557,7 @@ window.onload = async function() {
         }
         else if (response.type === 'error')
         {
-            displayToast(result.message, 'error')
+            displayToast(response.message, 'error')
             showSection('login');
         }
     }

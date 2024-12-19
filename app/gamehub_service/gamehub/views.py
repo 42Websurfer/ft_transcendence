@@ -4,7 +4,7 @@ import string
 import redis
 import json
 import logging
-from .utils import get_current_round, get_longest_winstreak, tournament_string, round_completed, set_match_data, set_online_match, match_lobby_string, multiple_lobby_string, set_winner_multiple
+from .utils import get_longest_winstreak, tournament_string, round_completed, set_match_data, set_online_match, match_lobby_string, multiple_lobby_string, set_winner_multiple
 from channels.layers import get_channel_layer
 from django.core.exceptions import ObjectDoesNotExist
 from .models import GameStatsUser, OnlineMatch, TournamentResults
@@ -24,32 +24,38 @@ def lobby_name_generator():
 @api_view(['PUT', 'POST'])
 @permission_classes([IsInternalContainerFactory(['user-service'])])
 def gamestatsuser(request):
-	data = json.loads(request.body)
 	if request.method == 'POST':
 		try:
+			data = request.POST
 			uid = (int)(data.get('user_id'))
-			logger.debug(f"{type(uid)} + 'uid = ' {uid}")
 			username = data.get('username')
+			avatar = request.FILES.get('avatar')
 			gamestatsuser = GameStatsUser.objects.create(user_id=uid, username=username)
 			if not gamestatsuser:
 				return JsonResponse({'message': 'Create GameStatsUser model failed.'}, status=400)
+			if avatar:
+				gamestatsuser.avatar = avatar
+			gamestatsuser.save()
 			return HttpResponse(status=200)
 		except Exception as e:
-			logger.debug(f"Error: {e}")
-			return JsonResponse({'message': 'Create GameStatsUser model failed.'}, status=400)
+			return JsonResponse({'message': str(e)}, status=400)
 	elif request.method == 'PUT':
-		user_id = data.get('user_id')
-		username = data.get('username')
 		try:
+			data = request.POST
+			user_id = int(data.get('user_id'))
+			username = data.get('username')
+			avatar = request.FILES.get('avatar')
 			gamestatsuser = GameStatsUser.objects.get(user_id=user_id)
 			gamestatsuser.username = username
+			if avatar:
+				if gamestatsuser.avatar and gamestatsuser.avatar.name != 'defaults/default_avatar.png':
+					gamestatsuser.avatar.delete()
+				gamestatsuser.avatar = avatar
 			gamestatsuser.save()
 			return HttpResponse(status=200)
 		except Exception as e:
 			return JsonResponse({'message': str(e)}, status=400)
 	return JsonResponse({'message': 'Invalid request'}, status=400)
-
-
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -115,11 +121,16 @@ def update_match(request):
 		return HttpResponse(status=400)
 	return HttpResponse(status=200)
 	
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def join_lobby(request, lobby_id):
 	type = request.GET.get('type')
+	user = request.user	
+	if redis.sismember('user_lobbies', user.id):
+		return JsonResponse({
+			'type': 'error',
+			'message': 'You can\'t join multiple lobbies'
+		})
 	if type == 'tournament':
 		if redis.exists(tournament_string(lobby_id)):
 			return(JsonResponse({'type': 'error', 'message': 'Tournament already started.'}))
@@ -130,6 +141,8 @@ def join_lobby(request, lobby_id):
 			data = redis.get(multiple_lobby_string(lobby_id))
 			if data:
 				data = json.loads(data)
+				if len(data['users']) >= 4:
+					return(JsonResponse({'type': 'error', 'message': 'Lobby is Full.'}))
 				if data['status'] == 'pending':
 					return(JsonResponse({'type': 'success'}))
 				else:
@@ -195,7 +208,6 @@ def get_tournament_lobby_data(lobby_id):
 	if tournament is None:
 		return JsonResponse({'type': 'error', 'message': 'Tournament not found.'})
 	tournament_dic = json.loads(tournament)
-	round, start = get_current_round(tournament_dic['matches'])
 	channel_layer = get_channel_layer()
 	(async_to_sync)(channel_layer.group_send)(
 		lobby_id,
@@ -209,10 +221,9 @@ def get_tournament_lobby_data(lobby_id):
 			'type': 'send_tournament_users',
 		}
 	)
-	round -= 1
-	if round == -1:
-		round = 0
+	round = tournament_dic['current_round']
 	status, tournament_finished = round_completed(tournament_dic['matches'], round)
+
 	if status and not tournament_finished:
 		(async_to_sync)(channel_layer.group_send)(
 			lobby_id,
@@ -232,29 +243,29 @@ def get_tournament_lobby_data(lobby_id):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def start_tournament_round(request, lobby_id):
-	tournament_matches_json = redis.get(tournament_string(lobby_id))
-	if not tournament_matches_json:
+	tournament_data_json = redis.get(tournament_string(lobby_id))
+	if not tournament_data_json:
 		return (JsonResponse({'type': 'error', 'message': 'Tournament not found'}))
-	tournament_matches = json.loads(tournament_matches_json)
-	matches = tournament_matches['matches']
-	round, start = get_current_round(matches)
-	if round != -1 or start != -1:
-		channel_layer = get_channel_layer()
-		for match in matches[start:]:
-			if match['round'] > round:
-				break
-			if match['status'] == 'pending':
-				(async_to_sync)(channel_layer.group_send)(
-					lobby_id,
-					{
-						'type': 'start_tournament_match',
-						'match_id': 'tournament_' + lobby_id + '_loop_' + str(match['match_id']),
-						'user1': match['home'],
-						'user2': match['away'],
-					}
-				)
-	else: 
-		return JsonResponse({'type': 'error', 'message': 'No round founded'})
+	tournament_data = json.loads(tournament_data_json)
+	matches = tournament_data['matches']
+	round = 424242 #need for for-loop logic
+	channel_layer = get_channel_layer()
+	for match in matches:
+		if match['round'] > round:
+			break
+		if match['status'] == 'pending':
+			round = match['round']
+			(async_to_sync)(channel_layer.group_send)(
+				lobby_id,
+				{
+					'type': 'start_tournament_match',
+					'match_id': 'tournament_' + lobby_id + '_loop_' + str(match['match_id']),
+					'user1': match['home'],
+					'user2': match['away'],
+				}
+			)
+	tournament_data['current_round'] = round
+	redis.set(tournament_string(lobby_id), json.dumps(tournament_data))
 	return JsonResponse({'type': 'success'})
 
 @api_view(['GET'])
@@ -268,7 +279,7 @@ def start_group_tournament(request, lobby_id):
 		results.append({'user_id': -1})
 	num_rounds = len(results) - 1
 	num_matches_per_round = len(results) // 2
-	tournament_dict = {'tournament_id': lobby_id, 'matches': []}
+	tournament_dict = {'tournament_id': lobby_id, 'current_round': 0, 'matches': []}
 	match_id = 1
 	for round in range(num_rounds):
 		for match in range(num_matches_per_round):
@@ -424,6 +435,20 @@ def get_match_data(user_game_stats):
 					highest_loss = match_data
 		matches_data.append(match_data)
 	return matches_data, highest_win, highest_loss, form
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user_avatar_data(request, id=None):
+	try:
+		if id is None:
+			user_game_stats = GameStatsUser.objects.get(username=request.user.username)
+		else:
+			user_game_stats = GameStatsUser.objects.get(user_id=id)
+		return JsonResponse({'avatar_url': user_game_stats.avatar.url, 'username': request.user.username})
+	except GameStatsUser.DoesNotExist:
+		return JsonResponse({'avatar_url': '/media/defaults/default_avatar.png', 'username': 'logged-out'})
+	except Exception as e:
+		return JsonResponse({'message': str(e)}, status=404)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

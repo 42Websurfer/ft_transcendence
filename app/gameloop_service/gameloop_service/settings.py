@@ -143,7 +143,8 @@ CHANNEL_LAYERS = {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
             "hosts": [('redis', 6379)],
-            "expiry": 10, #messages will be deleted after 10 sec
+            "expiry": 1, #messages will be deleted after 11 sec
+            "capacity": 10000, 
         },
     },
 }
@@ -157,8 +158,7 @@ REST_FRAMEWORK = {
     ),
 }
 
-
-SECRET_KEY = 'D3RSIch3r5teKeYYYY33333v3r'
+SECRET_KEY = os.getenv('JWT_SECRET_KEY')
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=1),

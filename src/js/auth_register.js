@@ -55,9 +55,6 @@ async function handleFormSubmit(event) {
     event.preventDefault();
     const form = event.target;
     const formData = new FormData(form);
-    for (let [key, value] of formData.entries()) {
-        console.log(`${key}: ${value}`);
-    }
 	
     const token = localStorage.getItem('access_token'); 
 
@@ -67,9 +64,12 @@ async function handleFormSubmit(event) {
     });
 	
     const result = await response.json();
-	
+	console.log("Response: ", result);
 	if (result.type === 'success')
 		renderAuth2FARegister(result) 
 	else if (result.type === 'error')
-		displayToast(result.message, 'error');
+	{
+		for(let key of Object.keys(result.message))
+			displayToast(result.message[key], 'error');
+	}
 }

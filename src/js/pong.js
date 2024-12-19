@@ -474,7 +474,7 @@ class RemoteHandler extends Entity{
 		this.entities = {};
 		this.players = {};
 		this.complete = false;
-		window.addEventListener('keypress', sendMovementInput);
+		window.addEventListener('keydown', sendMovementInput);
 		window.addEventListener('keyup', sendMovementInput);
 	}
 
@@ -560,13 +560,13 @@ let socket = undefined;
 
 
 function sendMovementInput(event) {
-	if (event.type == 'keypress') {
+	if (event.type == 'keydown') {
 		if (event.key == 'w' || event.key == 'ArrowUp') {
 			socket.send(0b01);
 		} else if (event.key == 's' || event.key == 'ArrowDown') {
 			socket.send(0b10);
 		}
-	} else if (event.type == 'keyup' && (event.key == 's' || event.key == 'w')) {
+	} else if (event.type == 'keyup' && (event.key == 's' || event.key == 'w' || event.key == 'ArrowUp' || event.key == 'ArrowDown')) {
 		socket.send(0b00);
 	} 
 }
@@ -735,7 +735,7 @@ function initScoreBoard(playerNames, localPlayer = undefined) {
 		scoreItems[i].remove();
 	}
 	for (let i = 0; i < playerNames.length; i++) {
-		scoreContainer.appendChild(createScoreItem(playerNames[i], localPlayer?.uname == playerNames[i]));	
+		scoreContainer.appendChild(createScoreItem(playerNames[i], localPlayer?.uname == playerNames[i]));
 	}
 }
 

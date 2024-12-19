@@ -15,19 +15,26 @@ class Tournament(AsyncWebsocketConsumer):
 		self.user = self.scope["user"]
 		self.group_name = self.scope['url_route']['kwargs']['group_name']
 		left_user = False
-		if redis.exists(self.group_name):
-			results = redis.get(self.group_name)
-			if results:
-				results = json.loads(results)
-				for user in results: 
-					if user['user_id'] == self.user.id:
-						left_user = True
+		self.duplicate = False
+		# if redis.exists(self.group_name):
+		# 	results = redis.get(self.group_name)
+		# 	if results:
+		# 		print("WE ARE HERE", flush=True)
+		# 		results = json.loads(results)
+		# 		for user in results: 
+		# 			if user['user_id'] == self.user.id:
+		# 				left_user = True
 		if (self.user.is_authenticated):
 			User = get_user_model()
 			user = await sync_to_async(User.objects.get)(id=self.user.id)		
 			if (not left_user):
 				tournament_data = redis.get(self.group_name)
 				if redis.exists(self.group_name) and tournament_data:
+					if redis.sismember('user_lobbies', self.user.id):
+						print('ALREADY IN LOBBY!!', flush=True)
+						self.duplicate = True
+						await self.close()
+						return
 					redis.sadd('user_lobbies', self.user.id)
 					results = json.loads(tournament_data)
 					results.append(create_user_structure(self.user.id, 'member', user.username))
@@ -54,9 +61,12 @@ class Tournament(AsyncWebsocketConsumer):
 					'user_id': self.user.id,
 				}
 			)
+			#await self.send_info('success', 'You have successfully joined a lobby!')
 
 	async def disconnect(self, close_code):
 		if (self.user.is_authenticated):
+			if (self.duplicate):
+				return
 			await self.channel_layer.group_discard(
 				self.group_name,
 				self.channel_name
@@ -104,6 +114,9 @@ class Tournament(AsyncWebsocketConsumer):
 				}
 			)
 	
+	async def send_info(self, type, message):
+		await self.send(json.dumps({'type': type, 'message': message}))
+
 	async def send_tournament_users(self, event):
 		results_json = redis.get(self.group_name)
 		if not results_json:
@@ -156,6 +169,7 @@ class MultipleLobby(AsyncWebsocketConsumer):
 		self.user = self.scope["user"]
 		self.lobby_id = self.scope['url_route']['kwargs']['lobby_id']
 		self.match_name = multiple_lobby_string(self.lobby_id)
+		self.duplicate = False
 		if (self.user.is_authenticated):
 			User = get_user_model()
 			user = await sync_to_async(User.objects.get)(id=self.user.id)
@@ -163,6 +177,11 @@ class MultipleLobby(AsyncWebsocketConsumer):
 			lobby_data = None
 
 			if (redis.exists(self.match_name) and match_data):
+				if redis.sismember('user_lobbies', self.user.id):
+					print('ALREADY IN LOBBY!!', flush=True)
+					self.duplicate = True
+					await self.close()
+					return					
 				redis.sadd('user_lobbies', user.id)
 				lobby_data = json.loads(match_data)
 				if len(lobby_data['users']) >= 4:
@@ -198,6 +217,8 @@ class MultipleLobby(AsyncWebsocketConsumer):
 
 	async def disconnect(self, close_code):
 		if (self.user.is_authenticated):
+			if (self.duplicate):
+				return
 			await self.channel_layer.group_discard(
 				self.match_name,
 				self.channel_name
@@ -270,12 +291,18 @@ class OnlineMatch(AsyncWebsocketConsumer):
 		self.user = self.scope["user"]
 		self.lobby_id = self.scope['url_route']['kwargs']['match_name']
 		self.match_name = match_lobby_string(self.lobby_id)
+		self.duplicate = False
 		if (self.user.is_authenticated):
 			User = get_user_model()
 			user = await sync_to_async(User.objects.get)(id=self.user.id)
 			match_data = redis.get(self.match_name)
 			lobby_data = None
 			if (redis.exists(self.match_name) and match_data):
+				if redis.sismember('user_lobbies', self.user.id):
+					print('ALREADY IN LOBBY!!', flush=True)
+					self.duplicate = True
+					await self.close()
+					return
 				redis.sadd('user_lobbies', user.id)
 				lobby_data = json.loads(match_data)
 				if (lobby_data.get('member_id') == -1):
@@ -310,6 +337,8 @@ class OnlineMatch(AsyncWebsocketConsumer):
 
 	async def disconnect(self, close_code):
 		if (self.user.is_authenticated):
+			if (self.duplicate):
+				return
 			await self.channel_layer.group_discard(
 				self.match_name,
 				self.channel_name

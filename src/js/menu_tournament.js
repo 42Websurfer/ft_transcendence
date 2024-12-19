@@ -50,7 +50,6 @@ export function renderMenuTournament() {
         if (event.key === 'Enter') {
             const lobbyId = tournamentLobbyInput.value.trim();
             if (lobbyId) {
-                console.log(`Trying to enter lobby with id: ${lobbyId}`);
                 const response = await joinTournamentLobby(lobbyId);
                 if (response.type === 'success')
                     showSection('menu_tournament_roundrobin', lobbyId);
