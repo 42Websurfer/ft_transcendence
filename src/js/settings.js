@@ -57,7 +57,6 @@ export async function renderSettings() {
         displayToast(response.message, 'error');
     else
     {
-		console.log("Response; ", response);
         inputEmail.value = response.email;
 		if (response.third_party)
 		{
