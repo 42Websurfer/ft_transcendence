@@ -1,4 +1,4 @@
-import {Vector, Plane, World, Entity, Mesh, Physics, Ray, Box, Circle, RenderSystem, CollisionSystem, MovementSystem, canvas, drawText, strokeText, drawLine, ctx} from './GameSystem.js';
+import {Vector, Plane, World, Entity, Mesh, Physics, Ray, Box, Circle, RenderSystem, CollisionSystem, MovementSystem, canvas, drawText, strokeText, drawLine, drawDot} from './GameSystem.js';
 import { showSection } from './index.js';
 import { startGame, useCountdownAsMessageDisplay } from './utils.js';
 
@@ -493,7 +493,6 @@ class RemoteHandler extends Entity{
 }
 
 let world = new World();
-ctx.fillStyle = '#d8d3d3';
 
 let intervalId;
 
@@ -587,9 +586,7 @@ function setupSocketHandlers(socket){
 		} else if (data[0] === 'go') {
 			endGame();
 		} else if (data[0] === 'dd'){
-			ctx.fillStyle = 'red';
-			ctx.fillRect(data[1], data[2], 5, 5);
-			ctx.fillStyle = 'white';
+			drawDot(data[1], data[2], 5, 'red');
 		} else if (data[0] === 'dl'){
 			drawLine(new Vector(data[1], data[2]), new Vector(data[3], data[4]), 'blue');
 		}

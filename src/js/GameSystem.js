@@ -1,7 +1,8 @@
 export const canvas = document.createElement('canvas');
 canvas.width = 1280;
 canvas.height = 780;
-export const ctx = canvas.getContext('2d');
+const ctx = canvas.getContext('2d');
+ctx.fillStyle = '#d8d3d3';
 
 
 export class Vector{
@@ -520,4 +521,11 @@ export function drawLine(p1, p2, color = 'black', lineWidth = 1, dashPattern = [
 	ctx.strokeStyle = savestroke;
 	ctx.lineWidth = savewidth;
 	ctx.setLineDash(savePattern);
+}
+
+export function drawDot(x, y, size = 5, color = 'black') {
+	let saveColor = ctx.fillStyle;
+	ctx.fillStyle = color;
+	ctx.fillRect(x, y, size, size);
+	ctx.fillStyle = saveColor;
 }
