@@ -413,5 +413,8 @@ export function renderMenuTournamentRoundRobin(lobbyId) {
         roundStartButton.disabled = true;
         roundStartButton.style.display = 'none';
         startGame();
+        const response = fetch_get(`/tm/start_tournament_round/${lobbyId}/`)
+        if (response.type === 'error')
+            console.log(response.message);
     });
 }
