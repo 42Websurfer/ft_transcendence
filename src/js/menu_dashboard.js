@@ -1,6 +1,4 @@
-import { getCookie, fetch_get } from './utils.js';
-import { selectedListItem, setSelectedListItem, handleFriendRequest, showSection, addListItem } from './index.js';
-import { CollisionSystem, ctx } from './GameSystem.js';
+import { fetch_get } from './utils.js';
 
 let myGamesChart;
 let myGoalsChart;
