@@ -383,33 +383,25 @@ export async function showSection(section, lobbyId, pushState = true)
                 settingsButton.style.display = 'none';
         }
 
-		const user_data = localStorage.getItem('user_data');
-		function setAvatar(data) {
-			const avatarDiv = document.querySelector('#avatar');
-			const avatarConainer = avatarDiv.querySelector('#avatar_img_container');
-			const avatarName = avatarDiv.querySelector('#avatar_name');
-			const avatarImg = avatarConainer.querySelector('img');
-			avatarDiv.style.display = 'flex';
-			avatarImg.src = '/img' + data.avatar_url;
-			avatarName.textContent = data.username;
-		}
-		if (!user_data) {
-			const token = localStorage.getItem('access_token'); 
-			fetch('/api/tm/avatar_data/', {
-				method: 'GET',
-				headers: {
-					'Authorization': `Bearer ${token}`,
-					'Content-Type': 'application/json'
-				},
-			})
-			.then((response) => response.json())
-			.then((data) => {
-				setAvatar(data);
-				localStorage.setItem('user_data', JSON.stringify({username: data.username, avatar_url: data.avatar_url}));
-			});
-		} else {
-			setAvatar(JSON.parse(user_data));
-		}
+        const token = localStorage.getItem('access_token'); 
+        fetch('/api/tm/avatar_data/', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+        })
+        .then((response) => response.json())
+        .then((data) => {
+            const avatarDiv = document.querySelector('#avatar');
+            const avatarConainer = avatarDiv.querySelector('#avatar_img_container');
+            const avatarName = avatarDiv.querySelector('#avatar_name');
+            const avatarImg = avatarConainer.querySelector('img');
+            avatarDiv.style.display = 'flex';
+            avatarImg.src = '/img' + data.avatar_url;
+            avatarName.textContent = data.username;
+        });
+
 
         if (!wsBool)
         {
