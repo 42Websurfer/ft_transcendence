@@ -335,9 +335,9 @@ function initOnlineStatus() {
                     addListItem(freundesliste[i].username, friendsOnlineList, 'online');
                 else if (freundesliste[i].status === 'offline')
                     addListItem(freundesliste[i].username, friendsOfflineList, 'offline');
-                else if (freundesliste[i].status === 'pending' && freundesliste[i].type === 'sender')
+                else if (freundesliste[i].status === 'PENDING' && freundesliste[i].type === 'sender')
                     addListItem(freundesliste[i].username, friendsPendingList, 'pending');
-                else if (freundesliste[i].status === 'pending' && freundesliste[i].type === 'receiver')
+                else if (freundesliste[i].status === 'PENDING' && freundesliste[i].type === 'receiver')
                     addListItem(freundesliste[i].username, friendsRequestsList, 'request');
                 else
                     addListItem(freundesliste[i].username, friendsBlockedList, 'blocked');

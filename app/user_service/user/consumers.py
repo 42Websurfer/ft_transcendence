@@ -3,7 +3,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 import redis
 from asgiref.sync import sync_to_async
 from django.contrib.auth import get_user_model
-from user.models import Friendship
+from user.models import Friendship, FriendshipStatus
 from django.db.models import Q
 
 redis = redis.Redis(host='redis', port=6379, db=0)
@@ -47,17 +47,14 @@ class UserStatus(AsyncWebsocketConsumer):
 
 	async def send_online_users(self, event):
 		online_users_ids = redis.smembers("online_users")
-		online_users_ids = [
-			int(user_id)
-			for user_id in online_users_ids
-		]
-		online_friend_ids = await sync_to_async(list)(Friendship.objects.filter(
+		online_users_ids = [int(user_id) for user_id in online_users_ids]
+		online_friend_ids: list[Friendship] = await sync_to_async(list)(Friendship.objects.filter(
 			Q(user_id=self.user.id, friend_id__in=online_users_ids) |
 			Q(friend_id=self.user.id, user_id__in=online_users_ids)
 			).select_related('user', 'friend')
 		)
 
-		offline_friend_ids = await sync_to_async(list)(Friendship.objects.filter(
+		offline_friend_ids: list[Friendship] = await sync_to_async(list)(Friendship.objects.filter(
 			Q(user_id=self.user.id) | Q(friend_id=self.user.id)
 		).filter(
 			(~Q(user_id__in=online_users_ids) & Q(friend_id=self.user.id))| 
@@ -65,30 +62,30 @@ class UserStatus(AsyncWebsocketConsumer):
 		).select_related('user', 'friend'))
 
 		friendList = []
-		for user in online_friend_ids:
+		for user in online_friend_ids: 
 			if (user.friend_id == self.user.id):
-				if (user.status == 'accepted'):
+				if (user.status == FriendshipStatus.ACCEPTED):
 					friendList.append({'id': user.id, 'username': user.user.username, 'status': 'online', 'type': 'receiver'})
-				else:
-					friendList.append({'id': user.id, 'username': user.user.username, 'status': user.status, 'type': 'receiver'})
+				elif user.status != FriendshipStatus.BLOCKED:
+					friendList.append({'id': user.id, 'username': user.user.username, 'status': user.status.name, 'type': 'receiver'})
 					
 			elif(user.user_id == self.user.id):
-				if (user.status == 'accepted'):
+				if (user.status == FriendshipStatus.ACCEPTED):
 					friendList.append({'id': user.id, 'username': user.friend.username, 'status': 'online', 'type': 'sender'})
 				else:
-					friendList.append({'id': user.id, 'username': user.friend.username, 'status': user.status, 'type': 'sender'})
+					friendList.append({'id': user.id, 'username': user.friend.username, 'status': user.status.name, 'type': 'sender'})
 
 		for user in offline_friend_ids:
 			if(user.friend_id == self.user.id):
-				if (user.status == 'accepted'):
+				if (user.status == FriendshipStatus.ACCEPTED):
 					friendList.append({'id': user.id, 'username': user.user.username, 'status': 'offline', 'type': 'receiver'})
-				else:
-					friendList.append({'id': user.id, 'username': user.user.username, 'status': user.status, 'type': 'receiver'})	
+				elif user.status != FriendshipStatus.BLOCKED:
+					friendList.append({'id': user.id, 'username': user.user.username, 'status': user.status.name, 'type': 'receiver'})	
 			elif(user.user_id == self.user.id):
-				if (user.status == 'accepted'):
+				if (user.status == FriendshipStatus.ACCEPTED):
 					friendList.append({'id': user.id, 'username': user.friend.username, 'status': 'offline', 'type': 'sender'})		
 				else:
-					friendList.append({'id': user.id, 'username': user.friend.username, 'status': user.status, 'type': 'sender'})	
+					friendList.append({'id': user.id, 'username': user.friend.username, 'status': user.status.name, 'type': 'sender'})	
 		
 		friendList = sorted(friendList, key=lambda x: x['id'])
 		
