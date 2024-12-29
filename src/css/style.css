@@ -435,15 +435,26 @@ body {
 .friends-options {
     color: #d8d7d3;
     text-shadow: 1px 1px 2px #000000;
-    flex-direction: row;
     display: flex;
+    flex-direction: column;
+    align-items: center;
     font-size: 1.2em;
     margin-top: auto;
 }
 
 .friends-options-add {
-    width: 100%;
+    position: relative;
+    width: fit-content;
     text-align: center;
+}
+
+#friendsOptionsAlert {
+    position: absolute;
+    left: 95%;
+    bottom: 80%;
+    font-size: 1rem;
+    color: red;
+    display: none;
 }
 
 .friends-options button {

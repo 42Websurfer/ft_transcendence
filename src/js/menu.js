@@ -28,6 +28,7 @@ export function renderMenu() {
                 <div class="friends-options">
                     <div class="friends-options-add">
                         <button id="friendsOptionsAddButton">ADD FRIEND</button>
+                        <span id="friendsOptionsAlert">&#11044</span>
                     </div>
                 </div>
             </div>

@@ -358,9 +358,15 @@ function initOnlineStatus() {
                 else
                     addListItem(freundesliste[i].username, friendsBlockedList, 'blocked');
             }
+            const alertRequests = document.querySelector('#friendsOptionsAlert');
+            if (friendsRequestsList.children.length > 0) {
+                alertRequests.style.display = 'block';
+            } else {
+                alertRequests.style.display = 'none';
+            }
         }
         catch (error){
-            console.error("Error Parsing online status");
+            console.error("Error Parsing online status", error);
         }
     };
 
