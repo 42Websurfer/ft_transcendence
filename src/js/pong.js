@@ -196,19 +196,19 @@ class AiPlayer extends Player {
 			//hardcoded to simulate that the player will always hit it before the ball hits his goal
 			//this is to give AI a way to always somewhat predict a return shot
 			//maybe add this?
-			if (hitInfo.hitPos.x < 87.5 && hitInfo.entity == manager.sections[0].goal) {
-				console.log("Find intersection between ray and and line from x87.5 y0 to x87.5 yMAX then set hitInfo.hitPos to that");
-				let angle = Math.atan2(ray.start.y - hitInfo.hitPos.y, ray.start.x - hitInfo.hitPos.x) * (180 / Math.PI);
-				console.log('The angle is:', angle, 'angle2:');
-				let len = 87.5 / Math.cos(angle);
-				console.log('Base:', len, ' scuffed:');
-				let yC = ray.start.y + len * Math.sin(angle);
-				// ctx.fillRect(87.5, yC, 5, 5);
-				console.warn('pos:', 87.5, yC);
-				// maybe add this?
-				// hitInfo.hitPos.x = 87.5;
-				// hitInfo.hitPos.y = yC;
-			}
+			// if (hitInfo.hitPos.x < 87.5 && hitInfo.entity == manager.sections[0].goal) {
+			// 	console.log("Find intersection between ray and and line from x87.5 y0 to x87.5 yMAX then set hitInfo.hitPos to that");
+			// 	let angle = Math.atan2(ray.start.y - hitInfo.hitPos.y, ray.start.x - hitInfo.hitPos.x) * (180 / Math.PI);
+			// 	console.log('The angle is:', angle, 'angle2:');
+			// 	let len = 87.5 / Math.cos(angle);
+			// 	console.log('Base:', len, ' scuffed:');
+			// 	let yC = ray.start.y + len * Math.sin(angle);
+			// 	// ctx.fillRect(87.5, yC, 5, 5);
+			// 	console.warn('pos:', 87.5, yC);
+			// 	// maybe add this?
+			// 	// hitInfo.hitPos.x = 87.5;
+			// 	// hitInfo.hitPos.y = yC;
+			// }
 			this.debugPoints.push(hitInfo.hitPos);
 			if (hitInfo.entity == manager.sections[1].goal
 				|| hitInfo.entity == manager.sections[1].player
@@ -391,7 +391,7 @@ class PongLocalManager extends Entity{
 				}
 			}
 
-			window.addEventListener('keydown', restartGame)
+			window.addEventListener('keydown', restartGame);
 			return ;
 		}
 		this.round_running = false;
@@ -453,6 +453,9 @@ class PongLocalManager extends Entity{
 
 	cleanup(){
 		this.sections.forEach(section => {
+			if (section.player instanceof AiPlayer) {
+				clearInterval(section.player.aiBrain);
+			}
 			if (section.keyDownHandler) {
 				window.removeEventListener('keydown', section.keyDownHandler);
 			}
