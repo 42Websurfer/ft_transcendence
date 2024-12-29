@@ -152,6 +152,10 @@ export async function addListItem(content, ul, list, role)
             friendsModifyModal.style.display = 'block';
             removeFriendButton.style.display = 'block';
             blockFriendButton.style.display = 'block';
+            acceptFriendButton.style.display = 'none';
+            denyFriendButton.style.display = 'none';
+            withdrawFriendButton.style.display = 'none';
+            unblockFriendButton.style.display = 'none';
             friendsModifyModalUsername.textContent = "\"" + content + "\"";
             selectedListItem = li;
         });
@@ -191,6 +195,9 @@ export async function addListItem(content, ul, list, role)
             acceptFriendButton.style.display = 'block';
             denyFriendButton.style.display = 'block';
             blockFriendButton.style.display = 'block';
+            removeFriendButton.style.display = 'none';
+            withdrawFriendButton.style.display = 'none';
+            unblockFriendButton.style.display = 'none';
             friendsModifyModalUsername.textContent = "\"" + content + "\"";
             selectedListItem = li;
         });
@@ -227,8 +234,12 @@ export async function addListItem(content, ul, list, role)
 
         textSpan.addEventListener('click', () => {
             friendsModifyModal.style.display = 'block';
-            withdrawFriendButton.style.display = 'block';
             blockFriendButton.style.display = 'block';
+            withdrawFriendButton.style.display = 'block';
+            removeFriendButton.style.display = 'none';
+            acceptFriendButton.style.display = 'none';
+            denyFriendButton.style.display = 'none';
+            unblockFriendButton.style.display = 'none';
             friendsModifyModalUsername.textContent = "\"" + content + "\"";
             selectedListItem = li;
         });
@@ -265,6 +276,11 @@ export async function addListItem(content, ul, list, role)
 
         textSpan.addEventListener('click', () => {
             friendsModifyModal.style.display = 'block';
+            removeFriendButton.style.display = 'none';
+            blockFriendButton.style.display = 'none';
+            acceptFriendButton.style.display = 'none';
+            denyFriendButton.style.display = 'none';
+            withdrawFriendButton.style.display = 'none';
             unblockFriendButton.style.display = 'block';
             friendsModifyModalUsername.textContent = "\"" + content + "\"";
             selectedListItem = li;
