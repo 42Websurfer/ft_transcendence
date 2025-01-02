@@ -176,7 +176,7 @@ export async function sendAuthCode(user) {
 		return result;
 }
 
-const countdownTime = 3;
+let countdownTime = 3;
 let countdownIntervalID;
 
 export function useCountdownAsMessageDisplay(message) {
