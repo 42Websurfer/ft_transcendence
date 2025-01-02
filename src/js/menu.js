@@ -28,6 +28,7 @@ export function renderMenu() {
                 <div class="friends-options">
                     <div class="friends-options-add">
                         <button id="friendsOptionsAddButton">ADD FRIEND</button>
+                        <span id="friendsOptionsAlert">&#11044</span>
                     </div>
                 </div>
             </div>
@@ -202,14 +203,24 @@ export function renderMenu() {
     const denyFriendButton = document.getElementById('denyFriendButton');
     const withdrawFriendButton = document.getElementById('withdrawFriendButton');
     const unblockFriendButton = document.getElementById('unblockFriendButton');
+
+    function clearFriendshipModal() {
+        friendsModifyModal.style.display = 'none';
+        removeFriendButton.style.direction = 'none';
+        blockFriendButton .style.direction = 'none';
+        acceptFriendButton.style.direction = 'none';
+        denyFriendButton.style.direction = 'none';
+        withdrawFriendButton.style.direction = 'none';
+        unblockFriendButton .style.direction = 'none';
+    }
     
     removeFriendButton.addEventListener('click', async () => {
         if (selectedListItem) {
             const content = selectedListItem.textContent;
             setSelectedListItem(null);
-            friendsModifyModal.style.display = 'none';
+            clearFriendshipModal();
             console.log(`/remove_friendship/${content}/`)
-            const response = await handleFriendRequest(`/remove_friendship/${content}/`)
+            const response = await handleFriendRequest(`remove_friendship/${content}/`)
             console.log(response.type + ' + ' + response.message);
         }
     });
@@ -218,9 +229,9 @@ export function renderMenu() {
         if (selectedListItem) {
             const content = selectedListItem.textContent;
             setSelectedListItem(null);
-            friendsModifyModal.style.display = 'none';
+            clearFriendshipModal();
             console.log(`/block_friend_request/${content}/`)
-            const response = await handleFriendRequest(`/block_friend_request/${content}/`)
+            const response = await handleFriendRequest(`block_friend_request/${content}/`)
             console.log(response.type + ' + ' + response.message);
         }
     });
@@ -229,9 +240,9 @@ export function renderMenu() {
         if (selectedListItem) {
             const content = selectedListItem.textContent;
             setSelectedListItem(null);
-            friendsModifyModal.style.display = 'none';
+            clearFriendshipModal();
             console.log(`/accept_friend_request/${content}/`)
-            const response = await handleFriendRequest(`/accept_friend_request/${content}/`)
+            const response = await handleFriendRequest(`accept_friend_request/${content}/`)
             console.log(response.type + ' + ' + response.message);
         }
     });
@@ -240,9 +251,9 @@ export function renderMenu() {
         if (selectedListItem) {
             const content = selectedListItem.textContent;
             setSelectedListItem(null);
-            friendsModifyModal.style.display = 'none';
+            clearFriendshipModal();
             console.log(`/remove_friendship/${content}/`)
-            const response = await handleFriendRequest(`/remove_friendship/${content}/`)
+            const response = await handleFriendRequest(`remove_friendship/${content}/`)
             console.log(response.type + ' + ' + response.message);
         }
     });
@@ -251,9 +262,9 @@ export function renderMenu() {
         if (selectedListItem) {
             const content = selectedListItem.textContent;
             setSelectedListItem(null);
-            friendsModifyModal.style.display = 'none';
+            clearFriendshipModal();
             console.log(`/remove_friendship/${content}/`)
-            const response = await handleFriendRequest(`/remove_friendship/${content}/`)
+            const response = await handleFriendRequest(`remove_friendship/${content}/`)
             console.log(response.type + ' + ' + response.message);
         }
     });
@@ -262,9 +273,9 @@ export function renderMenu() {
         if (selectedListItem) {
             const content = selectedListItem.textContent;
             setSelectedListItem(null);
-            friendsModifyModal.style.display = 'none';
+            clearFriendshipModal();
             console.log(`/remove_friendship/${content}/`)
-            const response = await handleFriendRequest(`/remove_friendship/${content}/`)
+            const response = await handleFriendRequest(`remove_friendship/${content}/`)
             console.log(response.type + ' + ' + response.message);
         }
     });
