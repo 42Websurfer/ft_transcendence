@@ -4,10 +4,8 @@ import { renderWaiting } from './waiting.js';
 import { renderAuth2FALogin } from './auth_2fa_login.js';
 import { renderAuth2FARegister } from './auth_2fa_register.js';
 
-let wsBool;
-wsBool = false;
+let onlineWebSocket = undefined;
 
-let ws;
 async function checkAuthentication() {
     const token = localStorage.getItem('access_token'); 
     try {
@@ -51,10 +49,9 @@ async function renderLoginLogoutButton(isAuthenticated, section) {
         `;
         const logoutButton = document.getElementById('logoutButton')
         logoutButton.addEventListener('click', () => {
-            wsBool = false;
 			const logoContainer = document.querySelector('#avatar');
 			logoContainer.style.display = 'none';
-            handleLogoutSubmit(ws, wsBool);
+            handleLogoutSubmit(onlineWebSocket);
         });
     }
     else
@@ -318,13 +315,13 @@ export async function addListItem(content, ul, list, role)
 
 function initOnlineStatus() {
     const token = localStorage.getItem('access_token');
-    ws = new WebSocket(`wss://${window.location.host}/ws/user/online-status/?token=${token}`);
+    onlineWebSocket = new WebSocket(`wss://${window.location.host}/ws/user/online-status/?token=${token}`);
 
-    ws.onopen =  function() {
+    onlineWebSocket.onopen =  function() {
         console.log("Connected to WebSocket Online Status");
     };
 
-    ws.onmessage = function(event) {
+    onlineWebSocket.onmessage = function(event) {
         try {
             const data = JSON.parse(event.data);
             
@@ -370,7 +367,7 @@ function initOnlineStatus() {
         }
     };
 
-    ws.onclose = function() {
+    onlineWebSocket.onclose = function() {
         console.log("WebSocket Online Status connection closed");
     };
 }
@@ -424,16 +421,17 @@ export async function showSection(section, lobbyId, pushState = true)
             avatarName.textContent = data.username;
         });
 
-
-        if (!wsBool)
-        {
+        if (!onlineWebSocket || onlineWebSocket?.readyState == WebSocket.CLOSED)
             initOnlineStatus();
-            wsBool = true;
-        }
-        if (section === 'menu')
+
+        if (section === 'menu') {
             import('./menu.js').then(module => {
                 module.renderMenu();
             });
+            if (onlineWebSocket?.readyState == WebSocket.OPEN) {
+                onlineWebSocket.send(JSON.stringify({type: 'resend'}));
+            }
+        }
         else if (section === 'menu_local')
             import('./menu_local.js').then(module => {
                 module.renderMenuLocal(lobbyId);

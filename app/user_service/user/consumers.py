@@ -45,6 +45,14 @@ class UserStatus(AsyncWebsocketConsumer):
 			)
 
 
+	async def receive(self, text_data):
+		try:
+			text_data_json = json.loads(text_data)
+			if text_data_json['type'] == 'resend':
+				await self.send_online_users(None)
+		except Exception as e:
+			print(f'text_data exept:', text_data, 'excepton:', e, flush=True)
+
 	async def send_online_users(self, event):
 		online_users_ids = redis.smembers("online_users")
 		online_users_ids = [int(user_id) for user_id in online_users_ids]

@@ -21,6 +21,7 @@ from user.utils import updateOnlineStatusChannel
 from .models import User, Friendship, FriendshipStatus, UserProfile
 from .serializers import RegisterSerializer, UpdateUserSerializer
 from .utils import setup_2fa
+
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 

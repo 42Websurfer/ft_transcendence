@@ -73,7 +73,7 @@ export function copyToClipboard() {
 //     }
 // }
 
-export async function handleLogoutSubmit(ws, wsBool)
+export async function handleLogoutSubmit(ws)
 {
     const token = localStorage.getItem('access_token'); 
 
@@ -89,7 +89,6 @@ export async function handleLogoutSubmit(ws, wsBool)
     localStorage.removeItem('refresh_token');
     if (ws)
         ws.close(1000, "Client closed connection");
-    wsBool = false;
     showSection('auth_login');
 }
 
@@ -177,11 +176,11 @@ export async function sendAuthCode(user) {
 		return result;
 }
 
-let countdown = 3;
-let countdownInterval;
+const countdownTime = 3;
+let countdownIntervalID;
 
 export function useCountdownAsMessageDisplay(message) {
-	clearInterval(countdownInterval);
+	clearInterval(countdownIntervalID);
 	let countdownDisplay = document.getElementById('countdownDisplay');
 	
 	countdownDisplay.innerHTML = `<p>${message}</p>`;
@@ -189,15 +188,15 @@ export function useCountdownAsMessageDisplay(message) {
 }
 
 export function startGame() {
-	countdown = 3
+	countdownTime = 3
 	let countdownDisplay = document.getElementById('countdownDisplay');
 	if (!countdownDisplay)
 		return;
-	countdownDisplay.textContent = countdown.toString();
+	countdownDisplay.textContent = countdownTime.toString();
 	countdownDisplay.style.display = 'block';
-	if (countdownInterval)
-		clearInterval(countdownInterval);
-	countdownInterval = setInterval(updateCountdown, 1000);
+	if (countdownIntervalID)
+		clearInterval(countdownIntervalID);
+	countdownIntervalID = setInterval(updateCountdown, 1000);
 }
 
 async function updateCountdown() {
@@ -205,12 +204,12 @@ async function updateCountdown() {
 	let countdownDisplay = document.getElementById('countdownDisplay');
 	if (!countdownDisplay)
 		return ;
-	if (countdown > 1) {
-		countdown--;
-		countdownDisplay.textContent = countdown.toString();
+	if (countdownTime > 1) {
+		countdownTime--;
+		countdownDisplay.textContent = countdownTime.toString();
 	} else {
-		clearInterval(countdownInterval);
-		countdownInterval = undefined;
+		clearInterval(countdownIntervalID);
+		countdownIntervalID = undefined;
 		countdownDisplay.style.display = 'none';
 		
 		console.log('Game started!');
