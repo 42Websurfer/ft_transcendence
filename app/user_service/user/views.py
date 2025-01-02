@@ -289,7 +289,7 @@ def block_friend_request(request, username):
         if friendship.status == FriendshipStatus.BLOCKED and friendship.user.username != user.username:
             new_block = Friendship.objects.create(user=user, friend=friend, status=FriendshipStatus.BLOCKED)
             new_block.save()
-            return JsonResponse({'type': 'error', 'message': 'Now double blocked?!'})
+            return JsonResponse({'type': 'success'})
         friendship.status = FriendshipStatus.BLOCKED
         if user.username != friendship.user.username:
             tmp = friendship.user
@@ -304,6 +304,11 @@ def block_friend_request(request, username):
         return JsonResponse({
             'type': 'error',
             'message': 'Friendship doesn\'t exist.'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'type': 'error',
+            'message': e
         })
 
 @api_view(['GET'])
