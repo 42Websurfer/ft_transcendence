@@ -968,6 +968,7 @@ body {
 .lobby-container-inside {
     display: flex;
     flex-direction: row;
+    height: 100%;
 }
 
 .lobby-container-data {
@@ -977,6 +978,7 @@ body {
     background-color: rgba(245, 244, 244, 0.4);
     border-radius: 8px;
     border: 0.1em solid #000000;
+    padding: 2em;
 }
 
 .tournament-vertical-divider {
@@ -990,12 +992,10 @@ body {
 
 .tournament-table1 {
     width: 52%;
-    padding: 2em;
 }
 
 .tournament-table2 {
     width: 44%;
-    padding: 2em;
 }
 
 .lobby-container-buttons {

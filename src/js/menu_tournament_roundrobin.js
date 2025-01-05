@@ -290,7 +290,7 @@ export function renderMenuTournamentRoundRobin(lobbyId) {
                                 <p>MATCHES</p>
                             </div>  
 
-                            <ul id="tournamentMatches" style="list-style-type: none; padding: 0; margin: 0;"></ul>
+                            <ul id="tournamentMatches" style="list-style-type: none; padding: 0; margin: 0;height:90%;overflow-y:scroll;"></ul>
 
                         </div>
                     </div>
