@@ -285,7 +285,7 @@ export function renderMenuTournamentRoundRobin(lobbyId) {
                     <hr class="tournament-vertical-divider">
 
                     <div class="tournament-table2">
-                        <div id="tournamentLobby">
+                        <div id="tournamentLobby" style="height:100%">
                             <div class="tournament-table-header">
                                 <p>MATCHES</p>
                             </div>  
