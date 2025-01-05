@@ -245,7 +245,7 @@ export function renderMenuTournamentRoundRobin(lobbyId) {
 
                 <div class="lobby-container-data">
 
-                    <div class="tournament-table1" style="padding-right: 0.6em;">
+                    <div class="tournament-table1">
                         <div id="tournamentLobby">
                             <div class="tournament-table-header">
                                 <p>STANDINGS</p>
@@ -284,7 +284,7 @@ export function renderMenuTournamentRoundRobin(lobbyId) {
                     
                     <hr class="tournament-vertical-divider">
 
-                    <div class="tournament-table2" style="padding-left: 0;">
+                    <div class="tournament-table2">
                         <div id="tournamentLobby">
                             <div class="tournament-table-header">
                                 <p>MATCHES</p>
