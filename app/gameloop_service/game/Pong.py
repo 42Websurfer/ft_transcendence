@@ -413,28 +413,9 @@ class PongGame:
 	"""
 	def send_entity_move(self, entity: Entity):
 		self.move_tasks.append(f"up;{entity.id};{entity.position.x};{entity.position.y};{entity.rotation}")
-		return
-		asyncio.run_coroutine_threadsafe(self.players[0].channel_layer.group_send(
-			self.players[0].group_name,
-			{
-				'type': 'move_entity',
-				'id': entity.id,
-				'transform': entity.serialize()
-			}
-			),
-			self.event_loop)
 		
 	def send_entity_set_pos(self, entity):
 		self.move_tasks.append(f"sp;{entity.id};{entity.position.x};{entity.position.y};{entity.rotation}")
-		return
-		asyncio.run_coroutine_threadsafe(self.players[0].channel_layer.group_send(
-			self.players[0].group_name,
-			{
-				'type': 'set_entity_pos',
-				'id': entity.id,
-				'transform': entity.serialize()
-			}
-		), self.event_loop)
 
 
 class GamesHandler:
