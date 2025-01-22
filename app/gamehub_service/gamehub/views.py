@@ -464,8 +464,8 @@ def get_dashboard_data(request):
 	tournament_data, tournaments_played = get_last_tournament_data(user_game_stats)
 
 	tournament_wins = user_game_stats.tournament_wins
-	blockchain_result = requests.get(f'http://blockchain:5000/get_user_score?userId={user.id}')
 	try:
+		blockchain_result = requests.get(f'http://blockchain:5000/get_user_score?userId={user.id}')
 		json_data = blockchain_result.json()
 		if (blockchain_result.status_code == 200):
 			tournament_wins = json_data['score']
@@ -493,7 +493,6 @@ def get_dashboard_data(request):
 		'avatar_url': user_game_stats.avatar.url,
 	}
 	return JsonResponse(data)
-	#
 
 # BLOCKCHAIN-SERVICE
 
