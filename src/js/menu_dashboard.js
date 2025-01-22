@@ -120,6 +120,7 @@ function displayMatches(matches, username)
     if (list)
         list.innerHTML = '';
 
+	matches.sort((lhs, rhs) => lhs.date < rhs.date);
     for (let index = 0; index < matches.length; index++)
     {
         const m = matches[index];
