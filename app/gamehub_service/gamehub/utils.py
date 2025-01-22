@@ -177,7 +177,10 @@ def safe_tournament_data(lobby_id):
 			if result['rank'] == 1:
 				user_Gamestats.tournament_wins += 1
 				user_Gamestats.save()
-				requests.post('http://blockchain:5000/update_user_score', json={'userId': user_Gamestats.user_id, 'newScore': user_Gamestats.tournament_wins})
+				try:
+					requests.post('http://blockchain:5000/update_user_score', json={'userId': user_Gamestats.user_id, 'newScore': user_Gamestats.tournament_wins})
+				except:
+					pass
 			tournament_result = TournamentResults(
 				tournament_id = tournament,
 				rank = result['rank'],

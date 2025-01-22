@@ -469,7 +469,7 @@ def get_dashboard_data(request):
 		json_data = blockchain_result.json()
 		if (blockchain_result.status_code == 200):
 			tournament_wins = json_data['score']
-			print('KOMMT AUS DER BLOCKCHAIN!')
+			print('Score successfully retrieved from blockchain')
 		else:
 			print('Error when fetching blockchain data:', json_data['error'])
 	except Exception as e:
