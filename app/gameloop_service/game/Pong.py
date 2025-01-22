@@ -414,7 +414,7 @@ class PongGame:
 	def send_entity_move(self, entity: Entity):
 		self.move_tasks.append(f"up;{entity.id};{entity.position.x};{entity.position.y};{entity.rotation}")
 		
-	def send_entity_set_pos(self, entity):
+	def send_entity_set_pos(self, entity: Entity):
 		self.move_tasks.append(f"sp;{entity.id};{entity.position.x};{entity.position.y};{entity.rotation}")
 
 
