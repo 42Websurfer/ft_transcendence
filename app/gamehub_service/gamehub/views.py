@@ -469,11 +469,11 @@ def get_dashboard_data(request):
 		json_data = blockchain_result.json()
 		if (blockchain_result.status_code == 200):
 			tournament_wins = json_data['score']
-			print('Score successfully retrieved from blockchain')
+			logger.debug('Score successfully retrieved from blockchain')
 		else:
-			print('Error when fetching blockchain data:', json_data['error'])
+			logger.error(f"Error when fetching blockchain data: {json_data['error']}")
 	except Exception as e:
-		print('Error when fetching blockchain data:', e)
+		logger.error(f'Exception when fetching blockchain data: {e}')
 	data = {
 		'type': 'success',
 		'wins': user_game_stats.wins,
