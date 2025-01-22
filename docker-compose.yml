@@ -138,15 +138,15 @@ services:
     depends_on:
       - redis
 
-  # blockchain:
-  #   build: ./requirements/blockchain
-  #   container_name: blockchain
-  #   env_file: 
-  #     - ./.env
-  #   networks:
-  #     - trans_net
-  #   ports:
-  #     - "5000:5000"
+  blockchain:
+    build: ./requirements/blockchain
+    container_name: blockchain
+    env_file: 
+      - ./.env
+    networks:
+      - trans_net
+    ports:
+      - "5000:5000"
   daphne_user:
     build: 
       context: ./app/user_service/

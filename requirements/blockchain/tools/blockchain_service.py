@@ -177,14 +177,14 @@ def get_user_score():
 	user_id = int(request.args.get('userId'))
 
 	if not user_exists(user_id):
-		return {"type": "error", "message": "User does not exist."}, 200
+		return {"error": "User does not exist."}, 404
 	
 	try:
 		score = user_score(user_id)	
 	except:
-		return {"type": "error", "message": "Contract execution failed."}, 200
+		return {"error": "Contract execution failed."}, 400
 
-	return {"type": "success", "score": score}, 200
+	return {"score": score}, 200
 
 @app.route('/delete_user_score', methods=['GET'])
 def delete_user_score():
@@ -210,4 +210,3 @@ def delete_user_score():
 
 if __name__ == '__main__':
 	app.run(host='0.0.0.0', port=5000)
-

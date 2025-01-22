@@ -27,7 +27,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', 'user-service', '10.13.9.6', '127.0.0.1', 'websurfers.com', '10.13.9.1']
+ALLOWED_HOSTS = ['localhost', 'user-service', '10.13.9.6', '127.0.0.1', 'websurfers.com', '10.13.9.1', '10.13.8.1']
 
 
 # Application definition

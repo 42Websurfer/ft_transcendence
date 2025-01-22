@@ -5,6 +5,7 @@ from channels.layers import get_channel_layer
 from asgiref.sync import sync_to_async, async_to_sync
 from django.core.exceptions import ObjectDoesNotExist
 from .models import OnlineMatch, GameStatsUser, Tournament, TournamentResults 
+import requests
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -176,6 +177,7 @@ def safe_tournament_data(lobby_id):
 			if result['rank'] == 1:
 				user_Gamestats.tournament_wins += 1
 				user_Gamestats.save()
+				requests.post('http://blockchain:5000/update_user_score', json={'userId': user_Gamestats.user_id, 'newScore': user_Gamestats.tournament_wins})
 			tournament_result = TournamentResults(
 				tournament_id = tournament,
 				rank = result['rank'],

@@ -4,6 +4,7 @@ import string
 import redis
 import json
 import logging
+import requests
 from .utils import get_longest_winstreak, tournament_string, round_completed, set_match_data, set_online_match, match_lobby_string, multiple_lobby_string, set_winner_multiple
 from channels.layers import get_channel_layer
 from django.core.exceptions import ObjectDoesNotExist
@@ -462,6 +463,17 @@ def get_dashboard_data(request):
 	all_matches, highest_win, highest_loss, form = get_match_data(user_game_stats)
 	tournament_data, tournaments_played = get_last_tournament_data(user_game_stats)
 
+	tournament_wins = user_game_stats.tournament_wins
+	blockchain_result = requests.get(f'http://blockchain:5000/get_user_score?userId={user.id}')
+	try:
+		json_data = blockchain_result.json()
+		if (blockchain_result.status_code == 200):
+			tournament_wins = json_data['score']
+			print('KOMMT AUS DER BLOCKCHAIN!')
+		else:
+			print('Error when fetching blockchain data:', json_data['error'])
+	except Exception as e:
+		print('Error when fetching blockchain data:', e)
 	data = {
 		'type': 'success',
 		'wins': user_game_stats.wins,
@@ -469,8 +481,7 @@ def get_dashboard_data(request):
 		'goals_for': user_game_stats.goals_for,
 		'goals_against': user_game_stats.goals_against,
 		'username': user_game_stats.username,
-		'tournament_wins': user_game_stats.tournament_wins,
-		'form': 'WLWWLW', #muss noch gebaut werden
+		'tournament_wins': tournament_wins,
 		'matches': all_matches,
 		'last_tournament': tournament_data,
 		'highest_win': highest_win if highest_win else None,
