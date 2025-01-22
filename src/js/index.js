@@ -4,10 +4,8 @@ import { renderWaiting } from './waiting.js';
 import { renderAuth2FALogin } from './auth_2fa_login.js';
 import { renderAuth2FARegister } from './auth_2fa_register.js';
 
-let wsBool;
-wsBool = false;
+let onlineWebSocket = undefined;
 
-let ws;
 async function checkAuthentication() {
     const token = localStorage.getItem('access_token'); 
     try {
@@ -51,10 +49,9 @@ async function renderLoginLogoutButton(isAuthenticated, section) {
         `;
         const logoutButton = document.getElementById('logoutButton')
         logoutButton.addEventListener('click', () => {
-            wsBool = false;
 			const logoContainer = document.querySelector('#avatar');
 			logoContainer.style.display = 'none';
-            handleLogoutSubmit(ws, wsBool);
+            handleLogoutSubmit(onlineWebSocket);
         });
     }
     else
@@ -152,6 +149,10 @@ export async function addListItem(content, ul, list, role)
             friendsModifyModal.style.display = 'block';
             removeFriendButton.style.display = 'block';
             blockFriendButton.style.display = 'block';
+            acceptFriendButton.style.display = 'none';
+            denyFriendButton.style.display = 'none';
+            withdrawFriendButton.style.display = 'none';
+            unblockFriendButton.style.display = 'none';
             friendsModifyModalUsername.textContent = "\"" + content + "\"";
             selectedListItem = li;
         });
@@ -191,6 +192,9 @@ export async function addListItem(content, ul, list, role)
             acceptFriendButton.style.display = 'block';
             denyFriendButton.style.display = 'block';
             blockFriendButton.style.display = 'block';
+            removeFriendButton.style.display = 'none';
+            withdrawFriendButton.style.display = 'none';
+            unblockFriendButton.style.display = 'none';
             friendsModifyModalUsername.textContent = "\"" + content + "\"";
             selectedListItem = li;
         });
@@ -227,8 +231,12 @@ export async function addListItem(content, ul, list, role)
 
         textSpan.addEventListener('click', () => {
             friendsModifyModal.style.display = 'block';
-            withdrawFriendButton.style.display = 'block';
             blockFriendButton.style.display = 'block';
+            withdrawFriendButton.style.display = 'block';
+            removeFriendButton.style.display = 'none';
+            acceptFriendButton.style.display = 'none';
+            denyFriendButton.style.display = 'none';
+            unblockFriendButton.style.display = 'none';
             friendsModifyModalUsername.textContent = "\"" + content + "\"";
             selectedListItem = li;
         });
@@ -265,6 +273,11 @@ export async function addListItem(content, ul, list, role)
 
         textSpan.addEventListener('click', () => {
             friendsModifyModal.style.display = 'block';
+            removeFriendButton.style.display = 'none';
+            blockFriendButton.style.display = 'none';
+            acceptFriendButton.style.display = 'none';
+            denyFriendButton.style.display = 'none';
+            withdrawFriendButton.style.display = 'none';
             unblockFriendButton.style.display = 'block';
             friendsModifyModalUsername.textContent = "\"" + content + "\"";
             selectedListItem = li;
@@ -302,13 +315,13 @@ export async function addListItem(content, ul, list, role)
 
 function initOnlineStatus() {
     const token = localStorage.getItem('access_token');
-    ws = new WebSocket(`wss://${window.location.host}/ws/user/online-status/?token=${token}`);
+    onlineWebSocket = new WebSocket(`wss://${window.location.host}/ws/user/online-status/?token=${token}`);
 
-    ws.onopen =  function() {
+    onlineWebSocket.onopen =  function() {
         console.log("Connected to WebSocket Online Status");
     };
 
-    ws.onmessage = function(event) {
+    onlineWebSocket.onmessage = function(event) {
         try {
             const data = JSON.parse(event.data);
             
@@ -335,20 +348,26 @@ function initOnlineStatus() {
                     addListItem(freundesliste[i].username, friendsOnlineList, 'online');
                 else if (freundesliste[i].status === 'offline')
                     addListItem(freundesliste[i].username, friendsOfflineList, 'offline');
-                else if (freundesliste[i].status === 'pending' && freundesliste[i].type === 'sender')
+                else if (freundesliste[i].status === 'PENDING' && freundesliste[i].type === 'sender')
                     addListItem(freundesliste[i].username, friendsPendingList, 'pending');
-                else if (freundesliste[i].status === 'pending' && freundesliste[i].type === 'receiver')
+                else if (freundesliste[i].status === 'PENDING' && freundesliste[i].type === 'receiver')
                     addListItem(freundesliste[i].username, friendsRequestsList, 'request');
                 else
                     addListItem(freundesliste[i].username, friendsBlockedList, 'blocked');
             }
+            const alertRequests = document.querySelector('#friendsOptionsAlert');
+            if (friendsRequestsList.children.length > 0) {
+                alertRequests.style.display = 'block';
+            } else {
+                alertRequests.style.display = 'none';
+            }
         }
         catch (error){
-            console.error("Error Parsing online status");
+            console.error("Error Parsing online status", error);
         }
     };
 
-    ws.onclose = function() {
+    onlineWebSocket.onclose = function() {
         console.log("WebSocket Online Status connection closed");
     };
 }
@@ -383,43 +402,36 @@ export async function showSection(section, lobbyId, pushState = true)
                 settingsButton.style.display = 'none';
         }
 
-		const user_data = localStorage.getItem('user_data');
-		function setAvatar(data) {
-			const avatarDiv = document.querySelector('#avatar');
-			const avatarConainer = avatarDiv.querySelector('#avatar_img_container');
-			const avatarName = avatarDiv.querySelector('#avatar_name');
-			const avatarImg = avatarConainer.querySelector('img');
-			avatarDiv.style.display = 'flex';
-			avatarImg.src = '/img' + data.avatar_url;
-			avatarName.textContent = data.username;
-		}
-		if (!user_data) {
-			const token = localStorage.getItem('access_token'); 
-			fetch('/api/tm/avatar_data/', {
-				method: 'GET',
-				headers: {
-					'Authorization': `Bearer ${token}`,
-					'Content-Type': 'application/json'
-				},
-			})
-			.then((response) => response.json())
-			.then((data) => {
-				setAvatar(data);
-				localStorage.setItem('user_data', JSON.stringify({username: data.username, avatar_url: data.avatar_url}));
-			});
-		} else {
-			setAvatar(JSON.parse(user_data));
-		}
+        const token = localStorage.getItem('access_token'); 
+        fetch('/api/tm/avatar_data/', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+        })
+        .then((response) => response.json())
+        .then((data) => {
+            const avatarDiv = document.querySelector('#avatar');
+            const avatarConainer = avatarDiv.querySelector('#avatar_img_container');
+            const avatarName = avatarDiv.querySelector('#avatar_name');
+            const avatarImg = avatarConainer.querySelector('img');
+            avatarDiv.style.display = 'flex';
+            avatarImg.src = '/img' + data.avatar_url;
+            avatarName.textContent = data.username;
+        });
 
-        if (!wsBool)
-        {
+        if (!onlineWebSocket || onlineWebSocket?.readyState == WebSocket.CLOSED)
             initOnlineStatus();
-            wsBool = true;
-        }
-        if (section === 'menu')
+
+        if (section === 'menu') {
             import('./menu.js').then(module => {
                 module.renderMenu();
             });
+            if (onlineWebSocket?.readyState == WebSocket.OPEN) {
+                onlineWebSocket.send(JSON.stringify({type: 'resend'}));
+            }
+        }
         else if (section === 'menu_local')
             import('./menu_local.js').then(module => {
                 module.renderMenuLocal(lobbyId);

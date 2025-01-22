@@ -18,9 +18,10 @@ from rest_framework.response import Response
 from user.utils import updateOnlineStatusChannel
 #TypeError: the JSON object must be str, bytes or bytearray, not Response
 #from tournament.models import GameStatsUser
-from .models import User, Friendship, UserProfile
+from .models import User, Friendship, FriendshipStatus, UserProfile
 from .serializers import RegisterSerializer, UpdateUserSerializer
 from .utils import setup_2fa
+
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
@@ -221,18 +222,17 @@ def send_friend_request(request, username):
             'message': 'You can\'t invite yourself.',
         }, status=400)
     try:
-        friendship = Friendship.objects.get(
-            Q(user=user, friend=friend) | Q(user=friend, friend=user))
+        friendship = Friendship.objects.get(Q(user=user, friend=friend) | Q(user=friend, friend=user))
         if (friendship):
-            if friendship.status == 'pending':
+            if friendship.status == FriendshipStatus.PENDING:
                 return JsonResponse({
                     'type': 'error',
                     'message': 'Request already sent!'
                 }, status=400)
-            elif friendship.status == 'rejected':
+            elif friendship.status == FriendshipStatus.BLOCKED:
                 return JsonResponse({
                     'type': 'error',
-                    'message': 'This user blocked you!'
+                    'message': 'This user blocked you!' if friendship.user.username != user.username else 'You Blocked this user!'
                 }, status=400)
             else:
                 return JsonResponse({
@@ -240,7 +240,8 @@ def send_friend_request(request, username):
                     'message': 'You are already friends!'
                 }, status=400)
     except Friendship.DoesNotExist:
-        newFriend = Friendship.objects.create(user=user, friend=friend, status='pending')
+        newFriend = Friendship.objects.create(user=user, friend=friend, status=FriendshipStatus.PENDING)
+        newFriend.save()
         updateOnlineStatusChannel()
         return JsonResponse({
             'type': 'Success Request',
@@ -255,18 +256,18 @@ def accept_friend_request(request, username):
     friend = get_object_or_404(User, username=username)
     try:
         friendship = Friendship.objects.get(user=friend, friend=user)
-        if (friendship.status == 'accepted'):
+        if (friendship.status == FriendshipStatus.ACCEPTED):
             return JsonResponse({
                 'type': 'error',
                 'message': 'Your are already friends.'
             }, status=400)
-        elif (friendship.status == 'rejected'):
+        elif (friendship.status == FriendshipStatus.BLOCKED):
             return JsonResponse({
                 'type': 'error',
                 'message': 'Your are already blocked.'
             }, status=400)
         else:
-            friendship.status = 'accepted'
+            friendship.status = FriendshipStatus.ACCEPTED
             friendship.save()
             updateOnlineStatusChannel()
         return (JsonResponse({
@@ -284,9 +285,16 @@ def block_friend_request(request, username):
     user = request.user
     friend = get_object_or_404(User, username=username)
     try:
-        friendship = Friendship.objects.get(
-            Q(user=friend, friend=user) | Q(user=user, friend=friend))
-        friendship.status = 'rejected'
+        friendship = Friendship.objects.get(Q(user=friend, friend=user) | Q(user=user, friend=friend))
+        if friendship.status == FriendshipStatus.BLOCKED and friendship.user.username != user.username:
+            new_block = Friendship.objects.create(user=user, friend=friend, status=FriendshipStatus.BLOCKED)
+            new_block.save()
+            return JsonResponse({'type': 'success'})
+        friendship.status = FriendshipStatus.BLOCKED
+        if user.username != friendship.user.username:
+            tmp = friendship.user
+            friendship.user = user
+            friendship.friend = tmp
         friendship.save()
         updateOnlineStatusChannel()
         return (JsonResponse({
@@ -297,6 +305,11 @@ def block_friend_request(request, username):
             'type': 'error',
             'message': 'Friendship doesn\'t exist.'
         })
+    except Exception as e:
+        return JsonResponse({
+            'type': 'error',
+            'message': e
+        })
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -304,31 +317,38 @@ def remove_friendship(request, username):
     user = request.user
     friend = get_object_or_404(User, username=username)
     try:
-        friendship = Friendship.objects.filter(
-            Q(user=friend, friend=user) | Q(user=user, friend=friend)
-            ).delete()
-        if (friendship):
-            updateOnlineStatusChannel()
-            return (JsonResponse({
-                'type': 'success'
-            }))
-    except Friendship.DoesNotExist:
+        friendships = Friendship.objects.filter(Q(user=friend, friend=user) | Q(user=user, friend=friend))
+        if not friendships.exists():
+            return JsonResponse({'type': 'error', 'message': 'Friendship doesn\'t exist.'})
+        
+        print('All friendships?!', friendships, flush=True)
+        for friendship in friendships:
+            if friendship.status == FriendshipStatus.BLOCKED and friendship.user.username != user.username:
+                continue
+            friendship.delete()
+            print('Delete friendship', friendship, flush=True)
+
+        updateOnlineStatusChannel()
+        return (JsonResponse({
+            'type': 'success'
+        }))
+    except Exception as e:
         return JsonResponse({
             'type': 'error',
-            'message': 'Friendship doesn\'t exist.'
+            'message': str(e)
         })
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def friend_requests(request):
     user = request.user
-    friend_requests = Friendship.objects.filter(friend=user, status='pending')
+    friend_requests = Friendship.objects.filter(friend=user, status=FriendshipStatus.PENDING)
     requests_data = [
         {
             'id': fr.id,
             'from_user': fr.user.username,
             'friend_user': fr.friend.username,
-            'status': fr.status,
+            'status': fr.status.name,
             'created_at': fr.created_at,
         }
         for fr in friend_requests
@@ -339,13 +359,13 @@ def friend_requests(request):
 @permission_classes([IsAuthenticated])
 def friend_list(request):
     user = request.user
-    friend_requests = Friendship.objects.filter(friend=user, status='accepted')
+    friend_requests = Friendship.objects.filter(friend=user, status=FriendshipStatus.ACCEPTED)
     requests_data = [
         {
             'id': fr.id,
             'from_user': fr.user.username,
             'friend_user': fr.friend.username,
-            'status': fr.status,
+            'status': fr.status.name,
             'created_at': fr.created_at,
         }
         for fr in friend_requests
