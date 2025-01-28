@@ -1,4 +1,4 @@
-import { displayToast, getCookie } from './utils.js';
+import { AvatarLoader, displayToast, getCookie } from './utils.js';
 import { showSection } from './index.js';
 
 export async function renderSettings() {
@@ -115,6 +115,7 @@ async function handleSettingsFormSubmit(event) {
     const result = await response.json();
 	if (result.type === 'success')
 	{
+		AvatarLoader.deleteLocal();
 		displayToast('User data successfully updated.', 'success');		
 		showSection('menu')
 	}

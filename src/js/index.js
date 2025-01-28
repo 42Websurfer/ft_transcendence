@@ -1,4 +1,4 @@
-import { handleLogoutSubmit, displayToast } from './utils.js';
+import { handleLogoutSubmit, displayToast, AvatarLoader } from './utils.js';
 import { renderAuth42 } from './auth_42.js';
 import { renderWaiting } from './waiting.js';
 import { renderAuth2FALogin } from './auth_2fa_login.js';
@@ -51,6 +51,7 @@ async function renderLoginLogoutButton(isAuthenticated, section) {
         logoutButton.addEventListener('click', () => {
 			const logoContainer = document.querySelector('#avatar');
 			logoContainer.style.display = 'none';
+			AvatarLoader.deleteLocal();
             handleLogoutSubmit(onlineWebSocket);
         });
     }
@@ -402,24 +403,7 @@ export async function showSection(section, lobbyId, pushState = true)
                 settingsButton.style.display = 'none';
         }
 
-        const token = localStorage.getItem('access_token'); 
-        fetch('/api/tm/avatar_data/', {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-        })
-        .then((response) => response.json())
-        .then((data) => {
-            const avatarDiv = document.querySelector('#avatar');
-            const avatarConainer = avatarDiv.querySelector('#avatar_img_container');
-            const avatarName = avatarDiv.querySelector('#avatar_name');
-            const avatarImg = avatarConainer.querySelector('img');
-            avatarDiv.style.display = 'flex';
-            avatarImg.src = '/img' + data.avatar_url;
-            avatarName.textContent = data.username;
-        });
+		AvatarLoader.loadData();
 
         if (!onlineWebSocket || onlineWebSocket?.readyState == WebSocket.CLOSED)
             initOnlineStatus();
