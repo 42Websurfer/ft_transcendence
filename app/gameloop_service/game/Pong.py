@@ -265,7 +265,7 @@ class GameLogicManager(Entity):
 			self.reset_ball()
 
 
-async def getCurrentState(world, consumer):
+async def getCurrentState(world: World, consumer):
 	for ent in world.entities:
 		print('Sending ent id:', ent.id)
 		await consumer.client_create_entity(
@@ -420,13 +420,13 @@ class PongGame:
 
 class GamesHandler:
 	
-	game_sessions = {}
+	game_sessions: dict[str, 'GamesHandler'] = {}
 
 	def __init__(self, group_name):
 		print('GamesHandler() called')
 		self.group_name = group_name
 		self.players = []
-		self.game = None
+		self.game: PongGame = None
 
 	@staticmethod
 	async def add_consumer_to_game(consumer, group_name):

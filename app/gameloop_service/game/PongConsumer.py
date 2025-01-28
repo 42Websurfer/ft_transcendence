@@ -89,8 +89,8 @@ class MyConsumer(AsyncWebsocketConsumer):
 			if text_data_json['type'] == 'incomplete':
 				await getCurrentState(thread_local.world, self)
 			print(f"text:data: {text_data}")
-		except:
-			print(f'text_data exept:', text_data)
+		except Exception as e:
+			print(f'text_data:', text_data, 'eception:', e)
 
 	#initPlayer 	ip;entid;uid;uname
 	async def init_players(self, event):
