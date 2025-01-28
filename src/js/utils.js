@@ -225,7 +225,7 @@ export class AvatarLoader {
 		const avatarName = avatarDiv.querySelector('#avatar_name');
 		const avatarImg = avatarConainer.querySelector('img');
 		avatarDiv.style.display = 'flex';
-		avatarImg.src = '/img' + data.avatar_url;
+		avatarImg.src = data.avatar_url;
 		avatarName.textContent = data.username;
 	}
 
