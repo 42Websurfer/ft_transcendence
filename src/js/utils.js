@@ -249,17 +249,14 @@ export class AvatarLoader {
 		} else {
 			try {
 				let data = JSON.parse(local_avatar_data);
-				if (!this.#required_data_keys.every(key => Object.keys(data).includes(key))
-					|| data.expires < Date.now()) {
-					this.deleteLocal();
-					this.loadData();
+				if (this.#required_data_keys.every(key => Object.keys(data).includes(key))
+					&& data.expires > Date.now()) {
+					this.#applyData(data);
 					return;
 				}
-				this.#applyData(data);
-			} catch {
-				this.deleteLocal();
-				this.loadData();
-			}
+			} catch {}
+			this.deleteLocal();
+			this.loadData();
 		}
 	}
 
