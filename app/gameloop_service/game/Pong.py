@@ -265,7 +265,7 @@ class GameLogicManager(Entity):
 			self.reset_ball()
 
 
-async def getCurrentState(world, consumer):
+async def getCurrentState(world: World, consumer):
 	for ent in world.entities:
 		print('Sending ent id:', ent.id)
 		await consumer.client_create_entity(
@@ -303,6 +303,8 @@ class PongGame:
 		self.event_loop = None
 		self.asyncio_thread = None
 		self.game_thread = None
+
+		self.move_tasks = []
 
 	def set_players(self, group_name):
 		self.players = GamesHandler.game_players(group_name)
@@ -379,20 +381,28 @@ class PongGame:
 		thread_local.event_loop = self.event_loop
 		thread_local.host = self.players[0]
 		thread_local.world = self.world
-		iter = 0
+
 		while not self.stop_thread:
 			self.world.update()
+			asyncio.run_coroutine_threadsafe(self.send_move_tasks(), self.event_loop)
 			time.sleep(0.016)
-			if iter == 1000:
-				print('game running on', self.players[0].group_name)
-				iter = 0
-			iter += 1
+			
 		print('game loop stopped of group', self.players[0].group_name if len(self.players) != 0 else '[Removed]')
 		self.event_loop.call_soon_threadsafe(self.event_loop.stop)
 		print('asyncio event_loop ordered to stop')
 		for player in self.players:
 			(async_to_sync)(player.close)()
-
+	
+	async def send_move_tasks(self):
+		"""
+		Instead of trying to send moves instantly we save the moves we want to send and then send them in a batch
+		"""
+		gather = [consumer.send(move) for consumer in self.players for move in self.move_tasks]
+		self.move_tasks.clear()
+		if len(gather) == 0:
+			return
+		await asyncio.gather(*gather)
+	
 	def asyncio_tasks_thread(self):
 		asyncio.set_event_loop(self.event_loop)
 		self.event_loop.run_forever()
@@ -401,37 +411,22 @@ class PongGame:
 	"""
 	Some big and commonly used sends defined here to make code more readable
 	"""
-	def send_entity_move(self, entity):
-		asyncio.run_coroutine_threadsafe(self.players[0].channel_layer.group_send(
-			self.players[0].group_name,
-			{
-				'type': 'move_entity',
-				'id': entity.id,
-				'transform': entity.serialize()
-			}
-			),
-			self.event_loop)
+	def send_entity_move(self, entity: Entity):
+		self.move_tasks.append(f"up;{entity.id};{entity.position.x};{entity.position.y};{entity.rotation}")
 		
-	def send_entity_set_pos(self, entity):
-		asyncio.run_coroutine_threadsafe(self.players[0].channel_layer.group_send(
-			self.players[0].group_name,
-			{
-				'type': 'set_entity_pos',
-				'id': entity.id,
-				'transform': entity.serialize()
-			}
-		), self.event_loop)
+	def send_entity_set_pos(self, entity: Entity):
+		self.move_tasks.append(f"sp;{entity.id};{entity.position.x};{entity.position.y};{entity.rotation}")
 
 
 class GamesHandler:
 	
-	game_sessions = {}
+	game_sessions: dict[str, 'GamesHandler'] = {}
 
 	def __init__(self, group_name):
 		print('GamesHandler() called')
 		self.group_name = group_name
 		self.players = []
-		self.game = None
+		self.game: PongGame = None
 
 	@staticmethod
 	async def add_consumer_to_game(consumer, group_name):

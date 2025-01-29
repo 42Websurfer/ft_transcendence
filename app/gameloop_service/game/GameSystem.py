@@ -171,7 +171,7 @@ class Entity(Transform):
 		global G_ID
 		self.id = G_ID + 1
 		G_ID += 1
-		self.components = {}
+		self.components: dict[type[Component], Component] = {}
 
 	def on_collision(self, other, collision_point=None):
 		pass
@@ -192,7 +192,7 @@ class Entity(Transform):
 		pass
 
 class System:
-	def execute(self, entities):
+	def execute(self, entities: list[Entity]):
 		pass
 
 class MovementSystem(System):
@@ -248,8 +248,8 @@ class CollisionSystem(System):
 
 class World:
 	def __init__(self):
-		self.entities = []
-		self.systems = []
+		self.entities: list[Entity] = []
+		self.systems: list[Entity] = []
 
 	def addEntity(self, ent):
 		self.entities.append(ent)
