@@ -128,6 +128,10 @@ export function renderMenu() {
                 <div class="friends-modify-button">
                 <button id="unblockFriendButton">UNBLOCK USER</button>
                 </div>
+
+				<div class="friends-modify-button">
+                <button id="showUserProfile">USER PROFILE</button>
+                </div>
                 
                 <div class="friends-modify-button">
                     <button id="blockFriendButton">BLOCK USER</button>

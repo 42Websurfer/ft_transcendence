@@ -452,10 +452,10 @@ def get_user_avatar_data(request, id=None):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def get_dashboard_data(request):
+def get_dashboard_data(request, username = None):
 	user = request.user
 	try:
-		user_game_stats = GameStatsUser.objects.get(username=user.username)
+		user_game_stats = GameStatsUser.objects.get(username=(username if username else user.username))
 	except ObjectDoesNotExist:
 		return JsonResponse({'type': 'error', 'message': 'User does not exist in GameStats Object'})
 
@@ -482,7 +482,6 @@ def get_dashboard_data(request):
 		'avatar_url': user_game_stats.avatar.url,
 	}
 	return JsonResponse(data)
-	#
 
 # BLOCKCHAIN-SERVICE
 

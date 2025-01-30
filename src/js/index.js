@@ -131,6 +131,7 @@ export async function addListItem(content, ul, list, role)
     const denyFriendButton = document.getElementById('denyFriendButton');
     const withdrawFriendButton = document.getElementById('withdrawFriendButton');
     const unblockFriendButton = document.getElementById('unblockFriendButton');
+	const showProfile = document.getElementById('showUserProfile');
     
     if (!friendsModifyModal || !closeModalButton)
         return;
@@ -155,6 +156,10 @@ export async function addListItem(content, ul, list, role)
             withdrawFriendButton.style.display = 'none';
             unblockFriendButton.style.display = 'none';
             friendsModifyModalUsername.textContent = "\"" + content + "\"";
+			showProfile.style.display = 'block';
+			showProfile.onclick = () => {
+				showSection('menu_dashboard', content);
+			};
             selectedListItem = li;
         });
 
@@ -438,7 +443,7 @@ export async function showSection(section, lobbyId, pushState = true)
 			});
         else if (section === 'menu_dashboard')
             import('./menu_dashboard.js').then(module => {
-                module.renderMenuDashboard();
+                module.renderMenuDashboard(lobbyId);
             });
         else if (section === 'menu_online_lobby')
             import('./menu_online_lobby.js').then(module => {
