@@ -216,3 +216,51 @@ async function updateCountdown() {
 	}
 }
 
+export class AvatarLoader {
+	static #required_data_keys = ['username', 'avatar_url', 'expires'];
+
+	static #applyData(data){
+		const avatarDiv = document.querySelector('#avatar');
+		const avatarConainer = avatarDiv.querySelector('#avatar_img_container');
+		const avatarName = avatarDiv.querySelector('#avatar_name');
+		const avatarImg = avatarConainer.querySelector('img');
+		avatarDiv.style.display = 'flex';
+		avatarImg.src = data.avatar_url;
+		avatarName.textContent = data.username;
+	}
+
+	static loadData(){
+		const token = localStorage.getItem('access_token');
+		const local_avatar_data = localStorage.getItem('avatar_data');
+		if (local_avatar_data == undefined) {
+			fetch('/api/tm/avatar_data/', {
+				method: 'GET',
+				headers: {
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				},
+			})
+			.then((response) => response.json())
+			.then((data) => {
+				this.#applyData(data);
+				data['expires'] = Date.now() + 3600000;
+				localStorage.setItem('avatar_data', JSON.stringify(data));
+			});
+		} else {
+			try {
+				let data = JSON.parse(local_avatar_data);
+				if (this.#required_data_keys.every(key => Object.keys(data).includes(key))
+					&& data.expires > Date.now()) {
+					this.#applyData(data);
+					return;
+				}
+			} catch {}
+			this.deleteLocal();
+			this.loadData();
+		}
+	}
+
+	static deleteLocal() {
+		localStorage.removeItem('avatar_data');
+	}
+}
