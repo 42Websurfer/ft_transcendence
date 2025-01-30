@@ -165,25 +165,11 @@ export async function addListItem(content, ul, list, role)
 
         closeModalButton.addEventListener('click', () => {
             friendsModifyModal.style.display = 'none';
-            removeFriendButton.style.display = 'none';
-            blockFriendButton.style.display = 'none';
-            acceptFriendButton.style.display = 'none';
-            denyFriendButton.style.display = 'none';
-            withdrawFriendButton.style.display = 'none';
-            unblockFriendButton.style.display = 'none';
-			showProfile.style.display = 'none';
         });
     
         window.addEventListener('click', (event) => {
             if (event.target === friendsModifyModal) {
                 friendsModifyModal.style.display = 'none';
-                removeFriendButton.style.display = 'none';
-                blockFriendButton.style.display = 'none';
-                acceptFriendButton.style.display = 'none';
-                denyFriendButton.style.display = 'none';
-                withdrawFriendButton.style.display = 'none';
-                unblockFriendButton.style.display = 'none';
-				showProfile.style.display = 'none';
             }
         });
     }
@@ -204,28 +190,20 @@ export async function addListItem(content, ul, list, role)
             withdrawFriendButton.style.display = 'none';
             unblockFriendButton.style.display = 'none';
             friendsModifyModalUsername.textContent = "\"" + content + "\"";
+			showProfile.style.display = 'block';
+			showProfile.onclick = () => {
+				showSection('menu_dashboard', content);
+			};
             selectedListItem = li;
         });
 
         closeModalButton.addEventListener('click', () => {
             friendsModifyModal.style.display = 'none';
-            removeFriendButton.style.display = 'none';
-            blockFriendButton.style.display = 'none';
-            acceptFriendButton.style.display = 'none';
-            denyFriendButton.style.display = 'none';
-            withdrawFriendButton.style.display = 'none';
-            unblockFriendButton.style.display = 'none';
         });
     
         window.addEventListener('click', (event) => {
             if (event.target === friendsModifyModal) {
                 friendsModifyModal.style.display = 'none';
-                removeFriendButton.style.display = 'none';
-                blockFriendButton.style.display = 'none';
-                acceptFriendButton.style.display = 'none';
-                denyFriendButton.style.display = 'none';
-                withdrawFriendButton.style.display = 'none';
-                unblockFriendButton.style.display = 'none';
             }
         });
     }
@@ -246,28 +224,20 @@ export async function addListItem(content, ul, list, role)
             denyFriendButton.style.display = 'none';
             unblockFriendButton.style.display = 'none';
             friendsModifyModalUsername.textContent = "\"" + content + "\"";
+			showProfile.style.display = 'block';
+			showProfile.onclick = () => {
+				showSection('menu_dashboard', content);
+			};
             selectedListItem = li;
         });
 
         closeModalButton.addEventListener('click', () => {
             friendsModifyModal.style.display = 'none';
-            removeFriendButton.style.display = 'none';
-            blockFriendButton.style.display = 'none';
-            acceptFriendButton.style.display = 'none';
-            denyFriendButton.style.display = 'none';
-            withdrawFriendButton.style.display = 'none';
-            unblockFriendButton.style.display = 'none';
         });
     
         window.addEventListener('click', (event) => {
             if (event.target === friendsModifyModal) {
                 friendsModifyModal.style.display = 'none';
-                removeFriendButton.style.display = 'none';
-                blockFriendButton.style.display = 'none';
-                acceptFriendButton.style.display = 'none';
-                denyFriendButton.style.display = 'none';
-                withdrawFriendButton.style.display = 'none';
-                unblockFriendButton.style.display = 'none';
             }
         });
     }
@@ -281,35 +251,26 @@ export async function addListItem(content, ul, list, role)
 
         textSpan.addEventListener('click', () => {
             friendsModifyModal.style.display = 'block';
+            unblockFriendButton.style.display = 'block';
             removeFriendButton.style.display = 'none';
             blockFriendButton.style.display = 'none';
             acceptFriendButton.style.display = 'none';
             denyFriendButton.style.display = 'none';
             withdrawFriendButton.style.display = 'none';
-            unblockFriendButton.style.display = 'block';
             friendsModifyModalUsername.textContent = "\"" + content + "\"";
+			showProfile.style.display = 'block';
+			showProfile.onclick = () => {
+				showSection('menu_dashboard', content);
+			};
             selectedListItem = li;
         });
 
         closeModalButton.addEventListener('click', () => {
             friendsModifyModal.style.display = 'none';
-            removeFriendButton.style.display = 'none';
-            blockFriendButton.style.display = 'none';
-            acceptFriendButton.style.display = 'none';
-            denyFriendButton.style.display = 'none';
-            withdrawFriendButton.style.display = 'none';
-            unblockFriendButton.style.display = 'none';
         });
     
         window.addEventListener('click', (event) => {
             if (event.target === friendsModifyModal) {
-                friendsModifyModal.style.display = 'none';
-                removeFriendButton.style.display = 'none';
-                blockFriendButton.style.display = 'none';
-                acceptFriendButton.style.display = 'none';
-                denyFriendButton.style.display = 'none';
-                withdrawFriendButton.style.display = 'none';
-                unblockFriendButton.style.display = 'none';
             }
         });
     }
