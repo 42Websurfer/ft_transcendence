@@ -222,8 +222,9 @@ def send_friend_request(request, username):
             'message': 'You can\'t invite yourself.',
         }, status=400)
     try:
-        friendship = Friendship.objects.get(Q(user=user, friend=friend) | Q(user=friend, friend=user))
-        if (friendship):
+        friendships = Friendship.objects.filter(Q(user=user, friend=friend) | Q(user=friend, friend=user))
+
+        for friendship in friendships:
             if friendship.status == FriendshipStatus.PENDING:
                 return JsonResponse({
                     'type': 'error',
@@ -239,7 +240,6 @@ def send_friend_request(request, username):
                     'type': 'error',
                     'message': 'You are already friends!'
                 }, status=400)
-    except Friendship.DoesNotExist:
         newFriend = Friendship.objects.create(user=user, friend=friend, status=FriendshipStatus.PENDING)
         newFriend.save()
         updateOnlineStatusChannel()
@@ -247,7 +247,8 @@ def send_friend_request(request, username):
             'type': 'Success Request',
             'message': 'Request sent successfully!'
         }, status=201)
-
+    except Exception as e:
+        return JsonResponse({'type': 'error', 'message': f'Exception: {e}'}, 400)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -277,7 +278,7 @@ def accept_friend_request(request, username):
         return JsonResponse({
             'type': 'error',
             'message': 'Friendship doesn\'t exist or you are not responsible'
-        })
+        }, status=400)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -285,31 +286,29 @@ def block_friend_request(request, username):
     user = request.user
     friend = get_object_or_404(User, username=username)
     try:
-        friendship = Friendship.objects.get(Q(user=friend, friend=user) | Q(user=user, friend=friend))
+        friendships = Friendship.objects.filter(Q(user=friend, friend=user) | Q(user=user, friend=friend))
+        if len(friendships) == 0:
+            return JsonResponse({
+                'type': 'error',
+                'message': 'Friendship doesn\'t exist.'
+                }, status=400)
+        if len(friendships) > 1:
+            return JsonResponse({'type': 'error', 'message': 'Already Blocked this user!'}, status=400)
+        friendship = friendships[0]
         if friendship.status == FriendshipStatus.BLOCKED and friendship.user.username != user.username:
             new_block = Friendship.objects.create(user=user, friend=friend, status=FriendshipStatus.BLOCKED)
             new_block.save()
-            return JsonResponse({'type': 'success'})
-        friendship.status = FriendshipStatus.BLOCKED
-        if user.username != friendship.user.username:
-            tmp = friendship.user
-            friendship.user = user
-            friendship.friend = tmp
-        friendship.save()
+        else:
+            friendship.status = FriendshipStatus.BLOCKED
+            if user.username != friendship.user.username:
+                tmp = friendship.user
+                friendship.user = user
+                friendship.friend = tmp
+            friendship.save()
         updateOnlineStatusChannel()
-        return (JsonResponse({
-            'type': 'success'
-        }))
-    except Friendship.DoesNotExist:
-        return JsonResponse({
-            'type': 'error',
-            'message': 'Friendship doesn\'t exist.'
-        })
+        return JsonResponse({'type': 'success'})
     except Exception as e:
-        return JsonResponse({
-            'type': 'error',
-            'message': e
-        })
+        return JsonResponse({'type': 'error', 'message': f'Exception: {e}'}, 400)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -321,12 +320,10 @@ def remove_friendship(request, username):
         if not friendships.exists():
             return JsonResponse({'type': 'error', 'message': 'Friendship doesn\'t exist.'})
         
-        print('All friendships?!', friendships, flush=True)
         for friendship in friendships:
             if friendship.status == FriendshipStatus.BLOCKED and friendship.user.username != user.username:
                 continue
             friendship.delete()
-            print('Delete friendship', friendship, flush=True)
 
         updateOnlineStatusChannel()
         return (JsonResponse({
