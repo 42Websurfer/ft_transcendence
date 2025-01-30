@@ -171,6 +171,7 @@ export async function addListItem(content, ul, list, role)
             denyFriendButton.style.display = 'none';
             withdrawFriendButton.style.display = 'none';
             unblockFriendButton.style.display = 'none';
+			showProfile.style.display = 'none';
         });
     
         window.addEventListener('click', (event) => {
@@ -182,6 +183,7 @@ export async function addListItem(content, ul, list, role)
                 denyFriendButton.style.display = 'none';
                 withdrawFriendButton.style.display = 'none';
                 unblockFriendButton.style.display = 'none';
+				showProfile.style.display = 'none';
             }
         });
     }

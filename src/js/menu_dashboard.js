@@ -230,8 +230,7 @@ function displayDashboardData(data)
 export async function renderMenuDashboard(username) {
 
     //render waiting section
-
-    const response = await fetch_get('/tm/get_dashboard/' + username ? `${username}/` : '');
+    const response = await fetch_get('/tm/get_dashboard/' + (username ? `${username}/` : ''));
 
     if (response.type === "error")
     {
