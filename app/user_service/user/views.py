@@ -186,9 +186,6 @@ def get_user_information(request):
 def update_user_information(request):
     try:
         user = request.user
-        # if user.userprofile.is_third_party_user:
-        #     if user.email != request.data.get('email'):
-        #         return JsonResponse({'type': 'error', 'message': 'Third party user cannot change email'}, status=400)
         serialized_data = UpdateUserSerializer(
             user, 
             data=request.data, 
@@ -204,27 +201,27 @@ def update_user_information(request):
                 response_data = response.json()
                 return Response({'type': 'error', 'message': {'user' :response_data['message']}}, status=400)
             user = serialized_data.save()
-            return Response({'type': 'success', 'message': 'User information successfull updated.'}, 
-                            status=200)
+            return Response({'type': 'success', 'message': 'User information successfully updated.'}, status=200)
         else:
             return Response({'type': 'error', 'message': serialized_data.errors}, status=400)
     except Exception as e:
-        return JsonResponse({'type': 'error', 'message': {'exepction': str(e)}}, status=400)
+        return JsonResponse({'type': 'error', 'message': {'exception': str(e)}}, status=400)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def send_friend_request(request, username):
     user = request.user
-    friend = get_object_or_404(User, username=username)
-    if user == friend: 
+    if user.username == username:
         return JsonResponse({
             'type': 'error',
             'message': 'You can\'t invite yourself.',
         }, status=400)
     try:
+        friend = User.objects.get(username=username)
         friendships = Friendship.objects.filter(Q(user=user, friend=friend) | Q(user=friend, friend=user))
 
-        for friendship in friendships:
+        if len(friendships) > 0:
+            friendship = friendships[0]
             if friendship.status == FriendshipStatus.PENDING:
                 return JsonResponse({
                     'type': 'error',
@@ -235,11 +232,10 @@ def send_friend_request(request, username):
                     'type': 'error',
                     'message': 'This user blocked you!' if friendship.user.username != user.username else 'You Blocked this user!'
                 }, status=400)
-            else:
-                return JsonResponse({
-                    'type': 'error',
-                    'message': 'You are already friends!'
-                }, status=400)
+            return JsonResponse({
+                'type': 'error',
+                'message': 'You are already friends!'
+            }, status=400)
         newFriend = Friendship.objects.create(user=user, friend=friend, status=FriendshipStatus.PENDING)
         newFriend.save()
         updateOnlineStatusChannel()
@@ -248,7 +244,7 @@ def send_friend_request(request, username):
             'message': 'Request sent successfully!'
         }, status=201)
     except Exception as e:
-        return JsonResponse({'type': 'error', 'message': f'Exception: {e}'}, 400)
+        return JsonResponse({'type': 'error', 'message': e}, status=400)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
