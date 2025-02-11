@@ -145,8 +145,8 @@ services:
       - ./.env
     networks:
       - trans_net
-    ports:
-      - "5000:5000"
+    expose:
+      - 5000
   daphne_user:
     build: 
       context: ./app/user_service/
