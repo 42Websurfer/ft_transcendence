@@ -152,10 +152,10 @@ def update_user_score():
 	newScore = int(data['newScore'])
 
 	if (user_exists(user_id) and user_score(user_id) == newScore):
-		return {"type": "error", "message": "User has already the same score."}, 200
+		return {"error": "User has already the same score."}, 400
 
 	if (newScore <= 0):
-		return {"type": "error", "message": "New score is zero or negative."}, 200
+		return {"error": "New score is zero or negative."}, 400
 
 	try:
 		transaction = contract.functions.updateUserScore(user_id, newScore).build_transaction({
@@ -167,24 +167,24 @@ def update_user_score():
 		
 		signed_txn = web3.eth.account.sign_transaction(transaction, PRIVATE_KEY)
 		tx_hash = web3.eth.send_raw_transaction(signed_txn.raw_transaction)
-		return {"type": "success", "transaction_hash": tx_hash.hex()}, 200
+		return {"transaction_hash": tx_hash.hex()}, 201
 
 	except:
-		return {"type": "error", "message": "Contract execution failed."}, 200
+		return {"error": "Contract execution failed."}, 444
 
 @app.route('/get_user_score', methods=['GET'])
 def get_user_score():
 	user_id = int(request.args.get('userId'))
 
 	if not user_exists(user_id):
-		return {"type": "error", "message": "User does not exist."}, 200
+		return {"error": "User does not exist."}, 404
 	
 	try:
 		score = user_score(user_id)	
 	except:
-		return {"type": "error", "message": "Contract execution failed."}, 200
+		return {"error": "Contract execution failed."}, 444
 
-	return {"type": "success", "score": score}, 200
+	return {"score": score}, 200
 
 @app.route('/delete_user_score', methods=['GET'])
 def delete_user_score():
@@ -210,4 +210,3 @@ def delete_user_score():
 
 if __name__ == '__main__':
 	app.run(host='0.0.0.0', port=5000)
-
