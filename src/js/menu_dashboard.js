@@ -1,4 +1,5 @@
-import { fetch_get } from './utils.js';
+import { showSection } from './index.js';
+import { displayToast, fetch_get } from './utils.js';
 
 let myGamesChart;
 let myGoalsChart;
@@ -227,15 +228,15 @@ function displayDashboardData(data)
 }
 
 
-export async function renderMenuDashboard() {
+export async function renderMenuDashboard(username) {
 
     //render waiting section
-
-    const response = await fetch_get("/tm/get_dashboard/");
+    const response = await fetch_get('/tm/get_dashboard/' + (username ? `${username}/` : ''));
 
     if (response.type === "error")
     {
-        console.log("error: ", response.message);
+        displayToast(response.message, 'error');
+        showSection('menu');
         return;
     }
 

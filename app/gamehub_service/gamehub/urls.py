@@ -8,6 +8,7 @@ urlpatterns = [
 	path('set_match/', views.set_tournament_match, name='set_match'),
 	path('start_game/<str:lobby_id>/', views.start_game_loop, name='start_game_loop'),
 	path('get_dashboard/', views.get_dashboard_data, name='get_dashboard'),
+	path('get_dashboard/<str:username>/', views.get_dashboard_data, name='get_dashboard'),
 	path('avatar_data/', views.get_user_avatar_data, name='get_user_avatar_data_self'),
 	path('avatar_data/<int:id>/', views.get_user_avatar_data, name='get_user_avatar_data'),
 	path('get_lobby_data/<str:lobby_id>/', views.get_lobby_data, name='get_lobby_data'),

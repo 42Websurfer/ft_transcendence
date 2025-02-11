@@ -453,12 +453,15 @@ def get_user_avatar_data(request, id=None):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def get_dashboard_data(request):
+def get_dashboard_data(request, username = None):
 	user = request.user
 	try:
-		user_game_stats = GameStatsUser.objects.get(username=user.username)
+		user_game_stats = GameStatsUser.objects.get(username=username or user.username)
 	except ObjectDoesNotExist:
-		return JsonResponse({'type': 'error', 'message': 'User does not exist in GameStats Object'})
+		return JsonResponse({'type': 'error', 'message': 'User does not exist!'}, status=404)
+	except Exception as e:
+		return JsonResponse({'type': 'error', 'message': str(e)}, status=400)
+
 
 	all_matches, highest_win, highest_loss, form = get_match_data(user_game_stats)
 	tournament_data, tournaments_played = get_last_tournament_data(user_game_stats)
