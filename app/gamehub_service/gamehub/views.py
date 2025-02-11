@@ -455,7 +455,7 @@ def get_user_avatar_data(request, id=None):
 def get_dashboard_data(request, username = None):
 	user = request.user
 	try:
-		user_game_stats = GameStatsUser.objects.get(username=(username if username else user.username))
+		user_game_stats = GameStatsUser.objects.get(username=username or user.username)
 	except ObjectDoesNotExist:
 		return JsonResponse({'type': 'error', 'message': 'User does not exist!'}, status=404)
 	except Exception as e:
