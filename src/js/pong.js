@@ -526,8 +526,11 @@ class RemoteHandler extends Entity{
 	}
 
 	moveEntity(id, transform){
-		const ent = this.entities[id];
-
+		const ent = this.entities?.[id];
+		if (!ent) {
+			console.warn('Move called on missing entity');
+			return;
+		}
 		ent.position.x = lerp(ent.position.x, transform.position.x, .8);
 		ent.position.y = lerp(ent.position.y, transform.position.y, .8);
 		ent.rotate(transform.rotation);
@@ -562,6 +565,8 @@ let socket = undefined;
 
 
 function sendMovementInput(event) {
+	if (socket.readyState != socket.OPEN)
+		return;
 	if (event.type == 'keydown') {
 		if (event.key == 'w' || event.key == 'ArrowUp') {
 			socket.send(0b01);
@@ -610,19 +615,20 @@ function setupSocketHandlers(socket){
 
 		//newEntity		ne;id;type;xpos;ypos;rotation;?.height
 		//updatePos		up;id;xpos;ypos;rot
-		//setPos 		sp;id;xpos;ypos;rot
-		//roundStart 	rs
-		//setScore 		ss;id;score
-		//initPlayer 	ip;entid;uid;uname;sender_uid
-		//disconnect 	dc;id
-		//gameOver 		go
-		//drawDot 		dd;x;y
-		//drawLine 		dl;x1;y1;x2;y2
-
+		//setPos		sp;id;xpos;ypos;rot
+		//roundStart	rs
+		//setScore		ss;id;score
+		//initPlayer	ip;entid;uid;uname;sender_uid
+		//disconnect	dc;id
+		//gameOver		go
+		//drawDot		dd;x;y
+		//drawLine		dl;x1;y1;x2;y2
+		if (!data)
+			return;
 		if (data[0] !== 'up')
 			console.log(data);
 		if (data[0] === 'ne'){
-			manager.newEntity(data[2], data[1], {position: {x: data[3], y: data[4]}, rotation: data[5]}, data[6]);
+			manager.newEntity(data[2], data[1], {position: {x: data[3], y: data[4]}, rotation: data[5]}, data?.[6]);
 			return;
 		}
 		if (manager && !manager.complete) {
@@ -631,9 +637,9 @@ function setupSocketHandlers(socket){
 			return;
 		} 
 		if (data[0] === 'up'){
-			manager.moveEntity(data[1], {position: {x: data[2], y: data[3]}, rotation: data[4]});
+			manager?.moveEntity(data[1], {position: {x: data[2], y: data[3]}, rotation: data[4]});
 		} else if (data[0] === 'sp'){
-			manager.setEntityPosition(data[1], {position: {x: data[2], y: data[3]}, rotation: data[4]});
+			manager?.setEntityPosition(data[1], {position: {x: data[2], y: data[3]}, rotation: data[4]});
 		} else if (data[0] === 'rs'){
 			startGame();
 		} else if (data[0] === 'ss'){

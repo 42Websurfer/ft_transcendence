@@ -445,9 +445,9 @@ def get_user_avatar_data(request, id=None):
 			user_game_stats = GameStatsUser.objects.get(username=request.user.username)
 		else:
 			user_game_stats = GameStatsUser.objects.get(user_id=id)
-		return JsonResponse({'avatar_url': user_game_stats.avatar.url, 'username': request.user.username})
+		return JsonResponse({'avatar_url': '/img' + user_game_stats.avatar.url, 'username': request.user.username})
 	except GameStatsUser.DoesNotExist:
-		return JsonResponse({'avatar_url': '/media/defaults/default_avatar.png', 'username': 'logged-out'})
+		return JsonResponse({'avatar_url': '/img/media/defaults/default_avatar.png', 'username': 'logged-out'})
 	except Exception as e:
 		return JsonResponse({'message': str(e)}, status=404)
 
