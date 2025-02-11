@@ -1,6 +1,6 @@
 services:
-  user-service: 
-    build: 
+  user-service:
+    build:
       context: ./app/user_service/
       dockerfile: Dockerfile.django
     container_name: user-service
@@ -10,13 +10,13 @@ services:
       - ./app/user_service/:/app/
     expose:
       - 8002
-    networks: 
+    networks:
       - trans_net
     depends_on:
       - database
       - redis
-  gamehub-service: 
-    build: 
+  gamehub-service:
+    build:
       context: ./app/gamehub_service/
       dockerfile: Dockerfile.django
     container_name: gamehub-service
@@ -27,14 +27,14 @@ services:
       - ./src/img/media/:/media/
     expose:
       - 8003
-    networks: 
+    networks:
       - trans_net
     depends_on:
       - database
       - redis
       - user-service
   gameloop-service:
-    build: 
+    build:
       context: ./app/gameloop_service/
       dockerfile: Dockerfile.django
     container_name: gameloop-service
@@ -44,7 +44,7 @@ services:
       - ./app/gameloop_service/:/app/
     expose:
       - 8004
-    networks: 
+    networks:
       - trans_net
     depends_on:
       - database
@@ -64,7 +64,7 @@ services:
       - 5432
   postgres_exporter:
     image: wrouesnel/postgres_exporter
-    container_name: postgres_exporter    
+    container_name: postgres_exporter
     environment:
       DATA_SOURCE_NAME: "postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@django_db:5432/$POSTGRES_DB?sslmode=disable"
     expose:
@@ -102,7 +102,7 @@ services:
   nginx_exporter:
     image: nginx/nginx-prometheus-exporter:latest
     command: -nginx.scrape-uri http://nginx:8080/stub_status
-    container_name: nginx_exporter    
+    container_name: nginx_exporter
     expose:
       - 9113
     networks:
@@ -110,10 +110,10 @@ services:
     depends_on:
       - nginx
 
-  adminer: 
+  adminer:
     container_name: adminer
     image: adminer
-    networks: 
+    networks:
       - trans_net
     expose:
       - 8080
@@ -125,7 +125,7 @@ services:
     expose:
       - 6379
     networks:
-     - trans_net
+      - trans_net
 
   redis_exporter:
     image: oliver006/redis_exporter:latest
@@ -141,14 +141,14 @@ services:
   blockchain:
     build: ./requirements/blockchain
     container_name: blockchain
-    env_file: 
+    env_file:
       - ./.env
     networks:
       - trans_net
     expose:
       - 5000
   daphne_user:
-    build: 
+    build:
       context: ./app/user_service/
       dockerfile: Dockerfile.daphne
     container_name: daphne_user
@@ -158,10 +158,10 @@ services:
       - ./app/user_service/:/app/
     expose:
       - 8002
-    networks: 
+    networks:
       - trans_net
   daphne_gamehub:
-    build: 
+    build:
       context: ./app/gamehub_service/
       dockerfile: Dockerfile.daphne
     container_name: daphne_gamehub
@@ -171,10 +171,10 @@ services:
       - ./app/gamehub_service/:/app/
     expose:
       - 8003
-    networks: 
+    networks:
       - trans_net
   daphne_gameloop:
-    build: 
+    build:
       context: ./app/gameloop_service/
       dockerfile: Dockerfile.daphne
     container_name: daphne_gameloop
@@ -184,13 +184,13 @@ services:
       - ./app/gameloop_service/:/app/
     expose:
       - 8004
-    networks: 
+    networks:
       - trans_net
-  
+
   prometheus:
     image: prom/prometheus:v2.21.0
     container_name: prometheus
-    expose: 
+    expose:
       - 9090
     volumes:
       - prometheus_data:/prometheus
@@ -209,9 +209,9 @@ services:
       - grafana-data:/var/lib/grafana
     networks:
       - trans_net
-networks: 
+networks:
   trans_net:
-    name: trans_net 
+    name: trans_net
     driver: bridge
 volumes:
   postgres_data:
