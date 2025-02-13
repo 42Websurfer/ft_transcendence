@@ -362,15 +362,16 @@ export class MovementSystem extends System{
 	}
 }
 
-//functions for GJK
-function getFarthestPonintOfShape(shape, direction) {
+//#region functions for GJK 
+//guide/inspo https://winter.dev/articles/gjk-algorithm
+function getFarthestPointOfShape(shape, direction) {
 	if (shape.length == 2) {
 		return direction.dup().normalize().scale(shape[0].sub(shape[1]).length()).add(shape[0]);
 	}
 	let farthestPoint = shape[0];
 	let maxDot = -Infinity;
 
-	for (let i = 1; i < shape.length; i++) {
+	for (let i = 0; i < shape.length; i++) {
 		const dot = shape[i].dot(direction);
 		if (dot > maxDot) {
 			maxDot = dot;
@@ -381,25 +382,47 @@ function getFarthestPonintOfShape(shape, direction) {
 }
 
 function minkowskiDifference(shapeA, shapeB, dir) {
-	return getFarthestPonintOfShape(shapeA, dir).sub(getFarthestPonintOfShape(shapeB, dir.negate()));
+	function fullMinkowDraw() {
+		let diff = [];
+		for (let pa of shapeA) {
+			for (let pb of shapeB) {
+				diff.push(CENTER.add(pa.sub(pb)));
+			} 
+		}
+		for (let point of diff) {
+			ctx.fillRect(point.x, point.y, 5 ,5);
+		}
+	}
+	fullMinkowDraw();
+	let ga = getFarthestPointOfShape(shapeA, dir);
+	let gb = getFarthestPointOfShape(shapeB, dir.negate());
+	drawLine(ga,gb, 'yellow');
+	return getFarthestPointOfShape(shapeA, dir).sub(getFarthestPointOfShape(shapeB, dir.negate()));
 }
+
+const CENTER = new Vector(canvas.width * 0.5, canvas.height * 0.5);
 
 function gjk(shapeA, shapeB) {
 	let support = minkowskiDifference(shapeA, shapeB, new Vector(1, 0));
 	let simplex = [support];
-
+	drawLine(CENTER, CENTER.add(support), 'blue');
+	
 	let direction = support.negate();
 	let iter = 0;
 	const maxIter = (shapeA.length + shapeB.length) * 0.5;
+	ctx.fillRect(CENTER.x, CENTER.y, 5, 5);
+	drawLine(CENTER, CENTER.add(direction), 'green');
 	while (iter < maxIter) {
-		let a = minkowskiDifference(shapeA, shapeB, direction);
-
-		if (a.dot(direction) <= 0) {
+		support = minkowskiDifference(shapeA, shapeB, direction);
+		drawLine(CENTER, CENTER.add(support), 'blue');
+		if (support.dot(direction) <= 0) {
+			drawLine(CENTER, CENTER.add(direction), 'green', iter * 2 + 1);
+			
 			return {colliding: false, mtv: undefined};
 		}
-
-		simplex.unshift(a);
-
+		drawLine(CENTER, CENTER.add(direction), 'yellow', iter * 2 + 1);
+		simplex.unshift(support);
+		
 		if (nextSimplex(simplex, direction)) {
 			return {colliding: true, mtv: calculateMTV(shapeA, shapeB, simplex)};
 		}
@@ -460,14 +483,10 @@ function line(simplex, direction) {
 	let AB = b.sub(a);
 	let AO = a.negate();
 
-	let start = new Vector(800, 500);
-	drawLine(start, start.add(direction), 'blue');
 	if (vectorsAreSameDirection(AB, AO)) {
 		direction.set(-AB.y, AB.x);
-		drawLine(start, start.add(direction), 'purple');
 	} else {
 		direction.setV(AO);
-		drawLine(start, start.add(direction), 'yellow');
 		simplex.pop();
 		simplex[0] = a;
 	}
@@ -475,8 +494,7 @@ function line(simplex, direction) {
 }
 
 function triangle(simplex, direction) {
-	let debugPoints = simplex.map(p => p.dup().add(new Vector(500, 500)));
-	ctx.fillRect(500, 500, 5, 5);
+	let debugPoints = simplex.map(p => p.dup().add(CENTER));
 	for (let i = 0; i < debugPoints.length; i++) {
 		const a = debugPoints[i];
 		const b = debugPoints[(i + 1) % debugPoints.length];
@@ -500,8 +518,6 @@ function triangle(simplex, direction) {
 			simplex.pop();
 			simplex[0] = a;
 			simplex[1] = c;
-			drawLine(a, c);
-			drawLine(a.add(new Vector(500, 500)), simplex[1].add(new Vector(500, 500)), 'yellow');
 		} else {
 			simplex.pop();
 			return line(simplex, direction);
@@ -519,7 +535,7 @@ function triangle(simplex, direction) {
 
 	return false;
 }
-
+//#endregion
 
 export class CollisionSystem extends System{
 	execute(entities){
@@ -543,7 +559,6 @@ export class CollisionSystem extends System{
 					console.log("COLLISION!!!");
 					drawLine(currentEnt.position, otherEnt.position, 'red');
 					const mtv = result.mtv;
-					console.log(mtv);
 					drawLine(currentEnt.position, currentEnt.position.add(mtv.dup().scale(10)), 'purple');
 					if (!entPhys.isStatic) {
 						currentEnt.move(mtv.x, mtv.y);

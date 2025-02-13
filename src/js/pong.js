@@ -524,11 +524,23 @@ function selectGamemode(groupName){
 	if (matchType === 'debug') {
 		world.addSystem(new CollisionSystem());
 		world.addSystem(new MovementSystem());
-		let player = new Player(0 ,0, 100);
+		let player = new Entity(0 ,0);
+		let pm = new Mesh();
+		let up = new Vector(0, -30);
+		pm.points = [
+			up.dup(),
+			up.dup().rotate(120),
+			up.dup().rotate(240)
+		];
+		player.addComponent(Mesh, pm);
+		player.addComponent(Physics, new Physics(0, 0, true, false));
 		
 		world.addEntity(player);
-		world.addEntity(new Wall(500, 100, 90, 200));
-		world.addEntity(new Wall(600, 200, 33, 200));
+		let e = new Entity(500, 200);
+		let m = new Box(50, 50);
+
+		e.addComponent(Mesh, m);
+		world.addEntity(e);
 	
 		document.addEventListener('mousemove', (event) => {
 			const rect = canvas.getBoundingClientRect();
