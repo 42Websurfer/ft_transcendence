@@ -378,6 +378,7 @@ function getFarthestPointOfShape(shape, direction) {
 			farthestPoint = shape[i];
 		}
 	}
+	ctx.fillRect(farthestPoint.x, farthestPoint.y, 5, 5);
 	return farthestPoint;
 }
 
@@ -386,11 +387,11 @@ function minkowskiDifference(shapeA, shapeB, dir) {
 		let diff = [];
 		for (let pa of shapeA) {
 			for (let pb of shapeB) {
-				diff.push(CENTER.add(pa.sub(pb)));
+				diff.push(pa.sub(pb));
 			} 
 		}
 		for (let point of diff) {
-			ctx.fillRect(point.x, point.y, 5 ,5);
+			ctx.fillRect(point.x + CENTER.x, point.y + CENTER.y, 5, 5);
 		}
 	}
 	fullMinkowDraw();
@@ -405,22 +406,18 @@ const CENTER = new Vector(canvas.width * 0.5, canvas.height * 0.5);
 function gjk(shapeA, shapeB) {
 	let support = minkowskiDifference(shapeA, shapeB, new Vector(1, 0));
 	let simplex = [support];
-	drawLine(CENTER, CENTER.add(support), 'blue');
-	
+	drawLine(CENTER, CENTER.add(support), 'green', 1, [], '0');
 	let direction = support.negate();
 	let iter = 0;
 	const maxIter = (shapeA.length + shapeB.length) * 0.5;
 	ctx.fillRect(CENTER.x, CENTER.y, 5, 5);
-	drawLine(CENTER, CENTER.add(direction), 'green');
 	while (iter < maxIter) {
 		support = minkowskiDifference(shapeA, shapeB, direction);
-		drawLine(CENTER, CENTER.add(support), 'blue');
+		drawLine(CENTER, CENTER.add(support), 'green', 1, [], `${iter + 1}`);
+		drawLine(CENTER, CENTER.add(direction), 'red', 1, [], `${iter + 1}`);
 		if (support.dot(direction) <= 0) {
-			drawLine(CENTER, CENTER.add(direction), 'green', iter * 2 + 1);
-			
 			return {colliding: false, mtv: undefined};
 		}
-		drawLine(CENTER, CENTER.add(direction), 'yellow', iter * 2 + 1);
 		simplex.unshift(support);
 		
 		if (nextSimplex(simplex, direction)) {
@@ -483,12 +480,15 @@ function line(simplex, direction) {
 	let AB = b.sub(a);
 	let AO = a.negate();
 
+	drawLine(CENTER.add(a), CENTER.add(b), 'pink', 3);
+	ctx.fillText('a', a.x + CENTER.x, a.y + CENTER.y);
+	ctx.fillText('b', b.x + CENTER.x, b.y + CENTER.y);
 	if (vectorsAreSameDirection(AB, AO)) {
 		direction.set(-AB.y, AB.x);
+		direction = direction.negate();
 	} else {
 		direction.setV(AO);
 		simplex.pop();
-		simplex[0] = a;
 	}
 	return false;
 }
@@ -499,7 +499,7 @@ function triangle(simplex, direction) {
 		const a = debugPoints[i];
 		const b = debugPoints[(i + 1) % debugPoints.length];
 
-		drawLine(a, b, 'green');
+		drawLine(a, b, 'blue');
 		
 	}
 
@@ -514,10 +514,8 @@ function triangle(simplex, direction) {
 	let acCrossAo = ab.x * ao.y - ab.y * ao.x;
 	if (acCrossAo > 0) {
 		if (vectorsAreSameDirection(ac, ao)) {
-			direction.set(-ac.y, ac.x);
-			simplex.pop();
-			simplex[0] = a;
-			simplex[1] = c;
+			direction.set(-ab.y, ab.x);
+			simplex = [a, c];
 		} else {
 			simplex.pop();
 			return line(simplex, direction);
@@ -637,17 +635,20 @@ export function strokeText(text, x, y, textStyle = undefined, colour = 'black'){
 	ctx.font = save;
 }
 
-export function drawLine(p1, p2, color = 'black', lineWidth = 1, dashPattern = [], debug = false){
-	ctx.beginPath();
-	ctx.moveTo(p1.x, p1.y);
-	if (debug){
+export function drawLine(p1, p2, color = 'black', lineWidth = 1, dashPattern = [], debugstr = undefined){
+	if (debugstr){
 		let mid = p2.sub(p1);
-		let len = mid.length();
 		mid.scale(0.5);
 		mid = p1.add(mid);
-		ctx.fillText(len, mid.x, mid.y);
-		ctx.fillRect(p2.x, p2.y, 5, 5);
+		ctx.fillText(debugstr, mid.x, mid.y);
+		// ctx.fillRect(p2.x, p2.y, 5, 5);
+		ctx.beginPath();
+		ctx.arc(p2.x, p2.y, 2, 0, 360);
+		ctx.closePath();
+		ctx.fill();
 	}
+	ctx.beginPath();
+	ctx.moveTo(p1.x, p1.y);
 	ctx.lineTo(p2.x, p2.y);
 	ctx.closePath();
 
