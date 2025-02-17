@@ -49,8 +49,6 @@ async function renderLoginLogoutButton(isAuthenticated, section) {
         `;
         const logoutButton = document.getElementById('logoutButton')
         logoutButton.addEventListener('click', () => {
-			const logoContainer = document.querySelector('#avatar');
-			logoContainer.style.display = 'none';
 			AvatarLoader.deleteLocal();
             handleLogoutSubmit(onlineWebSocket);
         });
@@ -436,6 +434,7 @@ export async function showSection(section, lobbyId, pushState = true)
 		}
     }
     else if (section != 'auth_login' && section != 'auth_register' && section != 'auth_42') {
+        AvatarLoader.deleteLocal();
         import('./auth_login.js').then(module => {
             module.renderAuthLogin();    
         });

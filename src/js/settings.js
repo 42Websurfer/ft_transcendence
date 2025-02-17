@@ -38,9 +38,9 @@ export async function renderSettings() {
 					<input id="settings-username" type="text" name="username" class="form-control" placeholder="Username">
 				</div>
 				<div class="login-form-field form-floating">
-					<input type="file" name="avatar" class="form-control" placeholder="Upload avatar">
+					<input type="file" accept="image/*" name="avatar" class="form-control" placeholder="Upload avatar">
 					<label for="floatingInput">Upload avatar</label>
-				</div>	
+				</div>
 				<button class="signin-button btn btn-primary w-100 py-2" type="submit">Update</button>	
 			</form>
 		</div>
@@ -112,6 +112,14 @@ async function handleSettingsFormSubmit(event) {
         body: formData
     });
 	localStorage.removeItem('user_data');
+	if (!response.ok && response.status != 400) {
+		if (response.status == 413) {
+			displayToast('Avatar Image size too large! Max. 8MB', 'error');
+		} else {
+			displayToast(response.statusText, 'error');
+		}
+		return;
+	}
     const result = await response.json();
 	if (result.type === 'success')
 	{
