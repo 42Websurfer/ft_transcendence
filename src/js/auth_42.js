@@ -36,7 +36,7 @@ export async function renderAuth42(session_data) {
     form.addEventListener('submit', (event) => handleUsernameFormSubmit(event, session_data));
 }
 
-async function handleUsernameFormSubmit(event)
+async function handleUsernameFormSubmit(event, session_data)
 {
 	event.preventDefault();
     const form = event.target;
