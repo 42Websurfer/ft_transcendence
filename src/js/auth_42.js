@@ -33,10 +33,10 @@ export async function renderAuth42(session_data) {
 	</div>
 	`;
 	const form = document.getElementById('registerForm');
-    form.addEventListener('submit', (event) => handleUsernameFormSubmit(event, session_data));
+    form.addEventListener('submit', (event) => handleFormSubmit(event, session_data));
 }
 
-async function handleUsernameFormSubmit(event, session_data)
+async function handleFormSubmit(event, session_data)
 {
 	event.preventDefault();
     const form = event.target;
