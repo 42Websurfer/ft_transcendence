@@ -1,6 +1,6 @@
 import { AvatarLoader, displayToast, getCookie } from './utils.js';
-import { showSection } from './index.js';
 import { renderAuth2FARegister } from './auth_2fa_register.js';
+import { showSection } from './index.js';
 
 export function renderAuthRegister() {
 	const app = document.getElementById('app');
@@ -74,8 +74,15 @@ async function handleFormSubmit(event) {
 	}
     const result = await response.json();
 	console.log("Response: ", result);
-	if (result.type === 'success')
-		renderAuth2FARegister(result) 
+	if (result.type === 'success') {
+		if ('token' in result) {
+			localStorage.setItem('access_token', result.tokens.access);
+			localStorage.setItem('refresh_token', result.tokens.refresh);
+			showSection('menu');
+		} else {
+			renderAuth2FARegister(result);
+		}
+	}
 	else if (result.type === 'error')
 	{
 		for(let key of Object.keys(result.message))
