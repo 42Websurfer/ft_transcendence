@@ -24,7 +24,7 @@ def setup_2fa(user, third_party=False):
         user_profile = UserProfile.objects.get(user=user)
         user_profile.otp_secret = otp_secret
     else:
-        user_profile = UserProfile.objects.create(user=user, otp_secret=otp_secret)
+        user_profile = UserProfile.objects.create(user=user, otp_secret=otp_secret, enabled_2fa=True)
     if (third_party):
         user_profile.is_third_party_user = True
     user_profile.save()

@@ -64,19 +64,30 @@ def user_login(request):
                         'first_name': user.first_name,
                         'last_name': user.last_name
                     }
-                if not UserProfile.objects.get(user=user).verified_2fa:
-                    qr_code_string = setup_2fa(user)
-                    return JsonResponse({
-                        'type': 'pending',
-                        'user': user_dic,
-                        'qr_code': f"data:image/png;base64,{qr_code_string}",
+                user_profile = UserProfile.objects.get(user=user)
+                if  user_profile.enabled_2fa:
+                    if not user_profile.verified_2fa:
+                        qr_code_string = setup_2fa(user)
+                        return JsonResponse({
+                            'type': 'pending',
+                            'user': user_dic,
+                            'qr_code': f"data:image/png;base64,{qr_code_string}",
 
-                    }, status=200)
-                else:
+                        }, status=200)
+                    else:
+                        return JsonResponse({
+                            'type': 'success',
+                            'user': user_dic,
+                        }, status=200)
+                else: 
+                    refresh = RefreshToken.for_user(user)
                     return JsonResponse({
                         'type': 'success',
-                        'user': user_dic,
-                    }, status=200)
+                        'tokens': {
+                            'refresh': str(refresh),
+                            'access': str(refresh.access_token),
+                        }
+                    }, status=200)                   
             
             else:
                 return JsonResponse({'type': 'error', 'message': 'Incorrect username or password.'}, status=400)
@@ -135,7 +146,7 @@ def register(request):
             serialized_data = RegisterSerializer(data=data)
             if serialized_data.is_valid():
                 user = serialized_data.save()
-                data = {
+                gamehub_data = {
                     'user_id': user.pk,
                     'username': user.username
                 }
@@ -143,7 +154,7 @@ def register(request):
                 if avatar and not validate_avatar(avatar):
                     user.delete()
                     return Response({'type': 'error', 'message': {'Avatar': 'Invalid Avatar'}}, status=400)
-                response = requests.post('http://gamehub-service:8003/gameStatsUser/', data=data, files={'avatar': avatar})
+                response = requests.post('http://gamehub-service:8003/gameStatsUser/', data=gamehub_data, files={'avatar': avatar})
                 if not response.ok:
                     response_data = response.json()
                     user.delete()
@@ -152,7 +163,7 @@ def register(request):
                 return Response({'type': 'error', 'message': serialized_data.errors}, status=400)
             if not data.get('enable2fa'):
                 refresh = RefreshToken.for_user(user)
-                user_profile = UserProfile.objects.create(user=user)
+                UserProfile.objects.create(user=user)
                 return JsonResponse({
                     'type': 'success',
                     'tokens': {
@@ -399,7 +410,6 @@ def get_all_online_users(request):
 
 def check_registration(request, session_data):
     try:
-        
         user = User.objects.get(email=session_data.get('email'))
         userprofile = UserProfile.objects.get(user=user)
         if (not userprofile.is_third_party_user):
@@ -410,19 +420,18 @@ def check_registration(request, session_data):
         return False, None
 
 @csrf_exempt
+@api_view(['POST'])
 def register_api(request):
     try:
-        data = json.loads(request.body)
+        data = request.POST
+        
         session_data = data.get('session_data', {}).get('data', {})
         username= data.get('username')
         email=session_data.get('email')
         firstname=session_data.get('first_name')
         lastname=session_data.get('last_name')
+        enabled_2fa=data.get('enable2fa')
 
-        # if User.objects.filter(username=username).exists():
-        #     return JsonResponse({'type': 'error', 'message': 'This username already exists.'}, status=400)
-        
-        # user= User.objects.create(username=username, email=email, first_name=firstname, last_name=lastname)
         serializer = RegisterSerializer(data={
             'username': username,
             'email': email,
@@ -441,7 +450,16 @@ def register_api(request):
                 response_data = response.json()
                 user.delete()
                 return Response({'type': 'error', 'message': {'usermodel': response_data['message']}}, status=400)
-            #hier muss der check rein für enable 2fa else setup
+            if not enabled_2fa:
+                refresh = RefreshToken.for_user(user)
+                UserProfile.objects.create(user=user)
+                return JsonResponse({
+                    'type': 'success',
+                    'tokens': {
+                        'refresh': str(refresh),
+                        'access': str(refresh.access_token),
+                    }
+                }, status=200)            
             qr_code_string = setup_2fa(user, True)
         #user.save()
             return JsonResponse(
