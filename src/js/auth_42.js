@@ -41,7 +41,9 @@ async function handleFormSubmit(event, session_data)
 	event.preventDefault();
     const form = event.target;
     const formData = new FormData(form);
-	formData.append('session_data', session_data);
+	formData.append('email', session_data.data.email);
+	formData.append('first_name', session_data.data.first_name);
+	formData.append('last_name', session_data.data.last_name);
 
     try {
         const response = await fetch('/api/user/register_api/', {
