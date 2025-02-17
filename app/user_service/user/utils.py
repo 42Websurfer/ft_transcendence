@@ -35,4 +35,14 @@ def setup_2fa(user, third_party=False):
     buffer = BytesIO() 
     qr_code.save(buffer, format="PNG")
     return b64encode(buffer.getvalue()).decode("utf-8")
-     
+
+def validate_avatar(avatar): 
+    try:
+        print("CONTTYPE: ", avatar.content_type)
+        if avatar.content_type.find("image/", 0) == 0:
+            return True
+        return False
+    except Exception as e:
+        return False
+    
+    

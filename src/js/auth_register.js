@@ -1,4 +1,4 @@
-import { displayToast, getCookie } from './utils.js';
+import { AvatarLoader, displayToast, getCookie } from './utils.js';
 import { showSection } from './index.js';
 import { renderAuth2FARegister } from './auth_2fa_register.js';
 
@@ -36,7 +36,7 @@ export function renderAuthRegister() {
 					<label for="floatingPassword">Username</label>
 				</div>
 				<div class="login-form-field form-floating">
-					<input type="file" accept=".jpg, .jpeg, .png, .webp" name="avatar" class="form-control" placeholder="Upload avatar">
+					<input type="file" accept="image/*" name="avatar" class="form-control" placeholder="Upload avatar">
 					<label for="floatingPassword">Upload avatar</label>
 				</div>
 				<button class="signin-button btn btn-primary w-100 py-2" type="submit">Sign up</button>
@@ -63,6 +63,14 @@ async function handleFormSubmit(event) {
         body: formData
     });
 	
+	if (!response.ok && response.status != 400) {
+		if (response.status == 413) {
+			displayToast('Avatar Image size too large! Max. 8MB', 'error');
+		} else {
+			displayToast(response.statusText, 'error');
+		}
+		return;
+	}
     const result = await response.json();
 	console.log("Response: ", result);
 	if (result.type === 'success')
@@ -72,4 +80,5 @@ async function handleFormSubmit(event) {
 		for(let key of Object.keys(result.message))
 			displayToast(result.message[key], 'error');
 	}
+	AvatarLoader.deleteLocal();
 }

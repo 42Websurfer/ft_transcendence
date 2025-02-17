@@ -231,8 +231,12 @@ export class AvatarLoader {
 
 	static loadData(){
 		const token = localStorage.getItem('access_token');
+		if (!token) {
+			this.deleteLocal();
+			return;
+		}
 		const local_avatar_data = localStorage.getItem('avatar_data');
-		if (local_avatar_data == undefined) {
+		if (!local_avatar_data) {
 			fetch('/api/tm/avatar_data/', {
 				method: 'GET',
 				headers: {
@@ -261,6 +265,9 @@ export class AvatarLoader {
 	}
 
 	static deleteLocal() {
+		const avatarDiv = document.querySelector('#avatar');
+		if (avatarDiv)
+			avatarDiv.style.display = 'none';
 		localStorage.removeItem('avatar_data');
 	}
 }
