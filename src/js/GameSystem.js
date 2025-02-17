@@ -268,6 +268,11 @@ export class Circle extends Mesh{
 		return (closestPoint);
 	}
 
+	/**
+	 * 
+	 * @param {Transform} transform current world position 
+	 * @returns {Array[Vector]}two points one for center, and one offset to the right of the center by the circles radius
+	 */
 	getWorldPoints(transform) {
 		return [transform.position.dup(), transform.position.add(new Vector(1, 0).scale(this.width * 0.5))];
 	}
@@ -485,7 +490,6 @@ function line(simplex, direction) {
 	ctx.fillText('b', b.x + CENTER.x, b.y + CENTER.y);
 	if (vectorsAreSameDirection(AB, AO)) {
 		direction.set(-AB.y, AB.x);
-		direction = direction.negate();
 	} else {
 		direction.setV(AO);
 		simplex.pop();
