@@ -73,7 +73,13 @@ async function handleLoginFormSubmit(event)
     const result = await response.json();
 	if (result.type === 'success')
 	{
-		renderAuth2FALogin(result.user);
+		if ('tokens' in result) {
+			localStorage.setItem('access_token', result.tokens.access);
+			localStorage.setItem('refresh_token', result.tokens.refresh);
+			showSection('menu');
+		} else {
+			renderAuth2FALogin(result.user);
+		}
 	}
 	else if (result.type === 'pending')
 	{
