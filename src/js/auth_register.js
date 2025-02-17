@@ -39,8 +39,11 @@ export function renderAuthRegister() {
 					<input type="file" accept="image/*" name="avatar" class="form-control" placeholder="Upload avatar">
 					<label for="floatingPassword">Upload avatar</label>
 				</div>
+				<div class="login-form-field font-colour-primary flex-container center">
+					<input type="checkbox" name="enable2fa" id="enable2fa">
+					<label style="margin-left: 15px" for="enable2fa">Enable 2fa</label>
+				</div>
 				<button class="signin-button btn btn-primary w-100 py-2" type="submit">Sign up</button>
-				
 			</form>
 		</div>
 	</div>
@@ -56,8 +59,6 @@ async function handleFormSubmit(event) {
     const form = event.target;
     const formData = new FormData(form);
 	
-    const token = localStorage.getItem('access_token'); 
-
     const response = await fetch('/api/user/register/', {
 		method: 'POST',
         body: formData
