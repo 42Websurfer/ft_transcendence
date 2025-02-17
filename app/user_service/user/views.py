@@ -140,7 +140,7 @@ def register(request):
                     'username': user.username
                 }
                 avatar = request.FILES.get('avatar')
-                if not validate_avatar(avatar):
+                if avatar and not validate_avatar(avatar):
                     user.delete()
                     return Response({'type': 'error', 'message': {'Avatar': 'Invalid Avatar'}}, status=400)
                 response = requests.post('http://gamehub-service:8003/gameStatsUser/', data=data, files={'avatar': avatar})
@@ -200,7 +200,7 @@ def update_user_information(request):
         if serialized_data.is_valid():
             username = request.data.get('username')
             avatar = request.FILES.get('avatar')
-            if not validate_avatar(avatar):
+            if avatar and  not validate_avatar(avatar):
                 return Response({'type': 'error', 'message': {'Avatar': 'Invalid Avatar'}}, status=400)
             response = requests.put('http://gamehub-service:8003/gameStatsUser/', data={'user_id': user.pk, 'username': username}, files={'avatar': avatar})
             if not response.ok:
