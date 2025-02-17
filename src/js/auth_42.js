@@ -11,54 +11,54 @@ export async function renderAuth42(session_data) {
             <input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
             
             <div class="login-instructions">
-                <p>Welcome, please enter a username!</p>
+                <p>Welcome, please enter your remaining info!</p>
             </div>
 
-            <div class="login-form-field form-floating">
-                <input type="text" name="login-username" class="form-control-new form-control" id="usernameInput" placeholder="Username" required>
-                <label for="floatingInput">Username</label>
-            </div>
-
-            <button id="usernameButton" class="signin-button btn btn-primary w-100 py-2" type="click">Sign up</button>
+			<form id="registerForm" enctype="multipart/form-data">
+				<div class="login-form-field form-floating">
+					<input type="text" name="username" id="username" class="form-control" placeholder="Username" required>
+					<label for="username">Username</label>
+				</div>
+				<div class="login-form-field form-floating">
+					<input type="file" accept="image/*" name="avatar" id="avatar" class="form-control" placeholder="Upload avatar">
+					<label for="avatar">Upload avatar</label>
+				</div>
+				<div class="login-form-field font-colour-primary flex-container center">
+					<input type="checkbox" name="enable2fa" id="enable2fa">
+					<label style="margin-left: 15px" for="enable2fa">Enable 2fa</label>
+				</div>
+				<button class="signin-button btn btn-primary w-100 py-2" type="submit">Sign up</button>
+			</form>
 		</div>
 	</div>
 	`;
-	const usernameButton = document.getElementById('usernameButton');
-	usernameButton.addEventListener('click', () => handleUsernameFormSubmit(session_data));
-
-    const usernameInput = document.getElementById('usernameInput');
-    usernameInput.addEventListener('keydown', async (event) => {
-        if (event.key === 'Enter') {
-            handleUsernameFormSubmit(session_data);
-        }
-    });
+	const form = document.getElementById('registerForm');
+    form.addEventListener('submit', (event) => handleUsernameFormSubmit(event, session_data));
 }
 
-async function handleUsernameFormSubmit(session_data)
+async function handleUsernameFormSubmit(event)
 {
-    const usernameElement = document.getElementById('usernameInput');
-    let username = '';
-    if (!usernameElement)
-    {
-        displayToast('Please enter a username', 'error');
-        return ;
-    }
-    
-    username = usernameElement.value.trim();
+	event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+	formData.append('session_data', session_data);
 
     try {
-        
         const response = await fetch('/api/user/register_api/', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({'username': username, 'session_data': session_data})
+            body: formData
         });
 
         const result = await response.json();
-        if (result.type === 'success')
-            renderAuth2FARegister(result);
+        if (result.type === 'success') {
+			if ('tokens' in result) {
+				localStorage.setItem('access_token', result.tokens.access);
+				localStorage.setItem('refresh_token', result.tokens.refresh);
+				showSection('menu');
+			} else {
+				renderAuth2FARegister(result);
+			}
+		}
         else if (result.type === 'error')
         {
             for(let key of Object.keys(result.message))
