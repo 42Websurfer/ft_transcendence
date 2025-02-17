@@ -20,7 +20,7 @@ from user.utils import updateOnlineStatusChannel
 #from tournament.models import GameStatsUser
 from .models import User, Friendship, FriendshipStatus, UserProfile
 from .serializers import RegisterSerializer, UpdateUserSerializer
-from .utils import setup_2fa
+from .utils import setup_2fa, validate_avatar
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -140,6 +140,9 @@ def register(request):
                     'username': user.username
                 }
                 avatar = request.FILES.get('avatar')
+                if not validate_avatar(avatar):
+                    user.delete()
+                    return Response({'type': 'error', 'message': {'Avatar': 'Invalid Avatar'}}, status=400)
                 response = requests.post('http://gamehub-service:8003/gameStatsUser/', data=data, files={'avatar': avatar})
                 if not response.ok:
                     response_data = response.json()
@@ -197,6 +200,8 @@ def update_user_information(request):
         if serialized_data.is_valid():
             username = request.data.get('username')
             avatar = request.FILES.get('avatar')
+            if not validate_avatar(avatar):
+                return Response({'type': 'error', 'message': {'Avatar': 'Invalid Avatar'}}, status=400)
             response = requests.put('http://gamehub-service:8003/gameStatsUser/', data={'user_id': user.pk, 'username': username}, files={'avatar': avatar})
             if not response.ok:
                 response_data = response.json()
