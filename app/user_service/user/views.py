@@ -150,8 +150,17 @@ def register(request):
                     return Response({'type': 'error', 'message': {'usermodel': response_data['message']}}, status=400)
             else:
                 return Response({'type': 'error', 'message': serialized_data.errors}, status=400)
-
-            qr_code_string = setup_2fa(user)
+            if not data.get('enable2fa'):
+                refresh = RefreshToken.for_user(user)
+                user_profile = UserProfile.objects.create(user=user)
+                return JsonResponse({
+                    'type': 'success',
+                    'tokens': {
+                        'refresh': str(refresh),
+                        'access': str(refresh.access_token),
+                    }
+                }, status=200)
+            qr_code_string = setup_2fa(user) 
             return Response({
                 'type': 'success',
                 'message': 'User registered successfully.',
@@ -173,7 +182,6 @@ def register(request):
 def get_user_information(request):
     user = request.user
     if user:
-        print("THIRD PARTY: ", user.userprofile.is_third_party_user, flush=True)
         return JsonResponse({
             'type': 'success',
             'email': user.email,
@@ -433,6 +441,7 @@ def register_api(request):
                 response_data = response.json()
                 user.delete()
                 return Response({'type': 'error', 'message': {'usermodel': response_data['message']}}, status=400)
+            #hier muss der check rein für enable 2fa else setup
             qr_code_string = setup_2fa(user, True)
         #user.save()
             return JsonResponse(
