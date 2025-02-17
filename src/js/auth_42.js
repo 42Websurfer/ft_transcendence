@@ -20,8 +20,8 @@ export async function renderAuth42(session_data) {
 					<label for="username">Username</label>
 				</div>
 				<div class="login-form-field form-floating">
-					<input type="file" accept="image/*" name="avatar" id="avatar" class="form-control" placeholder="Upload avatar">
-					<label for="avatar">Upload avatar</label>
+					<input type="file" accept="image/*" name="avatar" id="avatarUpload" class="form-control" placeholder="Upload avatar">
+					<label for="avatarUpload">Upload avatar</label>
 				</div>
 				<div class="login-form-field font-colour-primary flex-container center">
 					<input type="checkbox" name="enable2fa" id="enable2fa">
