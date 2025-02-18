@@ -199,7 +199,8 @@ def get_user_information(request):
             'firstname': user.first_name,
             'lastname': user.last_name,
             'username': user.username,
-            'third_party': user.userprofile.is_third_party_user
+            'third_party': user.userprofile.is_third_party_user,
+            'enable2fa': user.userprofile.enabled_2fa
         })
     else: 
         return JsonResponse({'type': 'error', 'message': 'User does not exists.'})
@@ -225,6 +226,12 @@ def update_user_information(request):
             if not response.ok:
                 response_data = response.json()
                 return Response({'type': 'error', 'message': {'user' :response_data['message']}}, status=400)
+            if 'enable2fa' in request.data and not user.userprofile.enabled_2fa:
+                user.userprofile.enabled_2fa = True
+            elif 'enable2fa' not in request.data and user.userprofile.enabled_2fa:
+                user.userprofile.enabled_2fa = False
+                user.userprofile.verified_2fa = False
+            user.userprofile.save()
             user = serialized_data.save()
             return Response({'type': 'success', 'message': 'User information successfully updated.'}, status=200)
         else:
