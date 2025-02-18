@@ -307,14 +307,22 @@ export function renderMenuOnlineLobby(lobbyId) {
         try {
             const token = localStorage.getItem('access_token'); 
 
-            const response = await fetch(`/api/tm/start_game/${lobbyId}/?type=match`, {
+			fetch(`/api/tm/start_game/${lobbyId}/?type=match`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },
-            });
-            matchStartButton.style.display = 'none';
+            })
+			.then(response => response.json())
+			.then(data => {
+				if (data.type === 'error') {
+					displayToast(data.message, 'error');
+				} else {
+					matchStartButton.style.display = 'none';
+				}
+			})
+			.catch(e => displayToast(e, 'error'));
         } catch (error) {
             console.log('Error: ', error);
         }
