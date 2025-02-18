@@ -41,6 +41,10 @@ export async function renderSettings() {
 					<input type="file" accept="image/*" name="avatar" class="form-control" placeholder="Upload avatar">
 					<label for="floatingInput">Upload avatar</label>
 				</div>
+				<div class="login-form-field font-colour-primary flex-container center">
+					<input type="checkbox" name="enable2fa" id="enable2fa">
+					<label style="margin-left: 15px" for="enable2fa">Enable 2fa</label>
+				</div>
 				<button class="signin-button btn btn-primary w-100 py-2" type="submit">Update</button>	
 			</form>
 		</div>
@@ -50,8 +54,9 @@ export async function renderSettings() {
     const inputFirstname = document.getElementById('settings-firstname');
     const inputLastname = document.getElementById('settings-lastname');
     const inputUsername = document.getElementById('settings-username');
-	const inputPassword = document.getElementById('settings-pw')
-	const inputConfirmPassword = document.getElementById('settings-confirm-pw')
+	const inputPassword = document.getElementById('settings-pw');
+	const inputConfirmPassword = document.getElementById('settings-confirm-pw');
+	const enable2fa = document.getElementById('enable2fa');
     const response = await getUserInformation();
     if (response.type === 'error')
         displayToast(response.message, 'error');
@@ -67,6 +72,9 @@ export async function renderSettings() {
         inputFirstname.value = response.firstname;
         inputLastname.value = response.lastname;
         inputUsername.value = response.username;
+		enable2fa.checked = response.enable2fa;
+		if (!enable2fa.checked)
+			enable2fa.setAttribute('wasfalse', '');
     }    
 	const form = document.getElementById('settingsForm');
     form.addEventListener('submit', handleSettingsFormSubmit);
@@ -87,7 +95,7 @@ async function getUserInformation() {
         return await response.json();
     }
     catch(error){
-		return {'type': 'request_error', 'message': 'Failed to tournament joind request.' }; //NOT ONLY COPY AND PASTE! THIS MESSAGE IS FROM ANOTHER UNIVERSUM
+		return {'type': 'error', 'message': 'Failed to get user information.' };
     }
 }
 
@@ -124,7 +132,12 @@ async function handleSettingsFormSubmit(event) {
 	if (result.type === 'success')
 	{
 		AvatarLoader.deleteLocal();
-		displayToast('User data successfully updated.', 'success');		
+		displayToast('User data successfully updated.', 'success');
+		const enable = document.getElementById('enable2fa');
+		if (enable?.getAttribute('wasfalse') != null && enable.checked) {
+			localStorage.removeItem('access_token');
+			localStorage.removeItem('refresh_token');
+		}
 		showSection('menu')
 	}
 	else if (result.type === 'error')
