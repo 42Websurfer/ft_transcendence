@@ -8,7 +8,6 @@ export async function renderSettings() {
 	<div class="login">
 		<div class="login-container">
 			<form id="settingsForm" enctype="multipart/form-data">
-				<input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
 				<div class="login-instructions">
 					<p>Update your account information!</p>
 				</div>
