@@ -239,13 +239,20 @@ export function renderMultiplayerLobby(lobbyId) {
         try {
             const token = localStorage.getItem('access_token'); 
 
-            const response = await fetch(`/api/tm/start_game/${lobbyId}/?type=multiple`, {
+            fetch(`/api/tm/start_game/${lobbyId}/?type=multiple`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },
-            });
+            })
+			.then(response => response.json())
+			.then(data => {
+				if (data.type === 'error') {
+					displayToast(data.message, 'error');
+				}
+			})
+			.catch(e => displayToast(e, 'error'));
         } catch (error) {
             console.log('Error: ', error);
         }
