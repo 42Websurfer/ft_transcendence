@@ -51,50 +51,33 @@ def validate_avatar(avatar):
         return False
     
     
-def register_api(session_data):
+def register_api(user):
     try:
-        username = user.username
+        username = user.get('username')
         while (User.objects.filter(username=username).exists()):
             username = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(16))            
         serializer = RegisterSerializer(data={
             'username': username,
-            'email': user.email,
-            'firstname': user.firstname,
-            'lastname': user.lastname
+            'email': user.get('email'),
+            'firstname': user.get('first_name'),
+            'lastname': user.get('last_name')
         }, is_third_party_user=True)
         if serializer.is_valid():
-
             user = serializer.save()
             data = {
                 'user_id': user.pk,
                 'username': user.username
             }
+            UserProfile.objects.create(user=user, is_third_party_user=True)
             response = requests.post('http://gamehub-service:8003/gameStatsUser/', data=data)
             if not response.ok:
                 response_data = response.json()
                 user.delete()
-                return {'type': 'error', 'message': {'usermodel': response_data['message']}}, status=400)
-            qr_code_string = setup_2fa(user, True)
-        #user.save()
-            return JsonResponse(
-                {
-                    'type': 'success',
-                    'user': {
-                        'id': user.id,
-                        'username': user.username,
-                        'email': user.email,
-                        'first_name': user.first_name,
-                        'last_name': user.last_name
-                    },
-                    'qr_code': f"data:image/png;base64,{qr_code_string}",
-                })
+                return {'type': 'error', 'message': {'usermodel': response_data['message']}}, 400, None
+            return None, 200, user
         else:
-            print("ERROR")
-            return JsonResponse({'type': 'error', 'message': serializer.errors}, status=400)
-    except json.JSONDecodeError as e:
-        logger.error(f"JSON decode error: {e}")
-        return JsonResponse({'type': 'error', 'message': {'exception': 'Invalid JSON data'}}, status=400)
+            return {'type': 'error', 'message': serializer.errors}, 400, None
     except Exception as e:
-        return JsonResponse({'type': 'error', 'message': {'exepction': str(e)}}, status=400)
+        return ({'type': 'error', 'message': {'exepction': str(e)}}, 400, None)
     
      
