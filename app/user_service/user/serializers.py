@@ -12,12 +12,12 @@ class RegisterSerializer(serializers.ModelSerializer):
             email: unique
     '''
     username = serializers.CharField(
-        max_length=150,
+        max_length=16,
         required=True,
         validators=[validate_username_format]
     )
     email = serializers.EmailField(required=True)
-    password = serializers.CharField(write_only=True, min_length=1)
+    password = serializers.CharField(write_only=True, min_length=8)
     firstname = serializers.CharField(source='first_name', required=True)
     lastname = serializers.CharField(source='last_name', required=True)
 
@@ -63,15 +63,14 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 class UpdateUserSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
-        max_length=150,
+        max_length=16,
         required=True,
         validators=[validate_username_format]
     )
     email = serializers.EmailField(required=True)
-    password = serializers.CharField(write_only=True, min_length=1, required=False)
+    password = serializers.CharField(write_only=True, min_length=8, required=False)
     firstname = serializers.CharField(source='first_name', required=True)
     lastname = serializers.CharField(source='last_name', required=True)
-    #avatar = serializers.ImageField(required=False, allow_null=True)
 
     class Meta:
 
