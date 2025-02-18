@@ -354,6 +354,12 @@ def start_game_loop(request, lobby_id):
 			}
 		)
 	elif type == 'multiple':
+		multiple_data = redis.get(multiple_lobby_string(lobby_id))
+		if not multiple_data: 
+			return JsonResponse({'type': 'error', 'message': 'No match data.'}, status=400)
+		multiple_data = json.loads(multiple_data)
+		if (len(multiple_data['users']) != 4):
+			return JsonResponse({'type': 'error', 'message': 'Where are your friends? You need 4 players.'}, status=400)
 		channel_layer = get_channel_layer()	
 		(async_to_sync)(channel_layer.group_send)(
 			multiple_lobby_string(lobby_id),
