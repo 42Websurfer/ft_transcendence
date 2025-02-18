@@ -133,8 +133,8 @@ async function handleSettingsFormSubmit(event) {
 	{
 		AvatarLoader.deleteLocal();
 		displayToast('User data successfully updated.', 'success');
-		console.log(document.getElementById('enable2fa')?.getAttribute('wasfalse'));
-		if (document.getElementById('enable2fa')?.getAttribute('wasfalse') != null) {
+		const enable = document.getElementById('enable2fa');
+		if (enable?.getAttribute('wasfalse') != null && enable.checked) {
 			localStorage.removeItem('access_token');
 			localStorage.removeItem('refresh_token');
 		}
