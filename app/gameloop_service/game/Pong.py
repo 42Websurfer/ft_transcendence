@@ -254,7 +254,6 @@ class GameLogicManager(Entity):
 
 async def getCurrentState(world: World, consumer):
 	for ent in world.entities:
-		print('Sending ent id:', ent.id)
 		await consumer.client_create_entity(
 			{
 				'id': ent.id,

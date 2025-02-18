@@ -56,7 +56,6 @@ class MyConsumer(AsyncWebsocketConsumer):
 	#drawLine 		dl;x1;y1;x2;y2
 
 	async def assign_player(self, pong_player):
-		print('consumer gets PongPlayer assigned')
 		self.player_c = pong_player
 		await self.channel_layer.group_send(
 			self.group_name,
@@ -71,7 +70,6 @@ class MyConsumer(AsyncWebsocketConsumer):
 
 
 	async def disconnect(self, close_code):
-		print('disconnected() called')
 		await self.channel_layer.group_discard(
 			self.group_name,
 			self.channel_name
@@ -88,21 +86,17 @@ class MyConsumer(AsyncWebsocketConsumer):
 				return
 			if text_data_json['type'] == 'incomplete':
 				await getCurrentState(thread_local.world, self)
-			print(f"text:data: {text_data}")
 		except Exception as e:
 			print(f'text_data:', text_data, 'eception:', e)
 
 	#initPlayer 	ip;entid;uid;uname
 	async def init_players(self, event):
-		print('We send what player has wich uid and uname')
 		await self.send(text_data=f"ip;{event.get('ent_id')};{event.get('uid')};{event.get('uname')};{self.user.id}")
 		
 	#newEntity		ne;id;type;xpos;ypos;rotation;?.height
 	async def client_create_entity(self, event):
-		print('client_create_entity event sent:', event)
 		transform = event.get('transform')
 		await self.send(text_data=f"ne;{event.get('id')};{event.get('entType')};{transform['position']['x']};{transform['position']['y']};{transform['rotation']};{event.get('height')}")
-		print('client_create_entity event processed')
 
 	"""
 	This is to indicate an entity moved, client side will smooth out rough movements

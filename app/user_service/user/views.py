@@ -112,7 +112,6 @@ def user_logout(request):
 def verify_2fa_code(request):
     try:
         data = json.loads(request.body)
-        print(data)
         otp_code = data.get('otp_code')
         user = data.get('user')
         username = user.get('username') 
