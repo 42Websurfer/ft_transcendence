@@ -1,5 +1,4 @@
 import { handleLogoutSubmit, displayToast, AvatarLoader } from './utils.js';
-import { renderAuth42 } from './auth_42.js';
 import { renderWaiting } from './waiting.js';
 import { renderAuth2FALogin } from './auth_2fa_login.js';
 import { renderAuth2FARegister } from './auth_2fa_register.js';
@@ -348,10 +347,6 @@ export async function showSection(section, lobbyId, pushState = true)
     else if (section === 'auth_login')
         import('./auth_login.js').then(module => {
             module.renderAuthLogin();    
-        });
-    else if (section === 'auth_42')
-        import('./auth_42.js').then(module => {
-            module.renderAuth42();    
         });
 	if (settingsButton)
 		settingsButton.style.display = 'none';
