@@ -223,9 +223,7 @@ export function renderMenu() {
             const content = selectedListItem.textContent;
             setSelectedListItem(null);
             clearFriendshipModal();
-            console.log(`/remove_friendship/${content}/`)
             const response = await handleFriendRequest(`remove_friendship/${content}/`)
-            console.log(response.type + ' + ' + response.message);
         }
     });
 
@@ -234,9 +232,7 @@ export function renderMenu() {
             const content = selectedListItem.textContent;
             setSelectedListItem(null);
             clearFriendshipModal();
-            console.log(`/block_friend_request/${content}/`)
             const response = await handleFriendRequest(`block_friend_request/${content}/`)
-            console.log(response.type + ' + ' + response.message);
         }
     });
 
@@ -245,9 +241,7 @@ export function renderMenu() {
             const content = selectedListItem.textContent;
             setSelectedListItem(null);
             clearFriendshipModal();
-            console.log(`/accept_friend_request/${content}/`)
             const response = await handleFriendRequest(`accept_friend_request/${content}/`)
-            console.log(response.type + ' + ' + response.message);
         }
     });
 
@@ -256,9 +250,7 @@ export function renderMenu() {
             const content = selectedListItem.textContent;
             setSelectedListItem(null);
             clearFriendshipModal();
-            console.log(`/remove_friendship/${content}/`)
             const response = await handleFriendRequest(`remove_friendship/${content}/`)
-            console.log(response.type + ' + ' + response.message);
         }
     });
 
@@ -267,9 +259,7 @@ export function renderMenu() {
             const content = selectedListItem.textContent;
             setSelectedListItem(null);
             clearFriendshipModal();
-            console.log(`/remove_friendship/${content}/`)
             const response = await handleFriendRequest(`remove_friendship/${content}/`)
-            console.log(response.type + ' + ' + response.message);
         }
     });
 
@@ -278,9 +268,7 @@ export function renderMenu() {
             const content = selectedListItem.textContent;
             setSelectedListItem(null);
             clearFriendshipModal();
-            console.log(`/remove_friendship/${content}/`)
             const response = await handleFriendRequest(`remove_friendship/${content}/`)
-            console.log(response.type + ' + ' + response.message);
         }
     });
 

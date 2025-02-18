@@ -71,7 +71,6 @@ async function handleFormSubmit(event) {
 		return;
 	}
     const result = await response.json();
-	console.log("Response: ", result);
 	if (result.type === 'success') {
 		if ('tokens' in result) {
 			localStorage.setItem('access_token', result.tokens.access);

@@ -6,9 +6,7 @@ export function runWebsocket() {
 
     let admin = false;
 
-    g_socket.onopen = function() {
-        console.log("Connected to Websocket of a Tournament")
-    };
+    g_socket.onopen = function() {};
 
     g_socket.onmessage = function(event) {
         try {
@@ -71,8 +69,7 @@ export function runWebsocket() {
                 }
             }
             else if (data.type === 'tournament_finished')
-                //HIER EINE MESSAGE VOM FRONTEND DASS DAS TOURNAMENT ZU ENDE IST UND MAN ZURÜCK IN DAS MENU GEHEN KANN
-                console.log('Tournament finished');
+                displayToast("Tournament finished!!!", "success");
             else if (data.type === 'start_tournament_match')
             {
                 if (data.match_id)
@@ -93,7 +90,6 @@ export function runWebsocket() {
     };
     
     g_socket.onclose = function(event) {
-        console.log('WebSocket connection closed');
         g_socket = undefined;
     };
 
@@ -415,6 +411,6 @@ export function renderMenuTournamentRoundRobin(lobbyId) {
         startGame();
         const response = fetch_get(`/tm/start_tournament_round/${lobbyId}/`)
         if (response.type === 'error')
-            console.log(response.message);
+            displayToast(response.message, "error");
     });
 }

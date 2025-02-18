@@ -5,9 +5,7 @@ import { renderPong } from './pong.js';
 export function runWebsocket(socket) {
 
 
-    socket.onopen = function() {
-        console.log("Connected to Websocket of a Tournament")
-    };
+    socket.onopen = function() {};
 
     socket.onmessage = function(event) {
         try {
@@ -67,7 +65,6 @@ export function runWebsocket(socket) {
     };
     
     socket.onclose = function(event) {
-        console.log('WebSocket connection closed');
         g_socket = undefined;
         const lobbyClosedModal = document.getElementById('lobbyClosedModal');
         if (!lobbyClosedModal)

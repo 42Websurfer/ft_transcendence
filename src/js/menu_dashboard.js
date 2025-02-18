@@ -242,7 +242,6 @@ export async function renderMenuDashboard(username) {
         return;
     }
 
-    console.log("response: ", response);
 
     const app = document.getElementById('app');
 

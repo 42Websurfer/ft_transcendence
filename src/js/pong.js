@@ -193,22 +193,6 @@ class AiPlayer extends Player {
 			if (hitInfo.hitPos.x == NaN || hitInfo.hitPos.y == NaN) {
 				continue;
 			}
-			//hardcoded to simulate that the player will always hit it before the ball hits his goal
-			//this is to give AI a way to always somewhat predict a return shot
-			//maybe add this?
-			// if (hitInfo.hitPos.x < 87.5 && hitInfo.entity == manager.sections[0].goal) {
-			// 	console.log("Find intersection between ray and and line from x87.5 y0 to x87.5 yMAX then set hitInfo.hitPos to that");
-			// 	let angle = Math.atan2(ray.start.y - hitInfo.hitPos.y, ray.start.x - hitInfo.hitPos.x) * (180 / Math.PI);
-			// 	console.log('The angle is:', angle, 'angle2:');
-			// 	let len = 87.5 / Math.cos(angle);
-			// 	console.log('Base:', len, ' scuffed:');
-			// 	let yC = ray.start.y + len * Math.sin(angle);
-			// 	// ctx.fillRect(87.5, yC, 5, 5);
-			// 	console.warn('pos:', 87.5, yC);
-			// 	// maybe add this?
-			// 	// hitInfo.hitPos.x = 87.5;
-			// 	// hitInfo.hitPos.y = yC;
-			// }
 			this.debugPoints.push(hitInfo.hitPos);
 			if (hitInfo.entity == manager.sections[1].goal
 				|| hitInfo.entity == manager.sections[1].player
@@ -340,8 +324,6 @@ class PongLocalManager extends Entity{
 							other.secondLastHit.score++;
 							this.updatePlayerScore(other.secondLastHit)
 						}
-					} else {
-						console.log("WHAT THE FUCK DO WE DO NOW?");
 					}
 					this.resetRound();
 				}
@@ -357,7 +339,6 @@ class PongLocalManager extends Entity{
 		this.starter = playerScored;
 		let section = this.sections.find((value) => value.player == playerScored);
 		let idx = this.sections.indexOf(section);
-		console.log('idx:', idx);
 		updateScore(idx, playerScored.score);
 	}
 
@@ -366,7 +347,6 @@ class PongLocalManager extends Entity{
 		
 		this.winner = this.playerHasWon();
 		if (this.winner) {
-			console.log('we have a winner', this.winner);
 			let displayMsg = document.getElementById('countdownDisplay');
 			if (displayMsg) {
 				let section = this.sections.find((value) => value.player == this.winner);
@@ -377,7 +357,6 @@ class PongLocalManager extends Entity{
 
 			const restartGame = (event) => {
 				if (event.key == ' ') {
-					console.log("RESTART LOCAL GAME!");
 					this.winner = undefined;
 					for (let section of this.sections) {
 						section.player.score = 0;
@@ -606,9 +585,7 @@ function selectGamemode(groupName){
 
 function setupSocketHandlers(socket){
 
-	socket.onopen = () => {
-		console.log("Connection to remote Pong serverer");
-	}
+	socket.onopen = () => {}
 	
 	socket.onmessage = (event) => {
 		const data = event.data.split(';');
@@ -625,8 +602,6 @@ function setupSocketHandlers(socket){
 		//drawLine		dl;x1;y1;x2;y2
 		if (!data)
 			return;
-		if (data[0] !== 'up')
-			console.log(data);
 		if (data[0] === 'ne'){
 			manager.newEntity(data[2], data[1], {position: {x: data[3], y: data[4]}, rotation: data[5]}, data?.[6]);
 			return;
@@ -660,7 +635,6 @@ function setupSocketHandlers(socket){
 	}
 	
 	socket.onclose = () => {
-		console.log('GAME SOCKET CLOSED!');
 		clearInterval(intervalId);
 		manager?.cleanup();
 		world.entities = [];
@@ -692,7 +666,6 @@ function setupCloseLocal() {
 	const homeButton = document.getElementById('webpong-button');
 
 	const closeGame = () => {
-		console.log("CLOSING LOCAL GAME!");
 		endGame();
 		homeButton.removeEventListener('click', closeGame);
 		logoutButton.removeEventListener('click', closeGame);
