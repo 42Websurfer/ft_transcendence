@@ -8,8 +8,6 @@ export function renderAuthRegister() {
 	<div class="login">
 		<div class="login-container">
 			<form id="registerForm" enctype="multipart/form-data">
-				<input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
-
 				<div class="login-instructions">
 					<p>Welcome, please sign up!</p>
 				</div>

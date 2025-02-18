@@ -10,8 +10,6 @@ export async function renderAuthLogin() {
 	<div class="login">
 		<div class="login-container">
 			<form id="loginForm">
-				<input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
-				
 				<div class="login-instructions">
 					<p>Welcome, please sign in!</p>
 				</div>
