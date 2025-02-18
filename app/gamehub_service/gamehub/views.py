@@ -67,7 +67,7 @@ def create_lobby(request):
 		return JsonResponse({
 			'type': 'error',
 			'message': 'You can\'t create multiple lobbies'
-		})
+		}, status=400)
 	lobby_id = lobby_name_generator()
 	if type == 'online':
 		redis.set(match_lobby_string(lobby_id), "")
@@ -79,7 +79,7 @@ def create_lobby(request):
 		return JsonResponse({
 			'type': 'error',
 			'message': 'Query "type" missing in request!'
-		})
+		}, status=400)
 	redis.sadd('user_lobbies', user.id)
 	return JsonResponse({
 		'type': 'success',
@@ -131,10 +131,10 @@ def join_lobby(request, lobby_id):
 		return JsonResponse({
 			'type': 'error',
 			'message': 'You can\'t join multiple lobbies'
-		})
+		}, status=400)
 	if type == 'tournament':
 		if redis.exists(tournament_string(lobby_id)):
-			return(JsonResponse({'type': 'error', 'message': 'Tournament already started.'}))
+			return(JsonResponse({'type': 'error', 'message': 'Tournament already started.'}, status=400))
 		elif redis.exists(lobby_id):
 			return(JsonResponse({'type': 'success'}))
 	elif type == 'multiple':
@@ -143,24 +143,24 @@ def join_lobby(request, lobby_id):
 			if data:
 				data = json.loads(data)
 				if len(data['users']) >= 4:
-					return(JsonResponse({'type': 'error', 'message': 'Lobby is Full.'}))
+					return(JsonResponse({'type': 'error', 'message': 'Lobby is Full.'}, status=400))
 				if data['status'] == 'pending':
 					return(JsonResponse({'type': 'success'}))
 				else:
-					return(JsonResponse({'type': 'error', 'message': 'Match already started.'}))
+					return(JsonResponse({'type': 'error', 'message': 'Match already started.'}, status=400))
 	elif type == 'online':
 		user = request.user
 		if (redis.exists(match_lobby_string(lobby_id))):
 			lobby_data_json = redis.get(match_lobby_string(lobby_id))
 			if not lobby_data_json: 
-				return (JsonResponse({'type': 'error', 'message': 'No data in redis.'}))
+				return (JsonResponse({'type': 'error', 'message': 'No data in redis.'}, status=400))
 			lobby_data = json.loads(lobby_data_json)
 			member_username = str(lobby_data.get('member_username'))
 			if (member_username == "" or member_username == user.username):
 				return(JsonResponse({'type': 'success'}))
 			else: 
-				return (JsonResponse({'type': 'error', 'message': 'Lobby already full.'}))
-	return(JsonResponse({'type': 'error', 'message': 'Lobby does not exist.'}))
+				return (JsonResponse({'type': 'error', 'message': 'Lobby already full.'}, status=400))
+	return(JsonResponse({'type': 'error', 'message': 'Lobby does not exist.'}, status=404))
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -169,7 +169,7 @@ def get_lobby_data(request, lobby_id):
 	if type == 'match':
 		online_match_json = redis.get(match_lobby_string(lobby_id))
 		if (not online_match_json):
-			return (JsonResponse({'type': 'error', 'message': 'No data in redis.'}))
+			return (JsonResponse({'type': 'error', 'message': 'No data in redis.'}, status=400))
 		channel_layer = get_channel_layer()
 		(async_to_sync)(channel_layer.group_send)(
 			match_lobby_string(lobby_id),
@@ -188,7 +188,7 @@ def get_lobby_data(request, lobby_id):
 	elif type == 'multiple':
 		multiple_data_json = redis.get(multiple_lobby_string(lobby_id))
 		if (not multiple_data_json):
-			return (JsonResponse({'type': 'error', 'message': 'No data in redis.'}))
+			return (JsonResponse({'type': 'error', 'message': 'No data in redis.'}, status=400))
 		channel_layer = get_channel_layer()
 		(async_to_sync)(channel_layer.group_send)(
 			multiple_lobby_string(lobby_id),
@@ -207,7 +207,7 @@ def get_lobby_data(request, lobby_id):
 def get_tournament_lobby_data(lobby_id):
 	tournament = redis.get(tournament_string(lobby_id))
 	if tournament is None:
-		return JsonResponse({'type': 'error', 'message': 'Tournament not found.'})
+		return JsonResponse({'type': 'error', 'message': 'Tournament not found.'}, status=404)
 	tournament_dic = json.loads(tournament)
 	channel_layer = get_channel_layer()
 	(async_to_sync)(channel_layer.group_send)(
@@ -246,7 +246,7 @@ def get_tournament_lobby_data(lobby_id):
 def start_tournament_round(request, lobby_id):
 	tournament_data_json = redis.get(tournament_string(lobby_id))
 	if not tournament_data_json:
-		return (JsonResponse({'type': 'error', 'message': 'Tournament not found'}))
+		return (JsonResponse({'type': 'error', 'message': 'Tournament not found'}, status=404))
 	tournament_data = json.loads(tournament_data_json)
 	matches = tournament_data['matches']
 	round = 424242 #need for for-loop logic
@@ -274,8 +274,10 @@ def start_tournament_round(request, lobby_id):
 def start_group_tournament(request, lobby_id):
 	results_json = redis.get(lobby_id)
 	if (not results_json):
-		return (JsonResponse({'type': 'error', 'message': 'No data in redis.'}))
+		return (JsonResponse({'type': 'error', 'message': 'No data in redis.'}, status=400))
 	results = json.loads(results_json)
+	if (len(results) < 3):
+		return (JsonResponse({'type': 'error', 'message': 'You need at least three players.'}, status=400))
 	if (len(results) % 2 != 0):
 		results.append({'user_id': -1})
 	num_rounds = len(results) - 1
@@ -335,9 +337,9 @@ async def set_tournament_match(request):
 	score_home = data.get('score_home')
 	score_away = data.get('score_away')
 	if await set_match_data(tournament_id, match_id, score_home, score_away, 'finished'):
-		return (JsonResponse({'type': 'success'}))
+		return (JsonResponse({'type': 'success'}, status=200))
 	else:
-		return (JsonResponse({'type': 'error'}))
+		return (JsonResponse({'type': 'error'}, status=400))
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
