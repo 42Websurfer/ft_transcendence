@@ -412,7 +412,6 @@ def check_registration(session_data):
     try:
         user = User.objects.get(email=session_data.get('email'))
         userprofile = UserProfile.objects.get(user=user)
-        
         if (not userprofile.is_third_party_user):
             return {'type': 'error', 'message': 'Email already registered.'}, 400, None   
         return (None, 200, user)
@@ -424,14 +423,14 @@ def check_registration(session_data):
 @api_view(['POST'])
 def api_callback(request):
     try:
-        data = json.loads(request.body) #request.GET.get('code')
+        data = json.loads(request.body)
         code = data.get('code')
         access_token_response, status = exchange_code_for_token(code)
         if (status != 200):
             return JsonResponse({'type': 'error', 'message': 'Failed to exchange code for token'}, status=status)
         user_info, status = get_user_info(access_token_response['access_token'])
         if status != 200:
-            return JsonResponse({'error': 'Failed to retrieve user info'}, status=status)
+            return JsonResponse({'type': 'error', 'message': 'Failed to retrieve user info'}, status=status)
         session_data = create_user_session(user_info)
         obj, status, user = check_registration(session_data)
         
@@ -458,7 +457,7 @@ def api_callback(request):
                 return JsonResponse(
                     {
                         'type': 'success',
-                        'user': user
+                        'user': user_dic
                     }, status=200
                 )
             else:
