@@ -250,7 +250,7 @@ export async function renderMenuDashboard(username) {
         <div class="dashboard-container">
 
             <div class="dashboard-container-header">
-                <p>Dashboard</p>
+                <p>Dashboards</p>
             </div>
             
             <hr class="dashboard-container-divider">
