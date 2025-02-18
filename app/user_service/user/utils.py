@@ -10,6 +10,8 @@ from io import BytesIO
 from base64 import b64encode
 from .models import User
 from .serializers import RegisterSerializer
+from django.conf import settings
+
 
 def updateOnlineStatusChannel():
     channel_layer = get_channel_layer()
@@ -80,4 +82,40 @@ def register_api(user):
     except Exception as e:
         return ({'type': 'error', 'message': {'exepction': str(e)}}, 400, None)
     
-     
+def exchange_code_for_token(code):
+    token_url = 'https://api.intra.42.fr/oauth/token'
+    payload = {
+        'grant_type': 'authorization_code',
+        'client_id': settings.CLIENT_ID,
+        'client_secret': settings.CLIENT_SECRET,
+        'code': code,
+        'redirect_uri': settings.REDIRECT_URI
+    }
+
+    response = requests.post(token_url, data=payload)
+    print("RESPONSE STATUS CODE: ", response.status_code)
+    if response.status_code == 200:
+        return response.json(), 200
+    else:
+        return None, response.status_code
+
+def get_user_info(access_token):
+
+    headers = {'Authorization': f'Bearer {access_token}'}
+    response = requests.get('https://api.intra.42.fr/v2/me', headers=headers)
+
+    if response.status_code == 200:
+        return response.json(), 200
+    else:
+        return (None, response.status_code)
+
+def create_user_session(user_info):
+
+    session_data = {
+        'email': user_info.get('email'),
+        'first_name': user_info.get('first_name'),
+        'last_name': user_info.get('last_name'),
+        'username': user_info.get('login')
+    }
+
+    return   session_data

@@ -22,7 +22,7 @@ from user.utils import updateOnlineStatusChannel
 #from tournament.models import GameStatsUser
 from .models import User, Friendship, FriendshipStatus, UserProfile
 from .serializers import RegisterSerializer, UpdateUserSerializer
-from .utils import setup_2fa, validate_avatar, register_api
+from .utils import setup_2fa, validate_avatar, register_api, exchange_code_for_token, create_user_session, get_user_info
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -431,14 +431,17 @@ def check_registration(session_data):
     except UserProfile.DoesNotExist:
         return {'type': 'error', 'message': 'UserProfile does not exist.'}, 400, None   
 
-@csrf_exempt
 @api_view(['POST'])
 def api_callback(request):
     try:
         data = json.loads(request.body) #request.GET.get('code')
         code = data.get('code')
-        access_token_response = exchange_code_for_token(code)
-        user_info = get_user_info(access_token_response['access_token'])
+        access_token_response, status = exchange_code_for_token(code)
+        if (status != 200):
+            return JsonResponse({'type': 'error', 'message': 'Failed to exchange code for token'}, status=status)
+        user_info, status = get_user_info(access_token_response['access_token'])
+        if status != 200:
+            return JsonResponse({'error': 'Failed to retrieve user info'}, status=status)
         session_data = create_user_session(user_info)
         obj, status, user = check_registration(session_data)
         
@@ -485,42 +488,3 @@ def api_callback(request):
         return JsonResponse({'type': 'error', 'message': 'UserProfile does not exists.'}, status=404)
     except Exception as e:
         return JsonResponse({'type': 'error', 'message': str(e)}, status=400)
-
-
-def exchange_code_for_token(code):
-    token_url = 'https://api.intra.42.fr/oauth/token'
-    payload = {
-        'grant_type': 'authorization_code',
-        'client_id': settings.CLIENT_ID,
-        'client_secret': settings.CLIENT_SECRET,
-        'code': code,
-        'redirect_uri': settings.REDIRECT_URI
-    }
-
-    response = requests.post(token_url, data=payload)
-
-    if response.status_code == 200:
-        return response.json()
-    else:
-        return JsonResponse({'error': 'Failed to exchange code for token'}, status=response.status_code)
-
-def get_user_info(access_token):
-
-    headers = {'Authorization': f'Bearer {access_token}'}
-    response = requests.get('https://api.intra.42.fr/v2/me', headers=headers)
-
-    if response.status_code == 200:
-        return response.json()
-    else:
-        return JsonResponse({'error': 'Failed to retrieve user info'}, status=response.status_code)
-
-def create_user_session(user_info):
-
-    session_data = {
-        'email': user_info.get('email'),
-        'first_name': user_info.get('first_name'),
-        'last_name': user_info.get('last_name'),
-        'username': user_info.get('login')
-    }
-
-    return   session_data
