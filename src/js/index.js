@@ -511,9 +511,9 @@ window.onload = async function() {
         }
         else if (response.type === 'success')
         {
-			if ('tokens' in result) {
-				localStorage.setItem('access_token', result.tokens.access);
-				localStorage.setItem('refresh_token', result.tokens.refresh);
+			if ('tokens' in response) {
+				localStorage.setItem('access_token', response.tokens.access);
+				localStorage.setItem('refresh_token', response.tokens.refresh);
 				showSection('menu');
 			} else {
 				renderAuth2FALogin(response.user);
