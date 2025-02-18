@@ -608,7 +608,6 @@ function setupSocketHandlers(socket){
 		}
 		if (manager && !manager.complete) {
 			socket.send(JSON.stringify({type: 'incomplete'}));
-			console.warn('did not recieve all entities. Send request for resend!!!');
 			return;
 		} 
 		if (data[0] === 'up'){
