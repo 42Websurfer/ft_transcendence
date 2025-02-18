@@ -390,7 +390,7 @@ export function renderMenuTournamentRoundRobin(lobbyId) {
             });
             return await response.json();
         } catch (error) {
-            return { error: 'Failed to tournament create request.' };
+            return { type: 'error', message: 'Failed to tournament create request.' };
         }
 
     };
@@ -400,17 +400,24 @@ export function renderMenuTournamentRoundRobin(lobbyId) {
     roundStartButton.disabled = false;
 
     tournamentStartButton.addEventListener('click', async() => {
-        tournamentStartButton.style.display = 'none';
-        roundStartButton.style.display = 'block';
-        await showTournamentMatches();
+		const response = await showTournamentMatches();
+		if (response.type === 'error') {
+			displayToast(response.message, 'error');
+		} else {
+			tournamentStartButton.style.display = 'none';
+			roundStartButton.style.display = 'block';
+		}
     });
 
     roundStartButton.addEventListener('click', async() => {
-        roundStartButton.disabled = true;
-        roundStartButton.style.display = 'none';
-        startGame();
-        const response = fetch_get(`/tm/start_tournament_round/${lobbyId}/`)
+		const response = fetch_get(`/tm/start_tournament_round/${lobbyId}/`)
         if (response.type === 'error')
             displayToast(response.message, "error");
+		else {
+			roundStartButton.disabled = true;
+			roundStartButton.style.display = 'none';
+			startGame();
+		}
+
     });
 }
