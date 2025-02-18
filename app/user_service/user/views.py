@@ -269,7 +269,7 @@ def send_friend_request(request, username):
             'message': 'Request sent successfully!'
         }, status=201)
     except Exception as e:
-        return JsonResponse({'type': 'error', 'message': e}, status=400)
+        return JsonResponse({'type': 'error', 'message': str(e)}, status=404)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
