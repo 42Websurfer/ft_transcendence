@@ -27,7 +27,9 @@ export async function renderAuth2FARegister(input) {
 	sendCodeButton.addEventListener('click', async function() {
 		let result = await sendAuthCode(input.user);
 		if (result.type === 'error')
-			displayToast(result.message, 'error')	
+			displayToast(result.message, 'error')
+		else if (result.type === 'success')
+			displayToast('You have successfully registered.', 'success');
 	});
 
 	const authcodeInput = document.getElementById('authcode');

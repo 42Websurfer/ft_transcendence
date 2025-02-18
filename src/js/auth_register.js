@@ -1,6 +1,6 @@
 import { AvatarLoader, displayToast, getCookie } from './utils.js';
-import { showSection } from './index.js';
 import { renderAuth2FARegister } from './auth_2fa_register.js';
+import { showSection } from './index.js';
 
 export function renderAuthRegister() {
 	const app = document.getElementById('app');
@@ -8,8 +8,6 @@ export function renderAuthRegister() {
 	<div class="login">
 		<div class="login-container">
 			<form id="registerForm" enctype="multipart/form-data">
-				<input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
-
 				<div class="login-instructions">
 					<p>Welcome, please sign up!</p>
 				</div>
@@ -39,8 +37,11 @@ export function renderAuthRegister() {
 					<input type="file" accept="image/*" name="avatar" class="form-control" placeholder="Upload avatar">
 					<label for="floatingPassword">Upload avatar</label>
 				</div>
+				<div class="login-form-field font-colour-primary flex-container center">
+					<input type="checkbox" name="enable2fa" id="enable2fa">
+					<label style="margin-left: 15px" for="enable2fa">Enable 2fa</label>
+				</div>
 				<button class="signin-button btn btn-primary w-100 py-2" type="submit">Sign up</button>
-				
 			</form>
 		</div>
 	</div>
@@ -56,8 +57,6 @@ async function handleFormSubmit(event) {
     const form = event.target;
     const formData = new FormData(form);
 	
-    const token = localStorage.getItem('access_token'); 
-
     const response = await fetch('/api/user/register/', {
 		method: 'POST',
         body: formData
@@ -73,8 +72,15 @@ async function handleFormSubmit(event) {
 	}
     const result = await response.json();
 	console.log("Response: ", result);
-	if (result.type === 'success')
-		renderAuth2FARegister(result) 
+	if (result.type === 'success') {
+		if ('tokens' in result) {
+			localStorage.setItem('access_token', result.tokens.access);
+			localStorage.setItem('refresh_token', result.tokens.refresh);
+			showSection('menu');
+		} else {
+			renderAuth2FARegister(result);
+		}
+	}
 	else if (result.type === 'error')
 	{
 		for(let key of Object.keys(result.message))

@@ -504,19 +504,20 @@ window.onload = async function() {
     {
         const response = await sendCodeToBackend(code);
         window.history.replaceState({}, document.title, window.location.pathname);
-        if (response.type === 'registration')
-        {
-            renderAuth42(response);
-            return;
-        }
-        else if (response.type === 'pending')
+        if (response.type === 'pending')
         {
             displayToast('You need to setup 2FA.', 'warning');
             renderAuth2FARegister(response)
         }
         else if (response.type === 'success')
         {
-            renderAuth2FALogin(response.user)
+			if ('tokens' in response) {
+				localStorage.setItem('access_token', response.tokens.access);
+				localStorage.setItem('refresh_token', response.tokens.refresh);
+				showSection('menu');
+			} else {
+				renderAuth2FALogin(response.user);
+			}
         }
         else if (response.type === 'error')
         {

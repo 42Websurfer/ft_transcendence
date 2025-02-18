@@ -10,8 +10,6 @@ export async function renderAuthLogin() {
 	<div class="login">
 		<div class="login-container">
 			<form id="loginForm">
-				<input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
-				
 				<div class="login-instructions">
 					<p>Welcome, please sign in!</p>
 				</div>
@@ -73,7 +71,13 @@ async function handleLoginFormSubmit(event)
     const result = await response.json();
 	if (result.type === 'success')
 	{
-		renderAuth2FALogin(result.user);
+		if ('tokens' in result) {
+			localStorage.setItem('access_token', result.tokens.access);
+			localStorage.setItem('refresh_token', result.tokens.refresh);
+			showSection('menu');
+		} else {
+			renderAuth2FALogin(result.user);
+		}
 	}
 	else if (result.type === 'pending')
 	{

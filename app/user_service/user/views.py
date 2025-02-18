@@ -3,6 +3,8 @@ import logging
 import redis
 import requests
 import pyotp
+import random
+import string
 from django.shortcuts import get_object_or_404, redirect
 from django.http import JsonResponse
 from django.contrib.auth.models import User
@@ -20,7 +22,7 @@ from user.utils import updateOnlineStatusChannel
 #from tournament.models import GameStatsUser
 from .models import User, Friendship, FriendshipStatus, UserProfile
 from .serializers import RegisterSerializer, UpdateUserSerializer
-from .utils import setup_2fa, validate_avatar
+from .utils import setup_2fa, validate_avatar, register_api, exchange_code_for_token, create_user_session, get_user_info
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -64,19 +66,30 @@ def user_login(request):
                         'first_name': user.first_name,
                         'last_name': user.last_name
                     }
-                if not UserProfile.objects.get(user=user).verified_2fa:
-                    qr_code_string = setup_2fa(user)
-                    return JsonResponse({
-                        'type': 'pending',
-                        'user': user_dic,
-                        'qr_code': f"data:image/png;base64,{qr_code_string}",
+                user_profile = UserProfile.objects.get(user=user)
+                if  user_profile.enabled_2fa:
+                    if not user_profile.verified_2fa:
+                        qr_code_string = setup_2fa(user)
+                        return JsonResponse({
+                            'type': 'pending',
+                            'user': user_dic,
+                            'qr_code': f"data:image/png;base64,{qr_code_string}",
 
-                    }, status=200)
-                else:
+                        }, status=200)
+                    else:
+                        return JsonResponse({
+                            'type': 'success',
+                            'user': user_dic,
+                        }, status=200)
+                else: 
+                    refresh = RefreshToken.for_user(user)
                     return JsonResponse({
                         'type': 'success',
-                        'user': user_dic,
-                    }, status=200)
+                        'tokens': {
+                            'refresh': str(refresh),
+                            'access': str(refresh.access_token),
+                        }
+                    }, status=200)                   
             
             else:
                 return JsonResponse({'type': 'error', 'message': 'Incorrect username or password.'}, status=400)
@@ -99,6 +112,7 @@ def user_logout(request):
 def verify_2fa_code(request):
     try:
         data = json.loads(request.body)
+        print(data)
         otp_code = data.get('otp_code')
         user = data.get('user')
         username = user.get('username') 
@@ -135,7 +149,7 @@ def register(request):
             serialized_data = RegisterSerializer(data=data)
             if serialized_data.is_valid():
                 user = serialized_data.save()
-                data = {
+                gamehub_data = {
                     'user_id': user.pk,
                     'username': user.username
                 }
@@ -143,15 +157,24 @@ def register(request):
                 if avatar and not validate_avatar(avatar):
                     user.delete()
                     return Response({'type': 'error', 'message': {'Avatar': 'Invalid Avatar'}}, status=400)
-                response = requests.post('http://gamehub-service:8003/gameStatsUser/', data=data, files={'avatar': avatar})
+                response = requests.post('http://gamehub-service:8003/gameStatsUser/', data=gamehub_data, files={'avatar': avatar})
                 if not response.ok:
                     response_data = response.json()
                     user.delete()
                     return Response({'type': 'error', 'message': {'usermodel': response_data['message']}}, status=400)
             else:
                 return Response({'type': 'error', 'message': serialized_data.errors}, status=400)
-
-            qr_code_string = setup_2fa(user)
+            if not data.get('enable2fa'):
+                refresh = RefreshToken.for_user(user)
+                UserProfile.objects.create(user=user)
+                return JsonResponse({
+                    'type': 'success',
+                    'tokens': {
+                        'refresh': str(refresh),
+                        'access': str(refresh.access_token),
+                    }
+                }, status=200)
+            qr_code_string = setup_2fa(user) 
             return Response({
                 'type': 'success',
                 'message': 'User registered successfully.',
@@ -173,14 +196,14 @@ def register(request):
 def get_user_information(request):
     user = request.user
     if user:
-        print("THIRD PARTY: ", user.userprofile.is_third_party_user, flush=True)
         return JsonResponse({
             'type': 'success',
             'email': user.email,
             'firstname': user.first_name,
             'lastname': user.last_name,
             'username': user.username,
-            'third_party': user.userprofile.is_third_party_user
+            'third_party': user.userprofile.is_third_party_user,
+            'enable2fa': user.userprofile.enabled_2fa
         })
     else: 
         return JsonResponse({'type': 'error', 'message': 'User does not exists.'})
@@ -206,6 +229,12 @@ def update_user_information(request):
             if not response.ok:
                 response_data = response.json()
                 return Response({'type': 'error', 'message': {'user' :response_data['message']}}, status=400)
+            if 'enable2fa' in request.data and not user.userprofile.enabled_2fa:
+                user.userprofile.enabled_2fa = True
+            elif 'enable2fa' not in request.data and user.userprofile.enabled_2fa:
+                user.userprofile.enabled_2fa = False
+                user.userprofile.verified_2fa = False
+            user.userprofile.save()
             user = serialized_data.save()
             return Response({'type': 'success', 'message': 'User information successfully updated.'}, status=200)
         else:
@@ -389,84 +418,34 @@ def get_all_online_users(request):
     ]
     return JsonResponse({'online_users': user_data})
 
-def check_registration(request, session_data):
+def check_registration(session_data):
     try:
-        
         user = User.objects.get(email=session_data.get('email'))
         userprofile = UserProfile.objects.get(user=user)
-        if (not userprofile.is_third_party_user):
-            return False, None
-        if (user.username):
-            return (True, user)
-    except User.DoesNotExist:
-        return False, None
-
-@csrf_exempt
-def register_api(request):
-    try:
-        data = json.loads(request.body)
-        session_data = data.get('session_data', {}).get('data', {})
-        username= data.get('username')
-        email=session_data.get('email')
-        firstname=session_data.get('first_name')
-        lastname=session_data.get('last_name')
-
-        # if User.objects.filter(username=username).exists():
-        #     return JsonResponse({'type': 'error', 'message': 'This username already exists.'}, status=400)
         
-        # user= User.objects.create(username=username, email=email, first_name=firstname, last_name=lastname)
-        serializer = RegisterSerializer(data={
-            'username': username,
-            'email': email,
-            'firstname': firstname,
-            'lastname': lastname
-        }, is_third_party_user=True)
-        if serializer.is_valid():
+        if (not userprofile.is_third_party_user):
+            return {'type': 'error', 'message': 'Email already registered.'}, 400, None   
+        return (None, 200, user)
+    except User.DoesNotExist:
+        return register_api(session_data)
+    except UserProfile.DoesNotExist:
+        return {'type': 'error', 'message': 'UserProfile does not exist.'}, 400, None   
 
-            user = serializer.save()
-            data = {
-                'user_id': user.pk,
-                'username': user.username
-            }
-            response = requests.post('http://gamehub-service:8003/gameStatsUser/', data=data)
-            if not response.ok:
-                response_data = response.json()
-                user.delete()
-                return Response({'type': 'error', 'message': {'usermodel': response_data['message']}}, status=400)
-            qr_code_string = setup_2fa(user, True)
-        #user.save()
-            return JsonResponse(
-                {
-                    'type': 'success',
-                    'user': {
-                        'id': user.id,
-                        'username': user.username,
-                        'email': user.email,
-                        'first_name': user.first_name,
-                        'last_name': user.last_name
-                    },
-                    'qr_code': f"data:image/png;base64,{qr_code_string}",
-                })
-        else: 
-            return JsonResponse({'type': 'error', 'message': serializer.errors}, status=400)
-    except json.JSONDecodeError as e:
-        logger.error(f"JSON decode error: {e}")
-        return JsonResponse({'type': 'error', 'message': {'exception': 'Invalid JSON data'}}, status=400)
-    except Exception as e:
-        return JsonResponse({'type': 'error', 'message': {'exepction': str(e)}}, status=400)
-    
-
-@csrf_exempt
+@api_view(['POST'])
 def api_callback(request):
     try:
         data = json.loads(request.body) #request.GET.get('code')
         code = data.get('code')
-        access_token_response = exchange_code_for_token(code)
-        user_info = get_user_info(access_token_response['access_token'])
+        access_token_response, status = exchange_code_for_token(code)
+        if (status != 200):
+            return JsonResponse({'type': 'error', 'message': 'Failed to exchange code for token'}, status=status)
+        user_info, status = get_user_info(access_token_response['access_token'])
+        if status != 200:
+            return JsonResponse({'error': 'Failed to retrieve user info'}, status=status)
         session_data = create_user_session(user_info)
-
-        isValid, user = check_registration(request, session_data)
-        if (isValid):
+        obj, status, user = check_registration(session_data)
+        
+        if (user):
             user_profile = UserProfile.objects.get(user=user)
             user_dic = {
                         'id': user.id,
@@ -475,7 +454,7 @@ def api_callback(request):
                         'first_name': user.first_name,
                         'last_name': user.last_name
                     }
-            if not user_profile.verified_2fa:
+            if user_profile.enabled_2fa and not user_profile.verified_2fa:
                 qr_code_string = setup_2fa(user)
                 return JsonResponse(
                     {
@@ -485,59 +464,27 @@ def api_callback(request):
                         'session_data': session_data,
                         'qr_code': f"data:image/png;base64,{qr_code_string}",
                     }, status=200)
-            else:
+            elif user_profile.enabled_2fa and user_profile.verified_2fa:
                 return JsonResponse(
                     {
                         'type': 'success',
-                        'message': 'User registered successfully.',
-                        'user': user_dic,
-                        'session_data': session_data,
-
-                    }, status=200)
-        else: 
-            return JsonResponse({'type': 'registration', 'data': session_data})
+                        'user': user
+                    }, status=200
+                )
+            else:
+                refresh = RefreshToken.for_user(user)
+                return JsonResponse({
+                    'type': 'success',
+                    'tokens': {
+                        'refresh': str(refresh),
+                        'access': str(refresh.access_token),
+                    }
+                }, status=200)   
+        else:
+            return JsonResponse(obj, status=status)
     except User.DoesNotExist:
         return JsonResponse({'type': 'error', 'message': 'User does not exists.'}, status=404)
     except UserProfile.DoesNotExist:
         return JsonResponse({'type': 'error', 'message': 'UserProfile does not exists.'}, status=404)
     except Exception as e:
         return JsonResponse({'type': 'error', 'message': str(e)}, status=400)
-
-
-def exchange_code_for_token(code):
-    token_url = 'https://api.intra.42.fr/oauth/token'
-    payload = {
-        'grant_type': 'authorization_code',
-        'client_id': settings.CLIENT_ID,
-        'client_secret': settings.CLIENT_SECRET,
-        'code': code,
-        'redirect_uri': settings.REDIRECT_URI
-    }
-
-    response = requests.post(token_url, data=payload)
-
-    if response.status_code == 200:
-        return response.json()
-    else:
-        return JsonResponse({'error': 'Failed to exchange code for token'}, status=response.status_code)
-
-def get_user_info(access_token):
-
-    headers = {'Authorization': f'Bearer {access_token}'}
-    response = requests.get('https://api.intra.42.fr/v2/me', headers=headers)
-
-    if response.status_code == 200:
-        return response.json()
-    else:
-        return JsonResponse({'error': 'Failed to retrieve user info'}, status=response.status_code)
-
-def create_user_session(user_info):
-
-    session_data = {
-        'email': user_info.get('email'),
-        'first_name': user_info.get('first_name'),
-        'last_name': user_info.get('last_name'),
-        'username': user_info.get('login')
-    }
-
-    return   session_data
