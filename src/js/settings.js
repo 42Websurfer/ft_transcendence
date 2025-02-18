@@ -17,11 +17,11 @@ export async function renderSettings() {
 					<input id="settings-email" type="email" name="email" class="form-control" placeholder="name@example.com">
 				</div>
 				<div class="login-form-field">
-                    <label for="floatingPassword" class="settings-label">New password</label>
+                    <label minlength="8" for="floatingPassword" class="settings-label">New password</label>
 					<input id="settings-pw" type="password" name="password" class="form-control" placeholder="Password">
 				</div>
 				<div class="login-form-field">
-                    <label for="floatingPassword" class="settings-label">Confirm new password</label>
+                    <label minlength="8" for="floatingPassword" class="settings-label">Confirm new password</label>
 					<input id="settings-confirm-pw" type="password" name="password-confirmation" class="form-control" placeholder="Password">
 				</div>
 				<div class="login-form-field">
@@ -33,7 +33,7 @@ export async function renderSettings() {
 					<input id="settings-lastname" type="text" name="lastname" class="form-control" placeholder="Lastname">
 				</div>
 				<div class="login-form-field">
-                    <label for="floatingPassword" class="settings-label">Username</label>
+                    <label maxlength="16" for="floatingPassword" class="settings-label">Username</label>
 					<input id="settings-username" type="text" name="username" class="form-control" placeholder="Username">
 				</div>
 				<div class="login-form-field form-floating">

@@ -18,7 +18,7 @@ export function renderAuthRegister() {
 					<label for="floatingInput">Email address</label>
 				</div>
 				<div class="login-form-field form-floating">
-					<input type="password" name="password" class="form-control" placeholder="Password" required>
+					<input minlength="8" type="password" name="password" class="form-control" placeholder="Password" required>
 					<label for="floatingPassword">Password</label>
 				</div>
 				<div class="login-form-field form-floating">
@@ -30,7 +30,7 @@ export function renderAuthRegister() {
 					<label for="floatingPassword">Lastname</label>
 				</div>
 				<div class="login-form-field form-floating">
-					<input type="text" name="username" class="form-control" placeholder="Username" required>
+					<input maxlength="16" type="text" name="username" class="form-control" placeholder="Username" required>
 					<label for="floatingPassword">Username</label>
 				</div>
 				<div class="login-form-field form-floating">
