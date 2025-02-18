@@ -3,10 +3,6 @@ from web3 import Web3
 from eth_account import Account
 
 import os
-import logging
-
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 

@@ -1,31 +1,22 @@
 import json
-import logging
 import redis
 import requests
 import pyotp
-import random
-import string
 from django.shortcuts import get_object_or_404, redirect
 from django.http import JsonResponse
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
-from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Q
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
 from user.utils import updateOnlineStatusChannel
-#TypeError: the JSON object must be str, bytes or bytearray, not Response
-#from tournament.models import GameStatsUser
 from .models import User, Friendship, FriendshipStatus, UserProfile
 from .serializers import RegisterSerializer, UpdateUserSerializer
 from .utils import setup_2fa, validate_avatar, register_api, exchange_code_for_token, create_user_session, get_user_info
-
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
 
 r = redis.Redis(host='redis', port=6379, db=0)
 User = get_user_model()

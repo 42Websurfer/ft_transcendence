@@ -1,14 +1,10 @@
 import redis
 import json
-import logging
 from channels.layers import get_channel_layer
 from asgiref.sync import sync_to_async, async_to_sync
 from django.core.exceptions import ObjectDoesNotExist
 from .models import OnlineMatch, GameStatsUser, Tournament, TournamentResults 
 import requests
-
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
 
 redis = redis.Redis(host='redis', port=6379, db=0)
 
