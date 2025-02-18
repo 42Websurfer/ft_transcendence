@@ -3,6 +3,8 @@ import logging
 import redis
 import requests
 import pyotp
+import random
+import string
 from django.shortcuts import get_object_or_404, redirect
 from django.http import JsonResponse
 from django.contrib.auth.models import User
@@ -110,6 +112,7 @@ def user_logout(request):
 def verify_2fa_code(request):
     try:
         data = json.loads(request.body)
+        print(data)
         otp_code = data.get('otp_code')
         user = data.get('user')
         username = user.get('username') 
@@ -418,6 +421,8 @@ def check_registration(request, session_data):
             return (True, user)
     except User.DoesNotExist:
         return False, None
+    except UserProfile.DoesNotExist:
+        return False, None
 
 @csrf_exempt
 @api_view(['POST'])
@@ -432,6 +437,8 @@ def register_api(request):
         lastname=session_data.get('last_name')
         enabled_2fa=data.get('enable2fa')
 
+        while (User.objects.filter(username=username).exists()):
+            username = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(16))            
         serializer = RegisterSerializer(data={
             'username': username,
             'email': email,
@@ -474,7 +481,8 @@ def register_api(request):
                     },
                     'qr_code': f"data:image/png;base64,{qr_code_string}",
                 })
-        else: 
+        else:
+            print("ERROR")
             return JsonResponse({'type': 'error', 'message': serializer.errors}, status=400)
     except json.JSONDecodeError as e:
         logger.error(f"JSON decode error: {e}")

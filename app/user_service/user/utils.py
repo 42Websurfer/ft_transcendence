@@ -1,10 +1,15 @@
 import qrcode
 import pyotp
+import string
+import random
+import requests
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from .models import UserProfile
 from io import BytesIO
 from base64 import b64encode
+from .models import User
+from .serializers import RegisterSerializer
 
 def updateOnlineStatusChannel():
     channel_layer = get_channel_layer()
@@ -46,3 +51,50 @@ def validate_avatar(avatar):
         return False
     
     
+def register_api(session_data):
+    try:
+        username = user.username
+        while (User.objects.filter(username=username).exists()):
+            username = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(16))            
+        serializer = RegisterSerializer(data={
+            'username': username,
+            'email': user.email,
+            'firstname': user.firstname,
+            'lastname': user.lastname
+        }, is_third_party_user=True)
+        if serializer.is_valid():
+
+            user = serializer.save()
+            data = {
+                'user_id': user.pk,
+                'username': user.username
+            }
+            response = requests.post('http://gamehub-service:8003/gameStatsUser/', data=data)
+            if not response.ok:
+                response_data = response.json()
+                user.delete()
+                return {'type': 'error', 'message': {'usermodel': response_data['message']}}, status=400)
+            qr_code_string = setup_2fa(user, True)
+        #user.save()
+            return JsonResponse(
+                {
+                    'type': 'success',
+                    'user': {
+                        'id': user.id,
+                        'username': user.username,
+                        'email': user.email,
+                        'first_name': user.first_name,
+                        'last_name': user.last_name
+                    },
+                    'qr_code': f"data:image/png;base64,{qr_code_string}",
+                })
+        else:
+            print("ERROR")
+            return JsonResponse({'type': 'error', 'message': serializer.errors}, status=400)
+    except json.JSONDecodeError as e:
+        logger.error(f"JSON decode error: {e}")
+        return JsonResponse({'type': 'error', 'message': {'exception': 'Invalid JSON data'}}, status=400)
+    except Exception as e:
+        return JsonResponse({'type': 'error', 'message': {'exepction': str(e)}}, status=400)
+    
+     
