@@ -8,13 +8,12 @@ import requests
 
 # Constants
 PLAYER_MOVE_SPEED = 20
-GAME_WINNING_SCORE = 2
+GAME_WINNING_SCORE = 7
 BALL_MOVE_SPEED = 20
 CANVAS_WIDTH = 1280
 CANVAS_HEIGHT = 780
 VECTOR_CENTER = Vector(CANVAS_WIDTH * 0.5, CANVAS_HEIGHT * 0.5)
 redis = redis.Redis(host='redis', port=6379, db=0)
-
 
 class Ball(Entity):
 	def __init__(self, x=CANVAS_WIDTH // 2, y=CANVAS_HEIGHT // 2):
