@@ -215,8 +215,6 @@ export class Mesh extends Component{
 			let pointB = transformedPoints[(i + 1) % transformedPoints.length];
 
 			let planeAB = new Plane(pointA, pointB.sub(pointA));
-
-			// drawLine(planeAB.start, planeAB.dir.add(planeAB.start));
 			
 			let currPoint = planeAB.getClosestPoint(point);
 			let line = currPoint.sub(point);
@@ -286,11 +284,7 @@ export class Entity extends Transform{
 	}
 
 	addComponent(type, component){
-		// if (!(type in this.components)){
-			this.components[type] = component;
-		// } else {
-			// this.components[type] = component;
-		// }
+		this.components[type] = component;
 	}
 
 	getComponent(type){

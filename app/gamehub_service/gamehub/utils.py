@@ -145,7 +145,7 @@ def set_online_match(data, lobby_id):
 		away = data.get('away'),
 		home_score = data.get('home_score'),
 		away_score = data.get('away_score'),
-		modus = 'match' #vllt noch setzen welcher type!
+		modus = 'match'
 	)
 	match.save()
 	(async_to_sync)(update_online_match_socket)(data, lobby_id)

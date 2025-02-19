@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 
-# Create your models here.
 User = get_user_model()
 
 class GameStatsUser(models.Model):
@@ -29,7 +28,6 @@ class OnlineMatch(models.Model):
     modus = models.CharField(max_length=50, default='DEFAULT')
     home_username = models.CharField(max_length=150, blank=True, null=True)
     away_username = models.CharField(max_length=150, blank=True, null=True)
-    #tournament = models.ForeignKey(TournamentModel, related_name='tournament_matches') for calling all matches from the tournament.object
     def save(self, *args, **kwargs):
         if self.home:
             self.home_username = self.home.username
@@ -68,8 +66,6 @@ class Tournament(models.Model):
 
     def __str__(self):
         return f"Tournament: {self.tournament_id}."
-
-#do not forget to set the GameStatsUser in user_id!!!!! check in redis is the user_id setted!
 
 class TournamentResults(models.Model):
     tournament_id = models.ForeignKey(Tournament, related_name="all_results", on_delete=models.CASCADE)

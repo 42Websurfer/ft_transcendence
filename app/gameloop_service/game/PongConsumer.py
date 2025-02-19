@@ -7,7 +7,6 @@ class MyConsumer(AsyncWebsocketConsumer):
 	
 	async def connect(self):
 		self.player_c = None
-		# User = get_user_model()
 		self.group_name = self.scope['url_route']['kwargs']['group_name']
 		self.user = self.scope["user"]
 		split = self.group_name.split('_')

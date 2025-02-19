@@ -103,8 +103,6 @@ body {
     padding: 0;
     display: flex;
     flex-direction: column;
-    /* animation: gradientAnimation 15s ease infinite, changeColor 10s linear infinite; */
-    /* background: #5c57ad; */
     background-image: url(../img/aurora.jpg);
     background-size: cover;
 }

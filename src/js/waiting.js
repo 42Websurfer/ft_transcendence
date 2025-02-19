@@ -1,5 +1,4 @@
 export function renderWaiting(lobbyId = null) {
-    // history.pushState({ section: 'waiting', lobbyId }, '', `/waiting${lobbyId ? `?lobbyId=${lobbyId}` : ''}`);
 
     const app = document.getElementById('app');
 
