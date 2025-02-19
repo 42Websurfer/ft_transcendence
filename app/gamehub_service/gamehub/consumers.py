@@ -113,10 +113,12 @@ class Tournament(AsyncWebsocketConsumer):
 		if not results_json:
 			return
 		results = json.loads(results_json)
+		matches = redis.get(tournament_string(self.group_name))
 		data = {
 			'type': 'send_tournament_users',
 			'results': results,
-			'user_id': self.user.id
+			'user_id': self.user.id,
+			'started': True if matches else False 
 		}		
 		await self.send(text_data=json.dumps(data))
 

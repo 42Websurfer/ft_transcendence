@@ -249,6 +249,12 @@ def start_tournament_round(request, lobby_id):
 		return (JsonResponse({'type': 'error', 'message': 'Tournament not found'}, status=404))
 	tournament_data = json.loads(tournament_data_json)
 	matches = tournament_data['matches']
+	current_round = tournament_data['current_round']
+	status, finished = round_completed(matches, current_round)
+	if (not status):
+		return (JsonResponse({'type': 'error', 'message': 'Wait until round is completed'}, status=400))
+	if (status and finished):
+		return (JsonResponse({'type': 'error', 'message': 'Tournament already finished'}, status=400))
 	round = 424242 #need for for-loop logic
 	channel_layer = get_channel_layer()
 	for match in matches:
