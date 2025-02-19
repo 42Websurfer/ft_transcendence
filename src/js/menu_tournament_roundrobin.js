@@ -32,7 +32,6 @@ export function runWebsocket() {
                     }
                     else if (data.user_id == user.user_id && user.role == 'admin') {
                         admin = true;
-                        console.log(data);
                         if (data.started == false) {
                             const startButton = document.getElementById('tournamentStartButton');
                             if (startButton)
