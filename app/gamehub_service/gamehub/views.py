@@ -153,7 +153,7 @@ def join_lobby(request, lobby_id):
 		if (redis.exists(match_lobby_string(lobby_id))):
 			lobby_data_json = redis.get(match_lobby_string(lobby_id))
 			if not lobby_data_json: 
-				return (JsonResponse({'type': 'error', 'message': 'No data in redis.'}, status=400))
+				return (JsonResponse({'type': 'error', 'message': 'Matchlobby does not exist anymore.'}, status=400))
 			lobby_data = json.loads(lobby_data_json)
 			member_username = str(lobby_data.get('member_username'))
 			if (member_username == "" or member_username == user.username):
@@ -169,7 +169,7 @@ def get_lobby_data(request, lobby_id):
 	if type == 'match':
 		online_match_json = redis.get(match_lobby_string(lobby_id))
 		if (not online_match_json):
-			return (JsonResponse({'type': 'error', 'message': 'No data in redis.'}, status=400))
+			return (JsonResponse({'type': 'error', 'message': 'Matchlobby does not exist anymore.'}, status=400))
 		channel_layer = get_channel_layer()
 		(async_to_sync)(channel_layer.group_send)(
 			match_lobby_string(lobby_id),
@@ -188,7 +188,7 @@ def get_lobby_data(request, lobby_id):
 	elif type == 'multiple':
 		multiple_data_json = redis.get(multiple_lobby_string(lobby_id))
 		if (not multiple_data_json):
-			return (JsonResponse({'type': 'error', 'message': 'No data in redis.'}, status=400))
+			return (JsonResponse({'type': 'error', 'message': 'Multiplelobby does not exist anymore.'}, status=400))
 		channel_layer = get_channel_layer()
 		(async_to_sync)(channel_layer.group_send)(
 			multiple_lobby_string(lobby_id),
@@ -274,7 +274,7 @@ def start_tournament_round(request, lobby_id):
 def start_group_tournament(request, lobby_id):
 	results_json = redis.get(lobby_id)
 	if (not results_json):
-		return (JsonResponse({'type': 'error', 'message': 'No data in redis.'}, status=400))
+		return (JsonResponse({'type': 'error', 'message': 'Tournamentlobby does not exist anymore.'}, status=400))
 	results = json.loads(results_json)
 	if (len(results) < 3):
 		return (JsonResponse({'type': 'error', 'message': 'You need at least three players.'}, status=400))
