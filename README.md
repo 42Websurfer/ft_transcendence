@@ -16,4 +16,6 @@ SEPOLIA_PRIVATE_KEY={{ Private Sepolia Key }}
 INFURA_API_KEY={{ Infura API Key }}
 TOURNAMENT_CONTRACT_ADDRESS={{ Tournament Contract Adress }}
 
+GF_SECURITY_ADMIN_USER=TheAdmin
+GF_SECURITY_ADMIN_PASSWORD=test
 ```
