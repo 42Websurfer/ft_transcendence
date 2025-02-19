@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 #SECRET_KEY = 'django-insecure-9i5%2btx6a5=!^2=-wjb%3qjfc#rvny)xb55z-#z$hwx+2521y'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*', '0.0.0.0', 'localhost']
 
@@ -165,7 +165,7 @@ CHANNEL_LAYERS = {
     },
 }
 
-CLIENT_ID = 'u-s4t2ud-fb637ad0b8bbb1367103db0f18b4b34529f896099d78f83e11d23e36076333e2'
+CLIENT_ID = os.getenv('CLIENT_ID_42')
 CLIENT_SECRET = os.getenv('CLIENT_SECRET_42')
 REDIRECT_URI = 'https://localhost:4433/'
 
