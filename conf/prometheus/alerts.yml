@@ -1,0 +1,11 @@
+groups:
+  - name: django_alerts
+    rules:
+      - alert: UserServiceDown
+        expr: up{job="userservice"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "User-service server is down"
+          description: "User-service server on {{ $labels.instance }} has been down for more than 1 minute."

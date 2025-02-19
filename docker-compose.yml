@@ -199,7 +199,7 @@ services:
       - 9090
     volumes:
       - prometheus_data:/prometheus
-      - ./conf/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./conf/prometheus/:/etc/prometheus/
     networks:
       - trans_net
     logging:
@@ -215,6 +215,8 @@ services:
       - ./conf/grafana/dashboards:/var/lib/grafana/dashboards/
       - ./conf/grafana/all.yml:/etc/grafana/provisioning/dashboards/all.yml
       - grafana_data:/var/lib/grafana
+    env_file:
+      - .env
     networks:
       - trans_net
     logging:
