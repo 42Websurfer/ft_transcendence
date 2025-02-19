@@ -280,6 +280,9 @@ def start_group_tournament(request, lobby_id):
 		return (JsonResponse({'type': 'error', 'message': 'You need at least three players.'}, status=400))
 	if (len(results) % 2 != 0):
 		results.append({'user_id': -1})
+	tournament_data = redis.get(tournament_string(lobby_id))
+	if tournament_data:
+		return (JsonResponse({'type': 'error', 'message': 'Tournament already started.'}, status=400))
 	num_rounds = len(results) - 1
 	num_matches_per_round = len(results) // 2
 	tournament_dict = {'tournament_id': lobby_id, 'current_round': 0, 'matches': []}
