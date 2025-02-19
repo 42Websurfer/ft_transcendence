@@ -5,9 +5,7 @@ import { renderPong } from './pong.js';
 export function runWebsocket(socket) {
 
 
-    socket.onopen = function() {
-        console.log("Connected to Websocket of a Tournament")
-    };
+    socket.onopen = function() {};
 
     socket.onmessage = function(event) {
         try {
@@ -67,7 +65,6 @@ export function runWebsocket(socket) {
     };
     
     socket.onclose = function(event) {
-        console.log('WebSocket connection closed');
         g_socket = undefined;
         const lobbyClosedModal = document.getElementById('lobbyClosedModal');
         if (!lobbyClosedModal)
@@ -310,14 +307,22 @@ export function renderMenuOnlineLobby(lobbyId) {
         try {
             const token = localStorage.getItem('access_token'); 
 
-            const response = await fetch(`/api/tm/start_game/${lobbyId}/?type=match`, {
+			fetch(`/api/tm/start_game/${lobbyId}/?type=match`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },
-            });
-            matchStartButton.style.display = 'none';
+            })
+			.then(response => response.json())
+			.then(data => {
+				if (data.type === 'error') {
+					displayToast(data.message, 'error');
+				} else {
+					matchStartButton.style.display = 'none';
+				}
+			})
+			.catch(e => displayToast(e, 'error'));
         } catch (error) {
             console.log('Error: ', error);
         }

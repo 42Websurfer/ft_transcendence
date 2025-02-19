@@ -1,31 +1,22 @@
 import json
-import logging
 import redis
 import requests
 import pyotp
-import random
-import string
 from django.shortcuts import get_object_or_404, redirect
 from django.http import JsonResponse
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
-from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Q
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
 from user.utils import updateOnlineStatusChannel
-#TypeError: the JSON object must be str, bytes or bytearray, not Response
-#from tournament.models import GameStatsUser
 from .models import User, Friendship, FriendshipStatus, UserProfile
 from .serializers import RegisterSerializer, UpdateUserSerializer
 from .utils import setup_2fa, validate_avatar, register_api, exchange_code_for_token, create_user_session, get_user_info
-
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
 
 r = redis.Redis(host='redis', port=6379, db=0)
 User = get_user_model()
@@ -112,7 +103,6 @@ def user_logout(request):
 def verify_2fa_code(request):
     try:
         data = json.loads(request.body)
-        print(data)
         otp_code = data.get('otp_code')
         user = data.get('user')
         username = user.get('username') 
@@ -279,7 +269,7 @@ def send_friend_request(request, username):
             'message': 'Request sent successfully!'
         }, status=201)
     except Exception as e:
-        return JsonResponse({'type': 'error', 'message': e}, status=400)
+        return JsonResponse({'type': 'error', 'message': str(e)}, status=404)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -422,7 +412,6 @@ def check_registration(session_data):
     try:
         user = User.objects.get(email=session_data.get('email'))
         userprofile = UserProfile.objects.get(user=user)
-        
         if (not userprofile.is_third_party_user):
             return {'type': 'error', 'message': 'Email already registered.'}, 400, None   
         return (None, 200, user)
@@ -434,14 +423,14 @@ def check_registration(session_data):
 @api_view(['POST'])
 def api_callback(request):
     try:
-        data = json.loads(request.body) #request.GET.get('code')
+        data = json.loads(request.body)
         code = data.get('code')
         access_token_response, status = exchange_code_for_token(code)
         if (status != 200):
             return JsonResponse({'type': 'error', 'message': 'Failed to exchange code for token'}, status=status)
         user_info, status = get_user_info(access_token_response['access_token'])
         if status != 200:
-            return JsonResponse({'error': 'Failed to retrieve user info'}, status=status)
+            return JsonResponse({'type': 'error', 'message': 'Failed to retrieve user info'}, status=status)
         session_data = create_user_session(user_info)
         obj, status, user = check_registration(session_data)
         
@@ -468,7 +457,7 @@ def api_callback(request):
                 return JsonResponse(
                     {
                         'type': 'success',
-                        'user': user
+                        'user': user_dic
                     }, status=200
                 )
             else:

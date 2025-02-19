@@ -1,14 +1,10 @@
 import redis
 import json
-import logging
 from channels.layers import get_channel_layer
 from asgiref.sync import sync_to_async, async_to_sync
 from django.core.exceptions import ObjectDoesNotExist
 from .models import OnlineMatch, GameStatsUser, Tournament, TournamentResults 
 import requests
-
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
 
 redis = redis.Redis(host='redis', port=6379, db=0)
 
@@ -216,12 +212,6 @@ def safe_tournament_data(lobby_id):
 			)
 			online_match.save()
 
-		#need to delete redis database!!. and set everything to finish!
-
-
-	#tournament = 
-	#1. safe tournament_id in Tournament object
-	#2. Tournament_results!
 
 def set_winner_multiple(lobby_id, winner_name):
 	data = redis.get(multiple_lobby_string(lobby_id))
@@ -326,10 +316,6 @@ async def update_matches_disconnect(user_id, lobby_id):
 		elif (match['away'] == user_id):
 			await update_match(lobby_id, match)
 
-	#for loop durch alle Spieler die disconnected werden
-	#checken die vorherigen Spiele, falls schon welche gespielt worden sind dann natürlich die als erster rauslöschen aus Standing und überschreiben mit der 0:7
-	# dann standing aktualisieren
-	# dann standing und matches erneut senden.
 
 def get_longest_winstreak(form):
 	

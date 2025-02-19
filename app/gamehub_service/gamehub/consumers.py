@@ -16,22 +16,18 @@ class Tournament(AsyncWebsocketConsumer):
 		self.group_name = self.scope['url_route']['kwargs']['group_name']
 		left_user = False
 		self.duplicate = False
-		# if redis.exists(self.group_name):
-		# 	results = redis.get(self.group_name)
-		# 	if results:
-		# 		print("WE ARE HERE", flush=True)
-		# 		results = json.loads(results)
-		# 		for user in results: 
-		# 			if user['user_id'] == self.user.id:
-		# 				left_user = True
+		
 		if (self.user.is_authenticated):
 			User = get_user_model()
-			user = await sync_to_async(User.objects.get)(id=self.user.id)		
+			user = await sync_to_async(User.objects.get)(id=self.user.id)
+			matches_data = redis.get(tournament_string(self.group_name))
+			if matches_data:
+				await self.close()
+				return	
 			if (not left_user):
 				tournament_data = redis.get(self.group_name)
 				if redis.exists(self.group_name) and tournament_data:
 					if redis.sismember('user_lobbies', self.user.id):
-						print('ALREADY IN LOBBY!!', flush=True)
 						self.duplicate = True
 						await self.close()
 						return
@@ -44,7 +40,6 @@ class Tournament(AsyncWebsocketConsumer):
 					results.append(create_user_structure(self.user.id, 'admin', user.username))
 					redis.set(self.group_name, json.dumps(results))
 				else:
-					print('TOURNAMENT INVALID LOBBY ID ALARM!')
 					await self.close()
 					return
 			
@@ -122,10 +117,12 @@ class Tournament(AsyncWebsocketConsumer):
 		if not results_json:
 			return
 		results = json.loads(results_json)
+		matches = redis.get(tournament_string(self.group_name))
 		data = {
 			'type': 'send_tournament_users',
 			'results': results,
-			'user_id': self.user.id
+			'user_id': self.user.id,
+			'started': True if matches else False 
 		}		
 		await self.send(text_data=json.dumps(data))
 
@@ -141,9 +138,6 @@ class Tournament(AsyncWebsocketConsumer):
 		await self.send(text_data=json.dumps(data))
 	
 	async def start_tournament_match(self, event):
-		print('self.user.id = ', self.user.id)
-		print('user1 = ', event['user1'])
-		print('user2 = ', event['user2'])
 
 		if self.user.id == event['user1'] or self.user.id == event['user2']:
 			data = {
@@ -178,7 +172,6 @@ class MultipleLobby(AsyncWebsocketConsumer):
 
 			if (redis.exists(self.match_name) and match_data):
 				if redis.sismember('user_lobbies', self.user.id):
-					print('ALREADY IN LOBBY!!', flush=True)
 					self.duplicate = True
 					await self.close()
 					return					
@@ -191,7 +184,6 @@ class MultipleLobby(AsyncWebsocketConsumer):
 			elif redis.exists(self.match_name):
 				lobby_data = {'users': [{'username': self.user.username, 'role': 'admin'}], 'winners': [], 'status': 'pending'}
 			else:
-				print('INVALID LOBBY ALARM!')
 				await self.close()
 				return
 			
@@ -299,7 +291,6 @@ class OnlineMatch(AsyncWebsocketConsumer):
 			lobby_data = None
 			if (redis.exists(self.match_name) and match_data):
 				if redis.sismember('user_lobbies', self.user.id):
-					print('ALREADY IN LOBBY!!', flush=True)
 					self.duplicate = True
 					await self.close()
 					return
@@ -311,7 +302,6 @@ class OnlineMatch(AsyncWebsocketConsumer):
 			elif redis.exists(self.match_name):
 				lobby_data = {'admin_id': user.id, 'admin_username': user.username, 'member_id': -1,  'member_username': '', 'matches': []}
 			else:
-				print('INVALID LOBBY ALARM!')
 				await self.close()
 				return
 			

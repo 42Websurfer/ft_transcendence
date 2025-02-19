@@ -73,7 +73,8 @@ services:
       - trans_net
     depends_on:
       - database
-
+    logging:
+      driver: none
   nginx:
     container_name: nginx
     image: nginx
@@ -109,6 +110,8 @@ services:
       - trans_net
     depends_on:
       - nginx
+    logging:
+      driver: none
 
   adminer:
     container_name: adminer
@@ -137,6 +140,8 @@ services:
       - trans_net
     depends_on:
       - redis
+    logging:
+      driver: none
 
   blockchain:
     build: ./requirements/blockchain
@@ -197,7 +202,8 @@ services:
       - ./conf/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     networks:
       - trans_net
-
+    logging:
+      driver: none
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
@@ -211,6 +217,8 @@ services:
       - grafana_data:/var/lib/grafana
     networks:
       - trans_net
+    logging:
+      driver: none
 networks:
   trans_net:
     name: trans_net

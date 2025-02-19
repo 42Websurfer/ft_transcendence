@@ -12,7 +12,6 @@ User = get_user_model()
 @database_sync_to_async
 def get_user(user_id):
     try:
-        print(f"User_id = {user_id}")
         return User.objects.get(id=user_id)
     except User.DoesNotExist:
         return AnonymousUser()
@@ -25,7 +24,6 @@ class JWTAuthMiddleware(BaseMiddleware):
             try:
                 decoded_data = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
                 user_id = decoded_data.get("user_id")
-                print(user_id)
                 scope["user"] = await get_user(user_id)
             except (InvalidToken, TokenError) as e:
                 scope["user"] = AnonymousUser()

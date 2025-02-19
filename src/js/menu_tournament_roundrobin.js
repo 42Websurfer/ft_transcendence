@@ -6,9 +6,7 @@ export function runWebsocket() {
 
     let admin = false;
 
-    g_socket.onopen = function() {
-        console.log("Connected to Websocket of a Tournament")
-    };
+    g_socket.onopen = function() {};
 
     g_socket.onmessage = function(event) {
         try {
@@ -30,10 +28,20 @@ export function runWebsocket() {
                     {
                         const startButton = document.getElementById('tournamentStartButton');
                         if (startButton)
-                            startButton.remove();
+                            startButton.style.display = 'none';
                     }
-                    else if (data.user_id == user.user_id && user.role == 'admin')
+                    else if (data.user_id == user.user_id && user.role == 'admin') {
                         admin = true;
+                        if (data.started == false) {
+                            const startButton = document.getElementById('tournamentStartButton');
+                            if (startButton)
+                                startButton.style.display = 'block';    
+                        } else {
+                            const roundStartButton = document.getElementById('roundStartButton');
+                            if (roundStartButton)
+                                roundStartButton.style.display = 'block';
+                        }
+                    }
                     
                     let rank = user.rank;
                     let player = data.user_id == user.user_id ? `<span class="local-player">${user.player}</span>` : user.player;
@@ -50,8 +58,6 @@ export function runWebsocket() {
             }
             else if (data.type === 'match_list')
             {
-                if (!data.matches)
-                    return;
                 if (!data.matches)
                     return;
                 
@@ -71,8 +77,7 @@ export function runWebsocket() {
                 }
             }
             else if (data.type === 'tournament_finished')
-                //HIER EINE MESSAGE VOM FRONTEND DASS DAS TOURNAMENT ZU ENDE IST UND MAN ZURÜCK IN DAS MENU GEHEN KANN
-                console.log('Tournament finished');
+                displayToast("Tournament finished!!!", "success");
             else if (data.type === 'start_tournament_match')
             {
                 if (data.match_id)
@@ -93,8 +98,12 @@ export function runWebsocket() {
     };
     
     g_socket.onclose = function(event) {
-        console.log('WebSocket connection closed');
         g_socket = undefined;
+		const lobbyClosedModal = document.getElementById('lobbyClosedModal');
+		if (!lobbyClosedModal)
+			return;
+
+		lobbyClosedModal.style.display = 'block';
     };
 
 }
@@ -328,6 +337,14 @@ export function renderMenuTournamentRoundRobin(lobbyId) {
                 </div>
             </div>
         </div>
+		<div class="modal" id="lobbyClosedModal">
+            <div class="modal-content-modify">
+                <span class="close-controls-button" id="closeLobbyClosedModalButton">&times;</span>
+                <div class="tournament-controls">
+                    <p>This lobby was closed by its owner!</p>
+                </div>
+            </div>
+        </div>
 
         <div class="countdown-container" id="countdownDisplay"></div>
 
@@ -371,6 +388,8 @@ export function renderMenuTournamentRoundRobin(lobbyId) {
 
     const controlsButton = document.getElementById('controlsButton');
     const controlsModal = document.getElementById('controlsModal');
+	const lobbyClosedModal = document.getElementById('lobbyClosedModal');
+    const closeLobbyClosedModalButton = document.getElementById('closeLobbyClosedModalButton');
     const closeControlsModalButton = document.getElementById('closeControlsModalButton');
 
     controlsButton.addEventListener('click', () => {
@@ -379,6 +398,10 @@ export function renderMenuTournamentRoundRobin(lobbyId) {
 
     closeControlsModalButton.addEventListener('click', () => {
         controlsModal.style.display = 'none';
+    });
+
+	closeLobbyClosedModalButton.addEventListener('click', () => {
+        lobbyClosedModal.style.display = 'none';
     });
 
     async function showTournamentMatches() {
@@ -394,7 +417,7 @@ export function renderMenuTournamentRoundRobin(lobbyId) {
             });
             return await response.json();
         } catch (error) {
-            return { error: 'Failed to tournament create request.' };
+            return { type: 'error', message: 'Failed to tournament create request.' };
         }
 
     };
@@ -404,17 +427,24 @@ export function renderMenuTournamentRoundRobin(lobbyId) {
     roundStartButton.disabled = false;
 
     tournamentStartButton.addEventListener('click', async() => {
-        tournamentStartButton.style.display = 'none';
-        roundStartButton.style.display = 'block';
-        await showTournamentMatches();
+		const response = await showTournamentMatches();
+		if (response.type === 'error') {
+			displayToast(response.message, 'error');
+		} else {
+			tournamentStartButton.style.display = 'none';
+			roundStartButton.style.display = 'block';
+		}
     });
 
     roundStartButton.addEventListener('click', async() => {
-        roundStartButton.disabled = true;
-        roundStartButton.style.display = 'none';
-        startGame();
-        const response = fetch_get(`/tm/start_tournament_round/${lobbyId}/`)
-        if (response.type === 'error')
-            console.log(response.message);
+		const response = await fetch_get(`/tm/start_tournament_round/${lobbyId}/`)
+        if (response.type == 'error')
+            displayToast(response.message, "error");
+		else {
+			roundStartButton.disabled = true;
+			roundStartButton.style.display = 'none';
+			startGame();
+		}
+
     });
 }

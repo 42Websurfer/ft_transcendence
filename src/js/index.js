@@ -1,5 +1,4 @@
 import { handleLogoutSubmit, displayToast, AvatarLoader } from './utils.js';
-import { renderAuth42 } from './auth_42.js';
 import { renderWaiting } from './waiting.js';
 import { renderAuth2FALogin } from './auth_2fa_login.js';
 import { renderAuth2FARegister } from './auth_2fa_register.js';
@@ -284,9 +283,7 @@ function initOnlineStatus() {
     const token = localStorage.getItem('access_token');
     onlineWebSocket = new WebSocket(`wss://${window.location.host}/ws/user/online-status/?token=${token}`);
 
-    onlineWebSocket.onopen =  function() {
-        console.log("Connected to WebSocket Online Status");
-    };
+    onlineWebSocket.onopen =  function() {};
 
     onlineWebSocket.onmessage = function(event) {
         try {
@@ -334,9 +331,7 @@ function initOnlineStatus() {
         }
     };
 
-    onlineWebSocket.onclose = function() {
-        console.log("WebSocket Online Status connection closed");
-    };
+    onlineWebSocket.onclose = function() {};
 }
 
 export async function showSection(section, lobbyId, pushState = true)
@@ -352,10 +347,6 @@ export async function showSection(section, lobbyId, pushState = true)
     else if (section === 'auth_login')
         import('./auth_login.js').then(module => {
             module.renderAuthLogin();    
-        });
-    else if (section === 'auth_42')
-        import('./auth_42.js').then(module => {
-            module.renderAuth42();    
         });
 	if (settingsButton)
 		settingsButton.style.display = 'none';

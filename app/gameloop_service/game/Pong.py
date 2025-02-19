@@ -8,13 +8,12 @@ import requests
 
 # Constants
 PLAYER_MOVE_SPEED = 20
-GAME_WINNING_SCORE = 2
+GAME_WINNING_SCORE = 7
 BALL_MOVE_SPEED = 20
 CANVAS_WIDTH = 1280
 CANVAS_HEIGHT = 780
 VECTOR_CENTER = Vector(CANVAS_WIDTH * 0.5, CANVAS_HEIGHT * 0.5)
 redis = redis.Redis(host='redis', port=6379, db=0)
-
 
 class Ball(Entity):
 	def __init__(self, x=CANVAS_WIDTH // 2, y=CANVAS_HEIGHT // 2):
@@ -65,7 +64,6 @@ class Player(Entity):
 	def move(self, x_add, y_add):
 		new_pos = self.position.add(Vector(x_add, y_add))
 
-		# Check if the new player position is still in range of its goal
 		if self.start_pos is not None:
 			ab = new_pos.sub(self.start_pos)
 			len = ab.length()
@@ -75,20 +73,11 @@ class Player(Entity):
 			if len > self.goal_height * 0.5 - self.mesh.height * 0.5:
 				return
 
-		# # Check if the mesh is still inside the canvas
-		# transformed_points = [p.dup().rotate(self.rotation).add(new_pos) for p in self.mesh.points]
-		# for point in transformed_points:
-		# 	if point.x < 0 or point.x > CANVAS_WIDTH:
-		# 		return
-		# 	if point.y < 0 or point.y > CANVAS_HEIGHT:
-		# 		return
 		if self.position.x != new_pos.x or self.position.y != new_pos.y:
 			self.position = new_pos
-			#send new position to everyone
 			thread_local.pong_game.send_entity_move(self)
 			
 	def increase_score(self):
-		print('Player', self.id, 'Scored')
 		self.score += 1
 		asyncio.run_coroutine_threadsafe(thread_local.host.channel_layer.group_send(
 			thread_local.host.group_name,
@@ -199,8 +188,6 @@ class GameLogicManager(Entity):
 						self.starter = other.second_last_hit
 					thread_local.pong_game.update_tournament_gamestate()
 					self.reset_ball()
-				else:
-					print("WHAT NOW? THIS IS AN INVALID GOAL AS THE BALL WAS LAUNCHED FROM CENTER")
 		return goal_function
 
 	def reset_ball(self):
@@ -241,7 +228,6 @@ class GameLogicManager(Entity):
 		if not self.round_running:
 			if time.time() - self.counter >= 3.0:
 				if self.starter:
-					# rework this so it works with player in any orientation
 					dir = VECTOR_CENTER.sub(self.starter.start_pos)
 					dir.normalize()
 					dir.scale(BALL_MOVE_SPEED)
@@ -267,7 +253,6 @@ class GameLogicManager(Entity):
 
 async def getCurrentState(world: World, consumer):
 	for ent in world.entities:
-		print('Sending ent id:', ent.id)
 		await consumer.client_create_entity(
 			{
 				'id': ent.id,
@@ -297,7 +282,6 @@ class PongGame:
 		self.world.addSystem(MovementSystem())
 		self.gameLogic = GameLogicManager()
 		self.players = None
-		print(f'Got Players: {self.players}')
 
 		self.world.addEntity(self.gameLogic)
 		self.event_loop = None
@@ -310,8 +294,6 @@ class PongGame:
 		self.players = GamesHandler.game_players(group_name)
 
 	def start_game(self):
-
-		print('Starting threads and game!')
 
 		self.gameLogic.buildDynamicField(self.world, self.playerCount)
 
@@ -329,7 +311,6 @@ class PongGame:
 
 	def stop(self):
 		self.stop_thread = True
-		print(f'stop_thread set to {self.stop_thread}')
 
 	def update_tournament_gamestate(self):
 		if self.players[0].match_type == 'tournament':
@@ -349,18 +330,15 @@ class PongGame:
 					'type': 'game_over',
 				}
 			), self.event_loop)
-		print('We have a winner! Stop game thread, and asyncio thread')
 		self.stop()
 		data = {}
 		data['lobby_id'] = self.players[0].lobby_id
 		if self.players[0].match_type == 'match':
-			print('Start of DB save')
 			data['type'] = 'match'
 			data['home_username'] = self.players[0].user.username
 			data['away_username'] = self.players[1].user.username
 			data['home_score'] = self.players[0].player_c.score
 			data['away_score'] = self.players[1].player_c.score
-			print('Data successfully saved into DB!')
 		elif self.players[0].match_type == 'tournament':
 			data['type'] = 'tournament'
 			data['match_id'] = self.players[0].match_id
@@ -387,9 +365,7 @@ class PongGame:
 			asyncio.run_coroutine_threadsafe(self.send_move_tasks(), self.event_loop)
 			time.sleep(0.016)
 			
-		print('game loop stopped of group', self.players[0].group_name if len(self.players) != 0 else '[Removed]')
 		self.event_loop.call_soon_threadsafe(self.event_loop.stop)
-		print('asyncio event_loop ordered to stop')
 		for player in self.players:
 			(async_to_sync)(player.close)()
 	
@@ -406,7 +382,6 @@ class PongGame:
 	def asyncio_tasks_thread(self):
 		asyncio.set_event_loop(self.event_loop)
 		self.event_loop.run_forever()
-		print('asyncio event_loop stopped')
 
 	"""
 	Some big and commonly used sends defined here to make code more readable
@@ -423,7 +398,6 @@ class GamesHandler:
 	game_sessions: dict[str, 'GamesHandler'] = {}
 
 	def __init__(self, group_name):
-		print('GamesHandler() called')
 		self.group_name = group_name
 		self.players = []
 		self.game: PongGame = None
@@ -431,10 +405,8 @@ class GamesHandler:
 	@staticmethod
 	async def add_consumer_to_game(consumer, group_name):
 		if group_name in GamesHandler.game_sessions:
-			print('Group exists in handler, we push the player')
 			await GamesHandler.game_sessions[group_name].add_consumer(consumer)
 			return
-		print('First player of group we create a new GamesHandler')
 		new_handler = GamesHandler(group_name=group_name)
 		await new_handler.add_consumer(consumer)
 		GamesHandler.game_sessions[group_name] = new_handler
@@ -442,22 +414,17 @@ class GamesHandler:
 	@staticmethod
 	async def disconnect_consumer_from_game(consumer, group_name):
 		if group_name in GamesHandler.game_sessions:
-			print('Group exists in handler, we remove the player')
 			await GamesHandler.game_sessions[group_name].remove_consumer(consumer)
 			if GamesHandler.game_sessions[group_name].players.__len__() == 0:
 				GamesHandler.game_sessions.pop(group_name)
-		print('Number of handlers:', len(GamesHandler.game_sessions))
 
 	@staticmethod
 	def game_players(group_name):
 		if group_name in GamesHandler.game_sessions:
-			print(f'Return Players: {GamesHandler.game_sessions[group_name].players}')
 			return GamesHandler.game_sessions[group_name].players
-		print(f'Return Players: {[]}')
 		return []
 
 	async def add_consumer(self, consumer):
-		print('GamesHandler.add_consumer() called')
 		if self.game and self.players.__len__() < self.game.playerCount or self.players.__len__() < 2:
 			if self.players.__len__() == 0:
 				if consumer.match_type == 'multiple':
@@ -466,11 +433,9 @@ class GamesHandler:
 					self.game = PongGame(2)
 			self.players.append(consumer)
 		else:
-			print('too many players!!! disconnect consumer')
 			await consumer.close()
 			return
 		if self.players.__len__() == self.game.playerCount:
-			print('init PongGame class!')
 			if self.players[0].match_type == 'tournament':
 				tournament_matches = redis.get(tournament_string(self.players[0].lobby_id))
 				if tournament_matches:
@@ -484,19 +449,14 @@ class GamesHandler:
 			self.game.start_game()
 	
 	async def remove_consumer(self, consumer):
-		print('GamesHandler.remove_consumer() called')
 		if self.players.__len__() > 0 and consumer in self.players:
 			self.players.remove(consumer)
-			print(f'\nPlayers after remove in GamesHandler: {self.players}\n')
-			print(f'\nPlayers after remove in PonGame: {self.game.players}\n')
 		else:
-			print('no consumers in this lobby?')
+			print('no consumers in this lobby')
 		if self.game is not None and self.players.__len__() < self.game.playerCount:
-			print('Stopping Game!')
 			self.game.stop()
 			for player in self.players:
 				if player.channel_layer.valid_channel_name(player.channel_name):
-					print('Closing consumer!!')
 					try:
 						await player.disconnectedMsg({'id': consumer.player_c.id, 'uid': consumer.user.id})
 					except Exception as e:

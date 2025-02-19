@@ -1,8 +1,5 @@
 from rest_framework.permissions import BasePermission
-import logging
 import socket
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
 
 class IsInternalContainer(BasePermission):
     def __init__(self, allowed_ips: list[str] = None):

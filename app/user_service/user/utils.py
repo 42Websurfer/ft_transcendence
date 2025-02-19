@@ -45,7 +45,6 @@ def setup_2fa(user, third_party=False):
 
 def validate_avatar(avatar): 
     try:
-        print("CONTTYPE: ", avatar.content_type)
         if avatar.content_type.find("image/", 0) == 0:
             return True
         return False
@@ -93,7 +92,6 @@ def exchange_code_for_token(code):
     }
 
     response = requests.post(token_url, data=payload)
-    print("RESPONSE STATUS CODE: ", response.status_code)
     if response.status_code == 200:
         return response.json(), 200
     else:

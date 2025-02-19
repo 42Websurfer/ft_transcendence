@@ -14,27 +14,27 @@ export async function renderSettings() {
 				
 				<div class="login-form-field">
                     <label for="floatingInput" class="settings-label">Email address</label>
-					<input id="settings-email" type="email" name="email" class="form-control" placeholder="name@example.com">
+					<input id="settings-email" type="email" name="email" class="form-control" placeholder="name@example.com" required>
 				</div>
 				<div class="login-form-field">
-                    <label for="floatingPassword" class="settings-label">New password</label>
+                    <label minlength="8" for="floatingPassword" class="settings-label">New password</label>
 					<input id="settings-pw" type="password" name="password" class="form-control" placeholder="Password">
 				</div>
 				<div class="login-form-field">
-                    <label for="floatingPassword" class="settings-label">Confirm new password</label>
+                    <label minlength="8" for="floatingPassword" class="settings-label">Confirm new password</label>
 					<input id="settings-confirm-pw" type="password" name="password-confirmation" class="form-control" placeholder="Password">
 				</div>
 				<div class="login-form-field">
                     <label for="floatingPassword" class="settings-label">Firstname</label>
-					<input id="settings-firstname" type="text" name="firstname" class="form-control" placeholder="Firstname">
+					<input id="settings-firstname" type="text" name="firstname" class="form-control" placeholder="Firstname" required>
 				</div>
 				<div class="login-form-field">
                 	<label for="floatingPassword" class="settings-label">Lastname</label>
-					<input id="settings-lastname" type="text" name="lastname" class="form-control" placeholder="Lastname">
+					<input id="settings-lastname" type="text" name="lastname" class="form-control" placeholder="Lastname" required>
 				</div>
 				<div class="login-form-field">
-                    <label for="floatingPassword" class="settings-label">Username</label>
-					<input id="settings-username" type="text" name="username" class="form-control" placeholder="Username">
+                    <label maxlength="16" for="floatingPassword" class="settings-label">Username</label>
+					<input id="settings-username" type="text" name="username" class="form-control" placeholder="Username" required>
 				</div>
 				<div class="login-form-field form-floating">
 					<input type="file" accept="image/*" name="avatar" class="form-control" placeholder="Upload avatar">
@@ -141,7 +141,6 @@ async function handleSettingsFormSubmit(event) {
 	}
 	else if (result.type === 'error')
 	{
-		console.log("Error; ", result.message);
 		for(let key of Object.keys(result.message))
 			displayToast(result.message[key], 'error');
 	}

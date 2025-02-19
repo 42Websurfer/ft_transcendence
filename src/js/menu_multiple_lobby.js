@@ -1,13 +1,11 @@
 import { renderPong } from './pong.js';
-import { copyToClipboard } from './utils.js';
+import { copyToClipboard, displayToast, fetch_get } from './utils.js';
 
 export function runWebsocket(socket) {
 
 	let USER = undefined;
 
-    socket.onopen = function() {
-        console.log("Connected to Websocket of a Tournament")
-    };
+    socket.onopen = function() {};
 
     socket.onmessage = function(event) {
         try {
@@ -53,7 +51,6 @@ export function runWebsocket(socket) {
     };
     
     socket.onclose = function(event) {
-        console.log('WebSocket connection closed');
         g_socket = undefined;
         const lobbyClosedModal = document.getElementById('lobbyClosedModal');
         if (!lobbyClosedModal)
@@ -208,9 +205,9 @@ export function renderMultiplayerLobby(lobbyId) {
 		.then((response) => response.json())
         .then((data) => {
             if (data.type === 'error') {
-                console.log(data.message);
+                displayToast(data.message, 'error');
             }
-        }).catch((error) => console.log("Error:", error));
+        }).catch((error) => displayToast(error, 'error'));
     }
 
     const copyLobbyIdButton = document.getElementById('copyLobbyIdButton');
@@ -240,15 +237,15 @@ export function renderMultiplayerLobby(lobbyId) {
 
     matchStartButton.addEventListener('click', async() => {
         try {
-            const token = localStorage.getItem('access_token'); 
-
-            const response = await fetch(`/api/tm/start_game/${lobbyId}/?type=multiple`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-            });
+			fetch_get(`/tm/start_game/${lobbyId}/?type=multiple`)
+			.then(data => {
+				if (data.type === 'error') {
+					displayToast(data.message, 'error');
+				} else {
+					matchStartButton.style.display = 'none';
+				}
+			})
+			.catch(e => displayToast(e, 'error'));
         } catch (error) {
             console.log('Error: ', error);
         }

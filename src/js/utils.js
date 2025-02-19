@@ -132,7 +132,6 @@ export async function fetch_get(url)
 }
 
 export function displayToast(message, level = undefined) {
-	console.log('create toast element!');
 	const toastContainer = document.getElementById('tc');
 
 	const toastHTML = `
@@ -211,8 +210,6 @@ async function updateCountdown() {
 		clearInterval(countdownIntervalID);
 		countdownIntervalID = undefined;
 		countdownDisplay.style.display = 'none';
-		
-		console.log('Game started!');
 	}
 }
 
