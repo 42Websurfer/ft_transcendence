@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .validators import validate_username_format
+from .validators import validate_username_format, validate_names_format
 
 class RegisterSerializer(serializers.ModelSerializer):
     '''Serialize the registration data.
@@ -18,8 +18,18 @@ class RegisterSerializer(serializers.ModelSerializer):
     )
     email = serializers.EmailField(required=True)
     password = serializers.CharField(write_only=True, min_length=8)
-    firstname = serializers.CharField(source='first_name', required=True)
-    lastname = serializers.CharField(source='last_name', required=True)
+    firstname = serializers.CharField(
+        source='first_name', 
+        max_length=40,
+        required=True,
+        validators=[validate_names_format]
+        )
+    lastname = serializers.CharField(
+        source='last_name',
+        max_length=40,
+        required=True,
+        validators=[validate_names_format]
+        )
 
     class Meta:
         model = User
@@ -69,9 +79,18 @@ class UpdateUserSerializer(serializers.ModelSerializer):
     )
     email = serializers.EmailField(required=True)
     password = serializers.CharField(write_only=True, min_length=8, required=False)
-    firstname = serializers.CharField(source='first_name', required=True)
-    lastname = serializers.CharField(source='last_name', required=True)
-
+    firstname = serializers.CharField(
+        source='first_name', 
+        max_length=40,
+        required=True,
+        validators=[validate_names_format]
+        )
+    lastname = serializers.CharField(
+        source='last_name',
+        max_length=40,
+        required=True,
+        validators=[validate_names_format]
+        )
     class Meta:
 
         model = User
