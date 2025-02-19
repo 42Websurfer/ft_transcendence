@@ -19,7 +19,11 @@ class Tournament(AsyncWebsocketConsumer):
 		
 		if (self.user.is_authenticated):
 			User = get_user_model()
-			user = await sync_to_async(User.objects.get)(id=self.user.id)		
+			user = await sync_to_async(User.objects.get)(id=self.user.id)
+			matches_data = redis.get(tournament_string(self.group_name))
+			if matches_data:
+				await self.close()
+				return	
 			if (not left_user):
 				tournament_data = redis.get(self.group_name)
 				if redis.exists(self.group_name) and tournament_data:
