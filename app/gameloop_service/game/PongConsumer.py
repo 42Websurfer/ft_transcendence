@@ -103,16 +103,22 @@ class MyConsumer(AsyncWebsocketConsumer):
 	"""
 	#updatePos		up;id;xpos;ypos;rot
 	async def move_entity(self, event):
-		transform = event.get('transform')
-		await self.send(text_data=f"up;{event.get('id')};{transform['position']['x']};{transform['position']['y']};{transform['rotation']}")
+		try:
+			transform = event.get('transform')
+			await self.send(text_data=f"up;{event.get('id')};{transform['position']['x']};{transform['position']['y']};{transform['rotation']}")
+		except:
+			print('Sending on closed socket')
 
 	"""
 	This is to set the pos aka so for ball reset
 	"""
 	#setPos 		sp;id;xpos;ypos;rot
 	async def set_entity_pos(self, event):
-		transform = event.get('transform')
-		await self.send(text_data=f"sp;{event.get('id')};{transform['position']['x']};{transform['position']['y']};{transform['rotation']}")
+		try:
+			transform = event.get('transform')
+			await self.send(text_data=f"sp;{event.get('id')};{transform['position']['x']};{transform['position']['y']};{transform['rotation']}")
+		except:
+			print('Sending on closed socket')
 
 	#roundStart 	rs
 	async def round_start(self, event):
