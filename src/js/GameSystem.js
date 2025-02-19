@@ -447,7 +447,7 @@ export class CollisionSystem extends System{
 						const currentPos = currentEnt.position.add(entPhys.velocity.dup().scale(t));
 						const otherPos = otherEnt.position;
 						let ab = otherPos.sub(currentPos);
-						let threshold = Math.max(entMesh.width, entMesh.height, otherMesh.width, otherMesh.height) * 0.5;
+						let threshold = Math.max(entMesh.width, entMesh.height, otherMesh.width, otherMesh.height) * 0.75;
 					
 						if (ab.length() < threshold){
 							const stepTransform = new Transform(currentPos.x, currentPos.y, currentEnt.rotation);

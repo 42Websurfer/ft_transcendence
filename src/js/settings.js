@@ -14,7 +14,7 @@ export async function renderSettings() {
 				
 				<div class="login-form-field">
                     <label for="floatingInput" class="settings-label">Email address</label>
-					<input id="settings-email" type="email" name="email" class="form-control" placeholder="name@example.com">
+					<input id="settings-email" type="email" name="email" class="form-control" placeholder="name@example.com" required>
 				</div>
 				<div class="login-form-field">
                     <label minlength="8" for="floatingPassword" class="settings-label">New password</label>
@@ -26,15 +26,15 @@ export async function renderSettings() {
 				</div>
 				<div class="login-form-field">
                     <label for="floatingPassword" class="settings-label">Firstname</label>
-					<input id="settings-firstname" type="text" name="firstname" class="form-control" placeholder="Firstname">
+					<input id="settings-firstname" type="text" name="firstname" class="form-control" placeholder="Firstname" required>
 				</div>
 				<div class="login-form-field">
                 	<label for="floatingPassword" class="settings-label">Lastname</label>
-					<input id="settings-lastname" type="text" name="lastname" class="form-control" placeholder="Lastname">
+					<input id="settings-lastname" type="text" name="lastname" class="form-control" placeholder="Lastname" required>
 				</div>
 				<div class="login-form-field">
                     <label maxlength="16" for="floatingPassword" class="settings-label">Username</label>
-					<input id="settings-username" type="text" name="username" class="form-control" placeholder="Username">
+					<input id="settings-username" type="text" name="username" class="form-control" placeholder="Username" required>
 				</div>
 				<div class="login-form-field form-floating">
 					<input type="file" accept="image/*" name="avatar" class="form-control" placeholder="Upload avatar">

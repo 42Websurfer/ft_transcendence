@@ -28,10 +28,21 @@ export function runWebsocket() {
                     {
                         const startButton = document.getElementById('tournamentStartButton');
                         if (startButton)
-                            startButton.remove();
+                            startButton.style.display = 'none';
                     }
-                    else if (data.user_id == user.user_id && user.role == 'admin')
+                    else if (data.user_id == user.user_id && user.role == 'admin') {
                         admin = true;
+                        console.log(data);
+                        if (data.started == false) {
+                            const startButton = document.getElementById('tournamentStartButton');
+                            if (startButton)
+                                startButton.style.display = 'block';    
+                        } else {
+                            const roundStartButton = document.getElementById('roundStartButton');
+                            if (roundStartButton)
+                                roundStartButton.style.display = 'block';
+                        }
+                    }
                     
                     let rank = user.rank;
                     let player = data.user_id == user.user_id ? `<span class="local-player">${user.player}</span>` : user.player;
@@ -48,8 +59,6 @@ export function runWebsocket() {
             }
             else if (data.type === 'match_list')
             {
-                if (!data.matches)
-                    return;
                 if (!data.matches)
                     return;
                 
@@ -91,6 +100,11 @@ export function runWebsocket() {
     
     g_socket.onclose = function(event) {
         g_socket = undefined;
+		const lobbyClosedModal = document.getElementById('lobbyClosedModal');
+		if (!lobbyClosedModal)
+			return;
+
+		lobbyClosedModal.style.display = 'block';
     };
 
 }
@@ -324,6 +338,14 @@ export function renderMenuTournamentRoundRobin(lobbyId) {
                 </div>
             </div>
         </div>
+		<div class="modal" id="lobbyClosedModal">
+            <div class="modal-content-modify">
+                <span class="close-controls-button" id="closeLobbyClosedModalButton">&times;</span>
+                <div class="tournament-controls">
+                    <p>This lobby was closed by its owner!</p>
+                </div>
+            </div>
+        </div>
 
         <div class="countdown-container" id="countdownDisplay"></div>
 
@@ -367,6 +389,8 @@ export function renderMenuTournamentRoundRobin(lobbyId) {
 
     const controlsButton = document.getElementById('controlsButton');
     const controlsModal = document.getElementById('controlsModal');
+	const lobbyClosedModal = document.getElementById('lobbyClosedModal');
+    const closeLobbyClosedModalButton = document.getElementById('closeLobbyClosedModalButton');
     const closeControlsModalButton = document.getElementById('closeControlsModalButton');
 
     controlsButton.addEventListener('click', () => {
@@ -375,6 +399,10 @@ export function renderMenuTournamentRoundRobin(lobbyId) {
 
     closeControlsModalButton.addEventListener('click', () => {
         controlsModal.style.display = 'none';
+    });
+
+	closeLobbyClosedModalButton.addEventListener('click', () => {
+        lobbyClosedModal.style.display = 'none';
     });
 
     async function showTournamentMatches() {
@@ -410,8 +438,8 @@ export function renderMenuTournamentRoundRobin(lobbyId) {
     });
 
     roundStartButton.addEventListener('click', async() => {
-		const response = fetch_get(`/tm/start_tournament_round/${lobbyId}/`)
-        if (response.type === 'error')
+		const response = await fetch_get(`/tm/start_tournament_round/${lobbyId}/`)
+        if (response.type == 'error')
             displayToast(response.message, "error");
 		else {
 			roundStartButton.disabled = true;
