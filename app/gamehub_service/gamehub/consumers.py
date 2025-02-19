@@ -11,7 +11,6 @@ redis = redis.Redis(host='redis', port=6379, db=0)
 
 class Tournament(AsyncWebsocketConsumer):
 	async def connect(self):
-		#try and catch einbauen, aber besser ohne zum debuggen
 		self.user = self.scope["user"]
 		self.group_name = self.scope['url_route']['kwargs']['group_name']
 		left_user = False
@@ -56,7 +55,6 @@ class Tournament(AsyncWebsocketConsumer):
 					'user_id': self.user.id,
 				}
 			)
-			#await self.send_info('success', 'You have successfully joined a lobby!')
 
 	async def disconnect(self, close_code):
 		if (self.user.is_authenticated):
@@ -84,7 +82,7 @@ class Tournament(AsyncWebsocketConsumer):
 						all_disconnected = False
 					new_results.append(result)
 			
-			redis.srem('user_lobbies', self.user.id) # frage?
+			redis.srem('user_lobbies', self.user.id) 
 			if (admin_disconnected and new_results):
 				new_results[0]['role'] = 'admin'
 			tournament_started = redis.exists(tournament_string(self.group_name))
@@ -228,7 +226,7 @@ class MultipleLobby(AsyncWebsocketConsumer):
 						admin_disconnected = True
 					users.pop(i)
 			
-			redis.srem('user_lobbies', self.user.id) # frage?
+			redis.srem('user_lobbies', self.user.id) 
 			if (admin_disconnected and users):
 				users[0]['role'] = 'admin'
 				if data['status'] == 'started':
@@ -356,7 +354,6 @@ class OnlineMatch(AsyncWebsocketConsumer):
 					'type': 'send_online_lobby_user'
 				}
 			) 
-				#now we have to set the everything in the database! oder vielleicht auch nicht
 
 			
 	async def send_online_lobby_user(self, event):

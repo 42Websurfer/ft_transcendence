@@ -127,7 +127,6 @@ function displayMatches(matches, username)
     {
         const m = matches[index];
 
-        // es gibt auch noch m.modus!!!
         let result = "loss";
         if (m.winner === username)
             result = "win";

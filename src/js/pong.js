@@ -92,17 +92,6 @@ class Player extends Entity{
 			if (len > (this.goalHeight * 0.5) - this.mesh.height * 0.5)
 				return;
 		}
-		// /**
-		//  * Check if the mesh is still inside the canvas
-		//  * if not dont allow the move
-		//  */
-		// let transformedPoints = this.mesh.points.map(p => p.dup().rotate(this.rotation).add(newPos));
-		// for (let point of transformedPoints) {
-		// 	if (point.x < 0 || point.x > canvas.width)
-		// 		return;
-		// 	if (point.y < 0 || point.y > canvas.height)
-		// 		return;
-		// }
 		this.position = newPos;
 	}
 
@@ -210,11 +199,6 @@ class AiPlayer extends Player {
 
 	update() {
 		this.moveToTarget();
-		// const colors = ['red', 'orange', 'yellow', 'green', 'blue', 'purple'];
-		// for (let i = 0; i < this.debugPoints.length - 1; i++) {
-		// 	drawLine(this.debugPoints[i], this.debugPoints[i + 1], colors[i % colors.length]);
-		// }
-		// drawLine(new Vector(75 + 25 / 2, 0), new Vector(75 + 25 / 2, canvas.height));
 	}
 }
 
