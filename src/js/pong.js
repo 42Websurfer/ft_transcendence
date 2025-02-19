@@ -603,7 +603,7 @@ function setupSocketHandlers(socket){
 		if (!data)
 			return;
 		if (data[0] === 'ne'){
-			manager.newEntity(data[2], data[1], {position: {x: data[3], y: data[4]}, rotation: data[5]}, data?.[6]);
+			manager?.newEntity(data[2], data[1], {position: {x: data[3], y: data[4]}, rotation: data[5]}, data?.[6]);
 			return;
 		}
 		if (manager && !manager.complete) {
@@ -617,9 +617,9 @@ function setupSocketHandlers(socket){
 		} else if (data[0] === 'rs'){
 			startGame();
 		} else if (data[0] === 'ss'){
-			manager.updatePlayerScore(data[1], data[2])
+			manager?.updatePlayerScore(data[1], data[2])
 		} else if (data[0] === 'ip') {
-			manager.addPlayer(data[1], data[2], data[3], data[4]);
+			manager?.addPlayer(data[1], data[2], data[3], data[4]);
 		} else if (data[0] === 'dc') {
 			let player = manager.players[data[1]];
 			useCountdownAsMessageDisplay(`${player.uname} disconnected!`);

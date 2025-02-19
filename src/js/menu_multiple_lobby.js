@@ -1,5 +1,5 @@
 import { renderPong } from './pong.js';
-import { copyToClipboard, displayToast } from './utils.js';
+import { copyToClipboard, displayToast, fetch_get } from './utils.js';
 
 export function runWebsocket(socket) {
 
@@ -237,19 +237,12 @@ export function renderMultiplayerLobby(lobbyId) {
 
     matchStartButton.addEventListener('click', async() => {
         try {
-            const token = localStorage.getItem('access_token'); 
-
-            fetch(`/api/tm/start_game/${lobbyId}/?type=multiple`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-            })
-			.then(response => response.json())
+			fetch_get(`/tm/start_game/${lobbyId}/?type=multiple`)
 			.then(data => {
 				if (data.type === 'error') {
 					displayToast(data.message, 'error');
+				} else {
+					matchStartButton.style.display = 'none';
 				}
 			})
 			.catch(e => displayToast(e, 'error'));
