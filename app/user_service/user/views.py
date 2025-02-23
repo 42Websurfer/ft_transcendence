@@ -26,14 +26,7 @@ def check_auth(request):
     try: 
         if request.user.is_authenticated:
             return JsonResponse({
-                'authenticated': True,
-                'user': {
-                    'id': request.user.id,
-                    'username': request.user.username,
-                    'email': request.user.email,
-                    'first_name': request.user.first_name,
-                    'last_name': request.user.last_name
-                }
+                'authenticated': True
             }, status=200)
         else:
             return JsonResponse({'authenticated': False}, status=404)
@@ -76,6 +69,7 @@ def user_login(request):
                     refresh = RefreshToken.for_user(user)
                     return JsonResponse({
                         'type': 'success',
+                        'user': user_dic,
                         'tokens': {
                             'refresh': str(refresh),
                             'access': str(refresh.access_token),

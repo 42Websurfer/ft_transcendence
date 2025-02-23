@@ -29,6 +29,8 @@ export class Authenticator {
 		const result = await response.json();
 		if (result.type === 'success')
 		{
+			if (result?.user)
+				localStorage.setItem('user', JSON.stringify(result.user));
 			if ('tokens' in result) {
 				localStorage.setItem('access_token', result.tokens.access);
 				localStorage.setItem('refresh_token', result.tokens.refresh);

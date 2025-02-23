@@ -30,6 +30,11 @@ export class SectionManager {
 				SectionManager.showSection('login');
 				return;
 			}
+
+			// const currentState = history.state
+			// if (section != 'waiting' && (!currentState || currentState.section != section))
+			// 	history.pushState({ section, lobbyId }, '', `/${section}${lobbyId ? `?lobbyId=${lobbyId}` : ''}`);
+
 			this.#currentSection?.exitSection();
 			this.#app.innerHTML = module.SECTION.content;
 			module.SECTION.loadSection();

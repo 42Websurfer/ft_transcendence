@@ -32,7 +32,20 @@ export const SECTION = new Section(`
 
 SECTION.loadSection = () => {
 	document.querySelector('#loginForm')?.addEventListener('submit', handleLoginFormSubmit);
-	document.querySelector('#signInButton')?.addEventListener('click', () => SectionManager.showSection('register'));
+	document.querySelector('#signInButton')?.addEventListener('click', () => SectionManager.showSection('registerAPI'));
+
+	const buttonDiv = document.querySelector('#LoginLogoutButton');
+	if (buttonDiv) {
+		buttonDiv.innerHTML = `
+		<div class="col-5">
+		<button id="registerButton" type="button" class="btn btn-primary login-logout-button">Sign up</button>
+		</div>
+		`;
+		const registerButton = document.getElementById('registerButton')
+		registerButton.addEventListener('click', () => {
+			SectionManager.showSection('register');
+		});
+	}
 };
 
 async function handleLoginFormSubmit(event)
